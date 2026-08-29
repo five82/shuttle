@@ -1,4 +1,5 @@
 import ServiceManagement
+import UserNotifications
 import SwiftUI
 
 @main
@@ -17,6 +18,7 @@ struct shuttleApp: App {
                 .environment(monitor)
         }
         .handlesExternalEvents(matching: [DeepLink.scheme])
+        .defaultSize(width: 1120, height: 720)
         .windowResizability(.contentSize)
         .commands {
             CommandGroup(after: .toolbar) {
@@ -90,14 +92,21 @@ private struct MenuBarLabel: View {
     }
 
     /// Outlined disc when the drive is free, filled while it is busy, pause
-    /// while the disc monitor is paused, and a struck antenna when shuttle
-    /// cannot reach the daemon at all.
+    /// while the disc monitor is paused, a dotted circle until the first
+    /// snapshot, and a struck antenna when shuttle cannot reach the daemon.
     private var symbol: String {
-        guard monitor.connection.isConnected else { return "antenna.radiowaves.left.and.right.slash" }
-        switch monitor.driveState {
-        case .busy: return "opticaldisc.fill"
-        case .paused: return "pause.circle"
-        case .available, .unknown: return "opticaldisc"
+        switch monitor.connection {
+        case .disconnected:
+            return monitor.status == nil ? "circle.dotted" : "antenna.radiowaves.left.and.right.slash"
+        case .connecting:
+            return "circle.dotted"
+        case .connected:
+            switch monitor.driveState {
+            case .busy: return "opticaldisc.fill"
+            case .paused: return "pause.circle"
+            case .available: return "opticaldisc"
+            case .unknown: return "circle.dotted"
+            }
         }
     }
 }
@@ -132,12 +141,19 @@ private struct ShuttleSettingsView: View {
     @State private var confirmingReset = false
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var launchAtLoginError: String?
+    @State private var libraryRemote = ""
+    @State private var libraryLocal = ""
+    @State private var notificationStatus: UNAuthorizationStatus?
+    @FocusState private var focusedField: Field?
+
+    private enum Field: Hashable { case address, token, libraryRemote, libraryLocal }
 
     var body: some View {
         Form {
             Section("Spindle API") {
                 TextField("Address", text: $baseURLString, prompt: Text(AppSettings.defaultBaseURLString))
                     .font(.system(.body, design: .monospaced))
+                    .focused($focusedField, equals: .address)
                     .onSubmit(commit)
 
                 HStack(spacing: 6) {
@@ -149,6 +165,7 @@ private struct ShuttleSettingsView: View {
                         }
                     }
                     .font(.system(.body, design: .monospaced))
+                    .focused($focusedField, equals: .token)
                     .onSubmit(commit)
                     Toggle(isOn: $revealToken) {
                         Image(systemName: revealToken ? "eye.slash" : "eye")
@@ -175,12 +192,27 @@ private struct ShuttleSettingsView: View {
                 }
                 .help("How often shuttle asks the daemon for status and queue while connected")
 
-                Text("Matches the daemon's [api] bind and token settings. shuttle only reads from this API.")
+                Text("Matches the daemon's [api] bind and token settings. shuttle only reads from this API. The token is kept in your login keychain.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("Library") {
+                TextField("On the daemon", text: $libraryRemote, prompt: Text("/mnt/media"))
+                    .font(.system(.body, design: .monospaced))
+                    .focused($focusedField, equals: .libraryRemote)
+                    .onSubmit(commitLibrary)
+                TextField("On this Mac", text: $libraryLocal, prompt: Text("/Volumes/media"))
+                    .font(.system(.body, design: .monospaced))
+                    .focused($focusedField, equals: .libraryLocal)
+                    .onSubmit(commitLibrary)
+                Text("Optional. When the library is mounted here (SMB, NFS), map the daemon's path to the mount and Reveal in Finder works for finished items.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
             Section("Notifications") {
+                notificationStatusRow
                 ForEach(NotificationKind.allCases) { kind in
                     Toggle(isOn: notificationBinding(kind)) {
                         VStack(alignment: .leading, spacing: 2) {
@@ -216,10 +248,18 @@ private struct ShuttleSettingsView: View {
                     if testing {
                         ProgressView().controlSize(.small)
                     } else if let testResult {
-                        Text(testResult)
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(testResult)
+                                .font(.callout)
+                                .foregroundStyle(testResult == "Connected." ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
+                                .lineLimit(2)
+                            if let hint = SpindleMonitor.hint(for: testResult) {
+                                Text(hint)
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                                    .lineLimit(2)
+                            }
+                        }
                     }
                     Spacer()
                     Button("Reset to Defaults…") {
@@ -233,7 +273,7 @@ private struct ShuttleSettingsView: View {
                             monitor.refreshNow()
                         }
                     } message: {
-                        Text("The address goes back to \(AppSettings.defaultBaseURLString), the token is cleared, and notification choices are reset.")
+                        Text("The address goes back to \(AppSettings.defaultBaseURLString), the token and library mapping are cleared, and notification choices are reset.")
                     }
                 }
             }
@@ -242,9 +282,75 @@ private struct ShuttleSettingsView: View {
         .padding(20)
         .frame(width: 560)
         .onAppear(perform: load)
-        .onDisappear(perform: commit)
+        .onDisappear {
+            commit()
+            commitLibrary()
+        }
+        .onChange(of: focusedField) { previous, _ in
+            // Leaving a field applies it; nobody should have to find Return.
+            switch previous {
+            case .address, .token: commit()
+            case .libraryRemote, .libraryLocal: commitLibrary()
+            case nil: break
+            }
+        }
         .onChange(of: baseURLString) { _, _ in testResult = nil }
         .onChange(of: token) { _, _ in testResult = nil }
+        .task { await refreshNotificationStatus() }
+    }
+    /// What macOS will actually do with the toggles below.
+    @ViewBuilder
+    private var notificationStatusRow: some View {
+        switch notificationStatus {
+        case .denied:
+            HStack {
+                Label("Notifications are turned off for shuttle in System Settings.", systemImage: "bell.slash")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                Spacer()
+                Button("Open System Settings") {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                .controlSize(.small)
+            }
+        case .notDetermined:
+            HStack {
+                Label("macOS has not been asked yet.", systemImage: "bell.badge")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Allow Notifications") {
+                    model.notifications.activate()
+                    Task {
+                        try? await Task.sleep(for: .seconds(1))
+                        await refreshNotificationStatus()
+                    }
+                }
+                .controlSize(.small)
+            }
+        case .authorized, .provisional, .ephemeral:
+            Label("Allowed by macOS.", systemImage: "bell")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        case nil:
+            EmptyView()
+        @unknown default:
+            EmptyView()
+        }
+    }
+
+    private func refreshNotificationStatus() async {
+        notificationStatus = await model.notifications.authorizationStatus()
+    }
+
+    private func commitLibrary() {
+        let remote = libraryRemote.trimmingCharacters(in: .whitespacesAndNewlines)
+        let local = libraryLocal.trimmingCharacters(in: .whitespacesAndNewlines)
+        if remote != settingsStore.settings.libraryRemotePrefix || local != settingsStore.settings.libraryLocalPrefix {
+            settingsStore.updateLibraryMapping(remote: remote, local: local)
+        }
     }
 
     private func notificationBinding(_ kind: NotificationKind) -> Binding<Bool> {
@@ -289,6 +395,8 @@ private struct ShuttleSettingsView: View {
     private func load() {
         baseURLString = settingsStore.settings.baseURLString
         token = settingsStore.settings.token
+        libraryRemote = settingsStore.settings.libraryRemotePrefix
+        libraryLocal = settingsStore.settings.libraryLocalPrefix
     }
 
     private func commit() {
@@ -341,17 +449,18 @@ private struct ShuttleHelpView: View {
 
                 HelpCard(title: "Quick Start", systemImage: "play.circle") {
                     HelpBullet("Spindle runs on a Linux host. Enable its HTTP API with [api] bind = \"0.0.0.0:7487\" and a token in its config, then enter http://<host>:7487 and the token in shuttle > Settings.")
-                    HelpBullet("Now shows what needs attention, what is running with progress and time left, what is waiting, and what just finished. Queue lists every item; click a column header to sort, right-click a row for Copy and Reveal. Attention is the triage list.")
-                    HelpBullet("Select an item to open the inspector (⌥⌘I): each pipeline stage with how long it took, media and encoder details, output, per-episode progress for TV, and the item's log.")
-                    HelpBullet("Log tails the daemon log; click an item number to jump to that item. Health shows the daemon's state, its last error, and the tool checks it ran at startup.")
-                    HelpBullet("The status chips in the toolbar are buttons: click one to go where that state is explained.")
+                    HelpBullet("Now shows what needs attention, what is running with progress and time left, what is waiting and why — after which stage, or for which resource — and what just finished. Queue lists every item; the All / Active / Attention / Completed control narrows it, a column header sorts, and right-click gives Copy and Reveal. Attention is the triage list.")
+                    HelpBullet("Select an item to open the inspector (⌥⌘I): each pipeline stage with how long it took (an indented stage runs alongside the one above it; the small tag is the resource it claims), media and encoder details, output, per-episode progress for TV, and the item's log.")
+                    HelpBullet("Log tails the daemon log; scrolling up pauses follow and scrolling back to the bottom resumes it. Click an item number to jump to that item. Health shows the daemon's state, its scheduler resources and who holds them, the pipeline template, and the tool checks it ran at startup.")
+                    HelpBullet("The status chips in the toolbar are buttons: click one to go where that state is explained. While the daemon is unreachable the last snapshot stays on screen under an orange “Showing data from…” banner.")
+                    HelpBullet("Reveal in Finder needs the library mounted on this Mac. Enter the daemon's library path and the mount here in Settings > Library.")
                     HelpBullet("shuttle never changes anything. Use the spindle CLI to retry, remove, or stop items.")
                 }
 
                 HelpCard(title: "Menu Bar and Notifications", systemImage: "bell") {
                     HelpBullet("The menu bar icon shows the drive: outlined when available, filled when busy, paused, or a struck antenna when shuttle cannot reach the daemon. A number beside it is how many items need attention.")
-                    HelpBullet("Click it for what is running and what needs you. Click a row to open that item. The ⋯ menu has Refresh, Settings, and Quit — handy in menu-bar-only mode.")
-                    HelpBullet("shuttle notifies when the drive becomes available, an item needs review, fails, or completes. Connection lost/restored is off by default. Each can be changed in Settings.")
+                    HelpBullet("Click it for what is running and what needs you. Rows open that item; chips open the section that explains them. The ⋯ menu has Refresh, Settings, and Quit — handy in menu-bar-only mode.")
+                    HelpBullet("shuttle notifies when the drive becomes available, an item needs review, fails, or completes (completions are silent). Connection lost/restored is off by default. Each can be changed in Settings, which also shows whether macOS allows notifications at all.")
                     HelpBullet("Turn on “Show in menu bar only” to hide the Dock icon; shuttle keeps polling in the background. “Launch at login” starts it with your Mac.")
                 }
 
@@ -359,12 +468,12 @@ private struct ShuttleHelpView: View {
                     HelpBullet("⌘1 Now · ⌘2 Queue · ⌘3 Attention · ⌘4 Log · ⌘5 Health.")
                     HelpBullet("⌘R refreshes immediately.")
                     HelpBullet("⌘F filters the current section: now, queue, attention, log, or dependencies.")
-                    HelpBullet("⌥⌘I shows or hides the inspector. Return or double-click on a queue row does the same.")
+                    HelpBullet("⌥⌘I shows or hides the inspector. Return or double-click on a queue row shows it.")
                     HelpBullet("⌘, opens Settings.")
                 }
 
                 HelpCard(title: "Troubleshooting", systemImage: "wrench.and.screwdriver") {
-                    HelpBullet("“Unreachable” means nothing answered at the address. Check the daemon is running and [api] bind is set.")
+                    HelpBullet("“Unreachable” means nothing answered at the address. Check the daemon is running and [api] bind is set. “Appears to be offline” on a LAN address usually means macOS has not allowed shuttle on the local network: System Settings > Privacy & Security > Local Network.")
                     HelpBullet("“Rejected the API token” means the daemon answered but the token does not match its [api] token.")
                     HelpBullet("While disconnected, the last good snapshot stays on screen and shuttle retries with increasing delays up to 30 seconds. Retry in the status bar polls immediately.")
                     HelpBullet("A red daemon chip means the daemon answered but reports it is stopped or has a workflow error; Health shows the message.")

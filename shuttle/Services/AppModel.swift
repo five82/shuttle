@@ -57,11 +57,29 @@ final class AppModel {
     }
 
     /// Selects an item in a section that shows the inspector. Stays put when
-    /// the current section already does (Now, Queue, Attention), so a click
-    /// on a Now row doesn't yank the operator over to the Queue.
+    /// the current section already lists the item, so a click on a Now row
+    /// doesn't yank the operator over to the Queue. Otherwise prefers the
+    /// short lists — Attention, then Now — where the row is always in view;
+    /// the Queue table cannot scroll to a programmatic selection.
     func focus(itemID: Int64) {
-        if !section.showsInspector { section = .queue }
+        if !sectionLists(section, itemID) {
+            section = bestSection(for: itemID)
+        }
         monitor.selectedItemID = itemID
+    }
+
+    private func sectionLists(_ section: SidebarSection, _ id: Int64) -> Bool {
+        switch section {
+        case .now: return monitor.nowShows(id)
+        case .attention: return monitor.attentionItems.contains { $0.id == id }
+        case .queue, .log, .dependencies: return false
+        }
+    }
+
+    private func bestSection(for id: Int64) -> SidebarSection {
+        if monitor.attentionItems.contains(where: { $0.id == id }) { return .attention }
+        if monitor.nowShows(id) { return .now }
+        return .queue
     }
 
     func resetQueueSort() {
@@ -77,6 +95,7 @@ final class AppModel {
         switch link {
         case .main: break
         case .item(let id): focus(itemID: id)
+        case .section(let target): section = target
         }
     }
 

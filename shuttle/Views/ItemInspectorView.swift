@@ -60,16 +60,7 @@ struct ItemInspectorView: View {
                 Text("#\(item.id)")
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.secondary)
-                Button {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString("\(item.id)", forType: .string)
-                } label: {
-                    Image(systemName: "doc.on.doc")
-                        .font(.caption2)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.tertiary)
-                .help("Copy ID")
+                CopyButton(text: "\(item.id)", help: "Copy ID")
                 Spacer()
                 Text("Updated \(item.updatedDate, format: .relative(presentation: .named))")
                     .font(.caption)
@@ -81,6 +72,7 @@ struct ItemInspectorView: View {
                 .textSelection(.enabled)
             HStack(spacing: 6) {
                 StatusChip(label: stageLabel(item), systemImage: stageSymbol(item), tint: stageTint(item))
+                    .help(stageHelp(item))
                 if let type = item.mediaTypeLabel {
                     StatusChip(label: type, systemImage: item.mediaType == "tv" ? "tv" : "film", tint: .secondary)
                 }
@@ -97,8 +89,17 @@ struct ItemInspectorView: View {
         if item.hasFailed { return "Failed" }
         if item.needsReview { return "Review" }
         if item.isActive { return item.activityDescription.components(separatedBy: " · ").first ?? item.stage.displayName }
-        if item.isWaiting { return "Queued · \(item.stage.displayName)" }
+        if item.isWaiting {
+            if let reason = monitor.waitReasons[item.id] { return "Queued · \(reason.short)" }
+            return "Queued · \(item.stage.displayName)"
+        }
         return item.stage.displayName
+    }
+
+    private func stageHelp(_ item: QueueItem) -> String {
+        if item.isWaiting, let reason = monitor.waitReasons[item.id] { return reason.detail }
+        if item.isActive { return item.activityDescription }
+        return item.attentionReason ?? item.stage.displayName
     }
 
     private func stageSymbol(_ item: QueueItem) -> String {
@@ -200,7 +201,7 @@ private struct OverviewView: View {
             ("Tracks", (item.commentaryCount ?? 0) > 0 ? "\(item.commentaryCount!) commentary track\(item.commentaryCount! == 1 ? "" : "s")" : "", nil),
             ("Config", encoding?.configSummary ?? "", nil),
             ("Quality", encoding?.qualitySummary ?? "", nil),
-            ("ID", contentIDSummary, nil),
+            ("Identify", contentIDSummary, nil),
             ("TMDB", item.tmdbID.map(String.init) ?? "", nil),
         ].filter { !$0.1.isEmpty }
         if !rows.isEmpty {
@@ -249,11 +250,11 @@ private struct OverviewView: View {
         }()
         let rows: [(String, String, Color?)] = [
             ("Progress", progress?.detailText ?? "", Color.accentColor),
-            ("Est", encoding?.sizeEstimate ?? "", Color.accentColor),
+            ("Estimate", encoding?.sizeEstimate ?? "", Color.accentColor),
             ("Size", encoding?.sizeResult ?? "", nil),
             ("Encode", encoding?.encodeStats ?? "", nil),
-            ("Checks", checks, validation?.passed == false ? Color.red : Color.green),
-            ("Subs", subs, nil),
+            ("Validation", checks, validation?.passed == false ? Color.red : Color.green),
+            ("Subtitles", subs, nil),
             ("Files", item.hasFailed ? "" : (item.fileStateSummary ?? ""), nil),
         ].filter { !$0.1.isEmpty }
         if !rows.isEmpty || item.finalPath != nil {
@@ -335,7 +336,7 @@ struct InspectorSection<Content: View>: View {
 }
 
 /// Width of the trailing-aligned label column shared by every row style,
-/// wide enough for "Disc monitor" and "Fingerprint".
+/// wide enough for "Disc monitor", "Fingerprint", and "Validation".
 let inspectorLabelWidth: CGFloat = 90
 
 struct InspectorRow: View {
@@ -415,21 +416,56 @@ private struct ReasonRow: View {
     }
 }
 
+/// Copies `text` and shows a checkmark for a moment so the click is seen
+/// to have done something.
 struct CopyButton: View {
     let text: String
     let help: String
+
+    @State private var copied = false
+    @State private var hovering = false
 
     var body: some View {
         Button {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(text, forType: .string)
+            withAnimation(.easeOut(duration: 0.15)) { copied = true }
+            Task {
+                try? await Task.sleep(for: .seconds(1.2))
+                withAnimation(.easeIn(duration: 0.2)) { copied = false }
+            }
         } label: {
-            Image(systemName: "doc.on.doc")
-                .font(.caption2)
+            Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                .font(.caption2.weight(copied ? .bold : .regular))
+                .foregroundStyle(copied ? AnyShapeStyle(.green) : (hovering ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tertiary)))
+                .contentTransition(.symbolEffect(.replace))
         }
         .buttonStyle(.plain)
-        .foregroundStyle(.tertiary)
-        .help(help)
+        .pointingHandCursor(hovering)
+        .onHover { hovering = $0 }
+        .help(copied ? "Copied" : help)
+        .accessibilityLabel(copied ? "Copied" : help)
+    }
+}
+
+/// A small bordered button that confirms the copy in its own label.
+struct CopyTextButton: View {
+    let title: String
+    let text: String
+
+    @State private var copied = false
+
+    var body: some View {
+        Button(copied ? "Copied" : title) {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(text, forType: .string)
+            copied = true
+            Task {
+                try? await Task.sleep(for: .seconds(1.2))
+                copied = false
+            }
+        }
+        .frame(minWidth: 70)
     }
 }
 
@@ -452,14 +488,21 @@ private struct ValidationStepRow: View {
     }
 }
 
-/// The final path with Reveal in Finder when the library is reachable from
-/// this Mac, or Copy Path plus a note saying why not.
+/// The final path with Reveal in Finder when the library mapping in
+/// Settings resolves it to something on this Mac, else Copy Path; the reason
+/// Reveal is absent lives in the tooltip rather than under every item.
 private struct OutputPathRow: View {
+    @Environment(AppSettingsStore.self) private var settingsStore
     let path: String
 
     private var localURL: URL? {
-        let url = URL(fileURLWithPath: path)
-        return FileManager.default.fileExists(atPath: url.path) ? url : nil
+        settingsStore.settings.localLibraryURL(for: path)
+    }
+
+    private var revealHint: String {
+        settingsStore.settings.libraryLocalPrefix.isEmpty
+            ? "Set the library mount in Settings to reveal files in Finder."
+            : "Not found under \(settingsStore.settings.libraryLocalPrefix) on this Mac."
     }
 
     var body: some View {
@@ -480,14 +523,12 @@ private struct OutputPathRow: View {
                             NSWorkspace.shared.activateFileViewerSelecting([localURL])
                         }
                     }
-                    Button("Copy Path") {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(path, forType: .string)
-                    }
+                    CopyTextButton(title: "Copy Path", text: path)
                     if localURL == nil {
-                        Text("Library not mounted on this Mac")
-                            .font(.caption)
+                        Image(systemName: "info.circle")
                             .foregroundStyle(.tertiary)
+                            .help(revealHint)
+                            .accessibilityLabel(revealHint)
                     }
                 }
                 .controlSize(.small)

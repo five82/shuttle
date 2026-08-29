@@ -20,6 +20,28 @@ enum Stage: Hashable, Sendable {
         self == .completed || self == .failed
     }
 
+    /// The daemon's pipeline order, set by the monitor from `status.pipeline`
+    /// on every snapshot so sorting by stage follows the process, not the
+    /// alphabet. Empty until the first snapshot; `rank` then falls back to
+    /// the declaration order below.
+    nonisolated(unsafe) static var pipelineOrder: [Stage] = []
+
+    private static let fallbackOrder: [Stage] = [
+        .identification, .ripping, .episodeIdentification, .encoding, .analysis, .subtitling, .apply, .organizing,
+    ]
+
+    /// Position in the pipeline; completed and failed sort after every
+    /// working stage, unknown stages just before them.
+    var rank: Int {
+        switch self {
+        case .completed: return 1000
+        case .failed: return 1001
+        default:
+            let order = Self.pipelineOrder.isEmpty ? Self.fallbackOrder : Self.pipelineOrder
+            return order.firstIndex(of: self) ?? 900
+        }
+    }
+
     var displayName: String {
         switch self {
         case .identification: return "Identification"

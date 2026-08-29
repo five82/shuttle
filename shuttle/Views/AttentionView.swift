@@ -23,9 +23,23 @@ struct AttentionView: View {
         } else if rows.isEmpty {
             ContentUnavailableView("No Matches", systemImage: "magnifyingglass")
         } else {
-            List(rows, selection: $monitor.selectedItemID) { item in
-                AttentionListRow(item: item)
-                    .tag(item.id)
+            List(selection: $monitor.selectedItemID) {
+                let failed = rows.filter(\.hasFailed)
+                let review = rows.filter { !$0.hasFailed }
+                if !failed.isEmpty {
+                    Section("Failed · \(failed.count)") {
+                        ForEach(failed) { item in
+                            AttentionListRow(item: item).tag(item.id)
+                        }
+                    }
+                }
+                if !review.isEmpty {
+                    Section("Review · \(review.count)") {
+                        ForEach(review) { item in
+                            AttentionListRow(item: item).tag(item.id)
+                        }
+                    }
+                }
             }
         }
     }
@@ -33,8 +47,6 @@ struct AttentionView: View {
 
 private struct AttentionListRow: View {
     let item: QueueItem
-
-    private var tint: Color { item.hasFailed ? .red : .orange }
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
@@ -45,12 +57,7 @@ private struct AttentionListRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 8) {
                     ItemTitle(item: item, weight: .semibold)
-                    Text(item.hasFailed ? "Failed" : "Review")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(tint)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 1)
-                        .background(Color.primary.opacity(0.07), in: Capsule())
+                    AttentionBadge(item: item)
                 }
                 if let reason = item.attentionReason {
                     Text(reason)

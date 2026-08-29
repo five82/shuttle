@@ -16,6 +16,9 @@ final class LogTailer {
     private(set) var next: UInt64 = 0
     private(set) var lastError: String?
     private(set) var isRunning = false
+    /// True from start or a filter change until the first response lands,
+    /// so the view can show "loading" rather than "no entries".
+    private(set) var isLoading = false
 
     var itemID: Int64? { didSet { if oldValue != itemID { restart() } } }
     var minimumLevel: LogLevel = .info { didSet { if oldValue != minimumLevel { restart() } } }
@@ -42,6 +45,7 @@ final class LogTailer {
     func start() {
         guard task == nil else { return }
         isRunning = true
+        if entries.isEmpty { isLoading = true }
         let generation = self.generation
         task = Task { [weak self] in
             while let self, !Task.isCancelled, self.generation == generation {
@@ -91,9 +95,11 @@ final class LogTailer {
         do {
             let response = try await client.logs(request)
             guard generation == self.generation else { return }
+            isLoading = false
             apply(response)
         } catch {
             guard generation == self.generation else { return }
+            isLoading = false
             lastError = SpindleMonitor.describe(error)
         }
     }

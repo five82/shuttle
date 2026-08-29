@@ -89,8 +89,13 @@ final class SpindleMonitor {
     private(set) var recentlyCompleted: [QueueItem] = []
     private(set) var driveState: DriveState = .unknown
     private(set) var resources: [NamedResource] = []
-    /// Live progress for every active item, keyed by ID.
+    /// Live progress of the furthest-along task for every active item, keyed by ID.
     private(set) var progress: [Int64: ItemProgress] = [:]
+    /// Progress for every running task of every active item, in pipeline
+    /// order; more than one entry when encoding runs beside the GPU branch.
+    private(set) var taskProgress: [Int64: [ItemProgress]] = [:]
+    /// Why each waiting item is not running, keyed by ID.
+    private(set) var waitReasons: [Int64: WaitReason] = [:]
     /// A daemon-level problem the operator should see: stopped, or a
     /// workflow error. nil while everything is fine.
     private(set) var daemonIssue: String?
@@ -254,14 +259,21 @@ final class SpindleMonitor {
         recentlyCompleted = Array(
             newItems.filter { $0.isCompleted && !$0.needsReview }.sorted { $0.updatedDate > $1.updatedDate }.prefix(5)
         )
-        progress = Dictionary(uniqueKeysWithValues: activeItems.compactMap { item in
-            item.progress.map { (item.id, $0) }
+        Stage.pipelineOrder = newStatus.pipelineStages.map(\.stage)
+        taskProgress = Dictionary(uniqueKeysWithValues: activeItems.compactMap { item in
+            let list = item.progressList
+            return list.isEmpty ? nil : (item.id, list)
         })
+        progress = taskProgress.compactMapValues { $0.max { $0.fraction < $1.fraction } }
         daemonIssue = Self.daemonIssue(from: newStatus)
-        resources = (newStatus.scheduler?.resources ?? [:])
+        let resourceMap = newStatus.scheduler?.resources ?? [:]
+        resources = resourceMap
             .map { NamedResource(name: $0.key, status: $0.value) }
             .sorted { $0.name < $1.name }
         driveState = Self.driveState(from: newStatus)
+        waitReasons = Dictionary(uniqueKeysWithValues: waitingItems.map { item in
+            (item.id, WaitReason.derive(for: item, pipeline: newStatus.pipelineStages, resources: resourceMap))
+        })
 
         if hadSnapshot {
             let events = EventDetector.events(
@@ -276,6 +288,31 @@ final class SpindleMonitor {
             }
         }
         onSnapshot?()
+    }
+
+    /// Every item the Now view lists, for routing a focus request.
+    func nowShows(_ id: Int64) -> Bool {
+        attentionItems.contains { $0.id == id } || activeItems.contains { $0.id == id }
+            || waitingItems.contains { $0.id == id } || recentlyCompleted.contains { $0.id == id }
+    }
+
+    /// A short explanation for the kinds of failure the operator can fix
+    /// from here, or nil when the message already says enough.
+    nonisolated static func hint(for error: String) -> String? {
+        let lower = error.lowercased()
+        if lower.contains("rejected the api token") {
+            return "The daemon answered but the token does not match its [api] token. Check the token in Settings."
+        }
+        if lower.contains("offline") || lower.contains("local network") {
+            return "macOS may be blocking local network access. Allow shuttle in System Settings > Privacy & Security > Local Network."
+        }
+        if lower.contains("could not connect") || lower.contains("refused") || lower.contains("timed out") {
+            return "Nothing answered at that address. Check the daemon is running and its [api] bind includes this network."
+        }
+        if lower.contains("hostname") || lower.contains("could not be found") {
+            return "The host name did not resolve. Try the Linux host's IP address instead."
+        }
+        return nil
     }
 
     static func daemonIssue(from status: StatusResponse) -> String? {

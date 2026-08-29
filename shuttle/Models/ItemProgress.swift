@@ -17,7 +17,7 @@ struct ItemProgress: Equatable, Sendable {
 
     var hasStarted: Bool { fraction > 0 || (bytesCopied ?? 0) > 0 }
 
-    var percentText: String { "\(Int((fraction * 100).rounded()))%" }
+    var percentText: String { Format.percent(fraction) }
 
     /// "43 min left" from the encoder's estimate.
     var etaText: String? {
@@ -72,35 +72,45 @@ struct ItemProgress: Equatable, Sendable {
 
     /// VoiceOver: "Encoding, 66 percent, 43 minutes left".
     var accessibilityText: String {
-        var parts = [stage.displayName, hasStarted ? "\(Int((fraction * 100).rounded())) percent" : "starting"]
+        var parts = [stage.displayName, hasStarted ? "\(Int((min(max(fraction, 0), 1) * 100).rounded(.down))) percent" : "starting"]
         if let eta = etaText { parts.append(eta) }
         return parts.joined(separator: ", ")
     }
 }
 
 extension QueueItem {
-    /// nil unless a task is running. Decodes the encoding blob, so call it
-    /// from the monitor, not from a view body.
+    /// nil unless a task is running: the furthest-along running task, which
+    /// is what a single bar shows. Decodes the encoding blob, so call it from
+    /// the monitor, not from a view body.
     var progress: ItemProgress? {
-        let running = runningTasks
-        guard let task = running.max(by: { $0.progress.percent < $1.progress.percent }) else { return nil }
-        var progress = ItemProgress(
-            fraction: progressFraction,
-            stage: task.type,
-            message: task.progress.message.trimmingCharacters(in: .whitespaces),
-            startedAt: task.startedDate,
-            bytesCopied: task.progress.bytesCopied,
-            totalBytes: task.progress.totalBytes
-        )
-        if task.type == .encoding, let encoding = encodingDetails {
-            if let percent = encoding.percent, percent > 0, progress.fraction == 0 {
-                progress.fraction = min(max(percent / 100, 0), 1)
+        progressList.max { $0.fraction < $1.fraction }
+    }
+
+    /// One progress per running task in pipeline order. Encoding runs beside
+    /// the GPU branch, so an item can have two; rows stack a bar per task.
+    var progressList: [ItemProgress] {
+        let encoding = runningTasks.contains { $0.type == .encoding } ? encodingDetails : nil
+        return runningTasks
+            .sorted { $0.type.rank < $1.type.rank }
+            .map { task in
+                var progress = ItemProgress(
+                    fraction: min(max(task.progress.percent / 100, 0), 1),
+                    stage: task.type,
+                    message: task.progress.message.trimmingCharacters(in: .whitespaces),
+                    startedAt: task.startedDate,
+                    bytesCopied: task.progress.bytesCopied,
+                    totalBytes: task.progress.totalBytes
+                )
+                if task.type == .encoding, let encoding {
+                    if let percent = encoding.percent, percent > 0, progress.fraction == 0 {
+                        progress.fraction = min(max(percent / 100, 0), 1)
+                    }
+                    progress.etaSeconds = encoding.etaSeconds
+                    progress.speed = encoding.averageSpeed
+                    progress.currentFrame = encoding.currentFrame
+                    progress.totalFrames = encoding.totalFrames
+                }
+                return progress
             }
-            progress.etaSeconds = encoding.etaSeconds
-            progress.speed = encoding.averageSpeed
-            progress.currentFrame = encoding.currentFrame
-            progress.totalFrames = encoding.totalFrames
-        }
-        return progress
     }
 }

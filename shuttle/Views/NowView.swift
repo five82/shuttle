@@ -2,12 +2,14 @@ import SwiftUI
 
 /// The landing view: what needs me, what is running, what the daemon is
 /// holding, what just finished. Rows are buttons that select the item in
-/// the inspector beside this view.
+/// the inspector beside this view. Attention and completed are capped so
+/// Running stays above the fold; the full lists live one click away.
 struct NowView: View {
     @Environment(AppModel.self) private var model
     @Environment(SpindleMonitor.self) private var monitor
-    @Environment(AppSettingsStore.self) private var settingsStore
     var filter = ""
+
+    private static let attentionCap = 3
 
     private var needle: String { filter.trimmingCharacters(in: .whitespaces).lowercased() }
 
@@ -16,42 +18,34 @@ struct NowView: View {
     }
 
     var body: some View {
-        if monitor.status == nil, settingsStore.settings.isPlaceholderAddress {
-            ContentUnavailableView {
-                Label("Set the Daemon Address", systemImage: "network")
-            } description: {
-                Text("Spindle runs on a Linux host on your network. Enter its address, such as http://spindle.local:7487, and its API token in Settings.")
-            } actions: {
-                SettingsLink { Text("Open Settings…") }
-                    .buttonStyle(.borderedProminent)
-            }
-        } else if monitor.status == nil, case .disconnected(let error, _, _) = monitor.connection {
-            ContentUnavailableView {
-                Label("Not Connected", systemImage: "antenna.radiowaves.left.and.right.slash")
-            } description: {
-                Text(error)
-            } actions: {
-                Button("Retry Now") { monitor.refreshNow() }
-                SettingsLink { Text("Open Settings…") }
-            }
-        } else if monitor.status == nil {
-            ProgressView("Connecting…")
+        let attention = matching(monitor.attentionItems)
+        let active = matching(monitor.activeItems)
+        let waiting = matching(monitor.waitingItems)
+        let completed = matching(monitor.recentlyCompleted)
+        let nothingMatches = !needle.isEmpty && attention.isEmpty && active.isEmpty && waiting.isEmpty && completed.isEmpty
+
+        if nothingMatches {
+            ContentUnavailableView("No Matches", systemImage: "magnifyingglass", description: Text("Nothing on Now contains “\(filter)”. The Queue lists every item."))
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     if let issue = monitor.daemonIssue {
-                        DaemonIssueBanner(issue: issue) { model.section = .dependencies }
+                        NoticeBanner(title: "Daemon needs attention", detail: issue, tint: .red, help: "Show daemon health") {
+                            model.section = .dependencies
+                        }
+                    } else if monitor.status?.isDraining == true {
+                        NoticeBanner(title: "Daemon draining", detail: "Running work finishes; nothing new is dispatched.", tint: .orange, help: "Show daemon health") {
+                            model.section = .dependencies
+                        }
                     }
-
-                    let attention = matching(monitor.attentionItems)
-                    let active = matching(monitor.activeItems)
-                    let waiting = matching(monitor.waitingItems)
-                    let completed = matching(monitor.recentlyCompleted)
 
                     if !attention.isEmpty {
                         NowSection("Needs attention") {
-                            ForEach(attention) { item in
+                            ForEach(attention.prefix(Self.attentionCap)) { item in
                                 NowRow(item: item) { AttentionRow(item: item) }
+                            }
+                            if attention.count > Self.attentionCap {
+                                MoreLink("Show all \(attention.count) in Attention") { model.section = .attention }
                             }
                         }
                     }
@@ -61,7 +55,7 @@ struct NowView: View {
                             idleRow
                         } else {
                             ForEach(active) { item in
-                                NowRow(item: item) { ActiveRow(item: item, progress: monitor.progress[item.id]) }
+                                NowRow(item: item) { ActiveRow(item: item, progress: monitor.taskProgress[item.id] ?? []) }
                             }
                         }
                     }
@@ -69,7 +63,7 @@ struct NowView: View {
                     if !waiting.isEmpty {
                         NowSection("Waiting · \(waiting.count)") {
                             ForEach(waiting) { item in
-                                NowRow(item: item) { WaitingRow(item: item) }
+                                NowRow(item: item) { WaitingRow(item: item, reason: monitor.waitReasons[item.id]) }
                             }
                         }
                     }
@@ -79,6 +73,7 @@ struct NowView: View {
                             ForEach(completed) { item in
                                 NowRow(item: item) { CompletedRow(item: item) }
                             }
+                            MoreLink("Show all in Queue") { model.section = .queue }
                         }
                     }
                 }
@@ -88,6 +83,8 @@ struct NowView: View {
         }
     }
 
+    /// Why nothing is running, when the daemon can say: the drive is free,
+    /// the disc monitor is paused, or the daemon is draining.
     @ViewBuilder
     private var idleRow: some View {
         if !needle.isEmpty, !monitor.activeItems.isEmpty {
@@ -95,10 +92,20 @@ struct NowView: View {
                 .foregroundStyle(.secondary)
                 .padding(.vertical, 6)
         } else {
+            let (symbol, text): (String, String) = {
+                if monitor.status?.isDraining == true {
+                    return ("pause.circle", "Nothing running. Daemon is draining — nothing new will be dispatched.")
+                }
+                switch monitor.driveState {
+                case .available: return ("opticaldisc", "Nothing running. Drive available — insert a disc.")
+                case .paused: return ("pause.circle", "Nothing running. Disc monitor paused — new discs are ignored.")
+                case .busy, .unknown: return ("moon.zzz", "Nothing running.")
+                }
+            }()
             HStack(spacing: 10) {
-                Image(systemName: monitor.driveState == .available ? "opticaldisc" : "moon.zzz")
+                Image(systemName: symbol)
                     .foregroundStyle(.secondary)
-                Text(monitor.driveState == .available ? "Nothing running. Drive available — insert a disc." : "Nothing running.")
+                Text(text)
                     .foregroundStyle(.secondary)
             }
             .padding(.vertical, 6)
@@ -106,18 +113,24 @@ struct NowView: View {
     }
 }
 
-private struct DaemonIssueBanner: View {
-    let issue: String
+/// A tinted, clickable notice: daemon stopped, workflow error, draining.
+private struct NoticeBanner: View {
+    let title: String
+    let detail: String
+    let tint: Color
+    let help: String
     let action: () -> Void
+
+    @State private var hovering = false
 
     var body: some View {
         Button(action: action) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Image(systemName: "exclamationmark.circle.fill")
-                    .foregroundStyle(.red)
+                Image(systemName: tint == .red ? "exclamationmark.circle.fill" : "pause.circle.fill")
+                    .foregroundStyle(tint)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Daemon needs attention").fontWeight(.semibold)
-                    Text(issue)
+                    Text(title).fontWeight(.semibold)
+                    Text(detail)
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .textSelection(.enabled)
@@ -128,15 +141,47 @@ private struct DaemonIssueBanner: View {
                     .foregroundStyle(.tertiary)
             }
             .padding(12)
-            .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(tint.opacity(hovering ? 0.12 : 0.08), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .stroke(Color.red.opacity(0.25), lineWidth: 1)
+                    .stroke(tint.opacity(0.25), lineWidth: 1)
             )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Show daemon health")
+        .pointingHandCursor(hovering)
+        .onHover { hovering = $0 }
+        .help(help)
+    }
+}
+
+/// "Show all 10 in Attention →" under a capped section.
+private struct MoreLink: View {
+    let title: String
+    let action: () -> Void
+
+    @State private var hovering = false
+
+    init(_ title: String, action: @escaping () -> Void) {
+        self.title = title
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Text(title)
+                Image(systemName: "arrow.right")
+                    .font(.caption2.weight(.semibold))
+            }
+            .font(.callout)
+            .foregroundStyle(Color.accentColor)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 4)
+        }
+        .buttonStyle(.plain)
+        .pointingHandCursor(hovering)
+        .onHover { hovering = $0 }
     }
 }
 
@@ -200,6 +245,7 @@ private struct NowRow<Content: View>: View {
                 .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(.plain)
+        .pointingHandCursor(hovering)
         .onHover { hovering = $0 }
         .help("Show #\(item.id) in the inspector")
         .accessibilityLabel("\(item.displayTitle), #\(item.id)")
@@ -229,6 +275,7 @@ struct ItemTitle: View {
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                     .help("TV")
+                    .accessibilityLabel("TV")
             }
             if let disc = item.discNumber, disc > 0 {
                 Text("Disc \(disc)")
@@ -259,9 +306,7 @@ private struct AttentionRow: View {
                 }
             }
             Spacer()
-            Text(item.hasFailed ? "Failed" : "Review")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(tint)
+            AttentionBadge(item: item)
         }
         .padding(10)
         .padding(.leading, 4)
@@ -282,7 +327,7 @@ private struct AttentionRow: View {
 
 private struct ActiveRow: View {
     let item: QueueItem
-    let progress: ItemProgress?
+    let progress: [ItemProgress]
 
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
@@ -296,25 +341,18 @@ private struct ActiveRow: View {
                     .truncationMode(.middle)
             }
             Spacer(minLength: 12)
-            VStack(alignment: .trailing, spacing: 4) {
-                ProgressView(value: progress?.fraction ?? item.progressFraction)
-                    .frame(width: 140)
-                    .accessibilityLabel(progress?.accessibilityText ?? item.activityDescription)
-                Text(progress?.shortText ?? "…")
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundStyle(.secondary)
-            }
+            ProgressStack(progress: progress, fallback: item.activityDescription, barWidth: 140)
         }
         .padding(.vertical, 6)
     }
 
-    /// "Encoding · Phase 1/1 - …", or "Encoding · started 4 min ago" until
+    /// "Encoding · Phase 1/1 - …", or "Encoding · started 4m ago" until
     /// the task reports a message.
     private var detail: String {
-        guard let progress else { return item.activityDescription }
-        if !progress.message.isEmpty { return item.activityDescription }
-        if let elapsed = progress.elapsedText(at: Date()) {
-            return "\(progress.stage.displayName) · started \(elapsed) ago"
+        guard progress.count == 1, let only = progress.first else { return item.activityDescription }
+        if !only.message.isEmpty { return item.activityDescription }
+        if let elapsed = only.elapsedText(at: Date()) {
+            return "\(only.stage.displayName) · started \(elapsed) ago"
         }
         return item.activityDescription
     }
@@ -322,17 +360,30 @@ private struct ActiveRow: View {
 
 private struct WaitingRow: View {
     let item: QueueItem
+    let reason: WaitReason?
 
     var body: some View {
         HStack(spacing: 10) {
             ItemID(id: item.id)
             ItemTitle(item: item)
             Spacer()
-            Text("waiting for \(item.stage.displayName.lowercased())")
+            Text(text)
                 .font(.callout)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(tint)
+                .help(reason?.detail ?? "Queued for \(item.stage.displayName.lowercased())")
         }
         .padding(.vertical, 3)
+    }
+
+    private var tint: Color {
+        if case .ready = reason { return .accentColor }
+        return .secondary
+    }
+
+    /// "Encoding · waiting for encode slot", "Analysis · after Ripping".
+    private var text: String {
+        guard let reason else { return "queued for \(item.stage.displayName.lowercased())" }
+        return "\(reason.next.displayName) · \(reason.short)"
     }
 }
 
@@ -352,6 +403,8 @@ private struct ResourcesRow: View {
                     .padding(.vertical, 1)
                     .background(Color.primary.opacity(0.07), in: Capsule())
                     .help("\(resource.name): \(resource.status.used) of \(resource.status.capacity) in use")
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(Format.resource(resource.name)): \(resource.status.used) of \(resource.status.capacity) in use\(holders.isEmpty ? "" : " by \(holders)")")
             }
         }
     }
@@ -365,6 +418,11 @@ private struct CompletedRow: View {
             ItemID(id: item.id)
             ItemTitle(item: item)
             Spacer()
+            if let size = item.encodingDetails?.encodedSize, size > 0 {
+                Text(EncodingDetails.bytes(size))
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.tertiary)
+            }
             Text(item.updatedDate, format: .relative(presentation: .named))
                 .font(.callout)
                 .foregroundStyle(.secondary)

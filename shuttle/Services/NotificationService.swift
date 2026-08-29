@@ -16,11 +16,19 @@ final class NotificationService: NSObject {
         center.requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
     }
 
+    /// Whether macOS will actually show anything; Settings shows the answer.
+    func authorizationStatus() async -> UNAuthorizationStatus {
+        await center.notificationSettings().authorizationStatus
+    }
+
     func post(_ events: [MonitorEvent], settings: AppSettings) {
         for event in events where settings.notifies(event.kind) {
             let content = UNMutableNotificationContent()
             content.sound = .default
             content.threadIdentifier = event.kind.rawValue
+            if let item = event.item {
+                content.subtitle = "#\(item.id)"
+            }
 
             switch event {
             case .driveAvailable:
@@ -34,10 +42,13 @@ final class NotificationService: NSObject {
                 content.title = "Failed · \(item.displayTitle)"
                 content.body = item.attentionReason ?? "Stopped before completing."
                 content.userInfo = ["itemID": item.id]
+                content.interruptionLevel = .timeSensitive
             case .completed(let item):
                 content.title = "Completed · \(item.displayTitle)"
                 content.body = "Ready in the library."
                 content.userInfo = ["itemID": item.id]
+                // A box set completes twenty times in a row; the banner is enough.
+                content.sound = nil
             case .disconnected(let error):
                 content.title = "Lost connection to Spindle"
                 content.body = error
@@ -82,19 +93,22 @@ extension NotificationService: UNUserNotificationCenterDelegate {
     }
 }
 
-/// `shuttle://main` and `shuttle://item/<id>`. Opening one through
-/// NSWorkspace makes SwiftUI create the main window if it is closed, which
-/// is the one thing `openWindow` cannot do from outside a view.
+/// `shuttle://main`, `shuttle://item/<id>`, and `shuttle://section/<name>`.
+/// Opening one through NSWorkspace makes SwiftUI create the main window if
+/// it is closed, which is the one thing `openWindow` cannot do from outside
+/// a view.
 enum DeepLink: Equatable {
     static let scheme = "shuttle"
 
     case main
     case item(Int64)
+    case section(SidebarSection)
 
     var url: URL {
         switch self {
         case .main: return URL(string: "\(Self.scheme)://main")!
         case .item(let id): return URL(string: "\(Self.scheme)://item/\(id)")!
+        case .section(let section): return URL(string: "\(Self.scheme)://section/\(section.rawValue)")!
         }
     }
 
@@ -106,6 +120,9 @@ enum DeepLink: Equatable {
         case "item":
             guard let id = Int64(url.lastPathComponent) else { return nil }
             self = .item(id)
+        case "section":
+            guard let section = SidebarSection(rawValue: url.lastPathComponent) else { return nil }
+            self = .section(section)
         default:
             return nil
         }

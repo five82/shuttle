@@ -73,11 +73,14 @@ struct StatusChips: View {
     }
 }
 
-/// A plain-styled button around a chip, so chips keep their look but act.
-private struct ChipButton<Label: View>: View {
+/// A plain-styled button around a chip: keeps the chip's look, adds a hover
+/// fill and a pointing hand so it reads as clickable without being told.
+struct ChipButton<Label: View>: View {
     let help: String
     let action: () -> Void
     @ViewBuilder let label: Label
+
+    @State private var hovering = false
 
     init(help: String, action: @escaping () -> Void, @ViewBuilder label: () -> Label) {
         self.help = help
@@ -86,9 +89,15 @@ private struct ChipButton<Label: View>: View {
     }
 
     var body: some View {
-        Button(action: action) { label }
-            .buttonStyle(.plain)
-            .help(help)
+        Button(action: action) {
+            label
+                .background(Color.primary.opacity(hovering ? 0.08 : 0), in: Capsule())
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .pointingHandCursor(hovering)
+        .onHover { hovering = $0 }
+        .help(help)
     }
 }
 
@@ -106,5 +115,93 @@ struct StatusChip: View {
             .padding(.vertical, 4)
             .background(Color.primary.opacity(0.07), in: Capsule())
             .lineLimit(1)
+    }
+}
+
+/// "Failed" or "Review" as a small tinted capsule; the one badge used by
+/// Now, Attention, and the inspector so the state looks the same everywhere.
+struct AttentionBadge: View {
+    let item: QueueItem
+
+    var body: some View {
+        if item.needsAttention {
+            let tint: Color = item.hasFailed ? .red : .orange
+            Text(item.hasFailed ? "Failed" : "Review")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(tint)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 1)
+                .background(tint.opacity(0.12), in: Capsule())
+                .accessibilityLabel(item.hasFailed ? "Failed" : "Needs review")
+        }
+    }
+}
+
+/// One bar per running task. A single task is the usual bar-plus-number;
+/// two (encoding beside the GPU branch) stack with the stage named, so the
+/// number never jumps when one branch finishes.
+struct ProgressStack: View {
+    let progress: [ItemProgress]
+    var fallback: String = "…"
+    var barWidth: CGFloat? = nil
+    var compact = false
+
+    var body: some View {
+        if progress.count > 1 {
+            VStack(alignment: .trailing, spacing: 3) {
+                ForEach(progress, id: \.stage) { task in
+                    HStack(spacing: 6) {
+                        Text(task.stage.displayName)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                        bar(task)
+                    }
+                }
+            }
+            .accessibilityElement(children: .combine)
+        } else if let task = progress.first {
+            bar(task)
+        } else {
+            HStack(spacing: 8) {
+                ProgressView(value: 0).frame(width: barWidth)
+                Text(fallback).font(.system(.caption, design: .monospaced)).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func bar(_ task: ItemProgress) -> some View {
+        HStack(spacing: 8) {
+            ProgressView(value: task.fraction)
+                .controlSize(compact ? .small : .regular)
+                .frame(width: barWidth)
+                .accessibilityLabel(task.accessibilityText)
+            Text(task.shortText)
+                .font(.system(compact ? .caption2 : .caption, design: .monospaced))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .fixedSize()
+        }
+    }
+}
+
+extension View {
+    /// The pointing hand while `active`, back to the arrow otherwise. Rows
+    /// and chips built from plain buttons get no cursor of their own.
+    func pointingHandCursor(_ active: Bool) -> some View {
+        modifier(PointingHandCursor(active: active))
+    }
+}
+
+private struct PointingHandCursor: ViewModifier {
+    let active: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: active) { _, hovering in
+                if hovering { NSCursor.pointingHand.push() } else { NSCursor.pop() }
+            }
+            // A row that vanishes on a poll while hovered would leave the hand stuck.
+            .onDisappear { if active { NSCursor.pop() } }
     }
 }

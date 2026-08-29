@@ -115,12 +115,7 @@ struct EncodingDetails: Codable, Hashable, Sendable {
     }
 
     static func duration(_ seconds: Double) -> String {
-        let total = Int(seconds.rounded())
-        let hours = total / 3600
-        let minutes = (total % 3600) / 60
-        if hours > 0 { return "\(hours)h \(minutes)m" }
-        if minutes > 0 { return "\(minutes)m \(total % 60)s" }
-        return "\(total)s"
+        Format.duration(seconds)
     }
 }
 

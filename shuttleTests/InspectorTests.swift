@@ -48,12 +48,12 @@ final class InspectorTests: XCTestCase {
         ])
         progress = try XCTUnwrap(item.progress)
         XCTAssertEqual(progress.fraction, 0.664, accuracy: 0.001, "falls back to the encoder's percent when the task reports 0")
-        XCTAssertEqual(progress.shortText, "66% · 42m 52s left")
-        XCTAssertEqual(progress.detailText, "66% · 1.3x · 177,507 / 258,775 frames · 42m 52s left")
-        XCTAssertEqual(progress.accessibilityText, "Encoding, 66 percent, 42m 52s left")
+        XCTAssertEqual(progress.shortText, "66% · 42m left")
+        XCTAssertEqual(progress.detailText, "66% · 1.3x · 177,507 / 258,775 frames · 42m left")
+        XCTAssertEqual(progress.accessibilityText, "Encoding, 66 percent, 42m left")
 
         let started = try XCTUnwrap(item.tasks?.first { $0.type == .encoding }?.startedDate)
-        XCTAssertEqual(progress.elapsedText(at: started.addingTimeInterval(125)), "2m 5s")
+        XCTAssertEqual(progress.elapsedText(at: started.addingTimeInterval(125)), "2m")
 
         item.tasks = nil
         item.inProgress = true
@@ -172,7 +172,11 @@ final class InspectorTests: XCTestCase {
         XCTAssertEqual(episode.label, "S01E03")
         XCTAssertEqual(episode.assetStates(active: true), [.done, .active, .pending, .pending])
         XCTAssertEqual(episode.assetStates(active: false), [.done, .pending, .pending, .pending])
-        XCTAssertEqual(episode.mappingDescription, "matched E03 · 91% confidence")
+        XCTAssertNil(episode.mappingDescription, "a confident match to the planned number says nothing new")
+        XCTAssertEqual(episode.mappingDescription(threshold: 0.95), "matched E03 · 91% confidence", "below the daemon's review threshold it is worth showing")
+        episode.matchedEpisode = 4
+        XCTAssertEqual(episode.mappingDescription, "matched E04 · 91% confidence", "a different number always shows")
+        episode.matchedEpisode = 3
 
         episode.status = "failed"
         XCTAssertTrue(episode.isFailed)

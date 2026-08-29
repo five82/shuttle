@@ -13,6 +13,10 @@
 		B00000000000000000000301 /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000201 /* JSONValue.swift */; };
 		B00000000000000000000302 /* Stage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000202 /* Stage.swift */; };
 		B00000000000000000000303 /* SpindleDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000203 /* SpindleDate.swift */; };
+		B00000000000000000010A04 /* NotConnectedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000A04 /* NotConnectedView.swift */; };
+		B00000000000000000010A03 /* KeychainTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000A03 /* KeychainTokenStore.swift */; };
+		B00000000000000000010A02 /* WaitReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000A02 /* WaitReason.swift */; };
+		B00000000000000000010A01 /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000A01 /* Format.swift */; };
 		B00000000000000000000304 /* StatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000204 /* StatusResponse.swift */; };
 		B00000000000000000000305 /* QueueItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000205 /* QueueItem.swift */; };
 		B00000000000000000000306 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000206 /* LogEntry.swift */; };
@@ -39,6 +43,7 @@
 		B00000000000000000000328 /* EpisodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000228 /* EpisodesView.swift */; };
 		B00000000000000000000329 /* AttentionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000229 /* AttentionView.swift */; };
 		B00000000000000000000335 /* InspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000235 /* InspectorTests.swift */; };
+		B0000000000000000001A005 /* WaitReasonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000A005 /* WaitReasonTests.swift */; };
 		B00000000000000000000317 /* LogTailer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000217 /* LogTailer.swift */; };
 		B0000000000000000000032A /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000022A /* LogView.swift */; };
 		B0000000000000000000032B /* DependenciesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000022B /* DependenciesView.swift */; };
@@ -65,6 +70,10 @@
 		B00000000000000000000201 /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
 		B00000000000000000000202 /* Stage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stage.swift; sourceTree = "<group>"; };
 		B00000000000000000000203 /* SpindleDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpindleDate.swift; sourceTree = "<group>"; };
+		B00000000000000000000A04 /* NotConnectedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotConnectedView.swift; sourceTree = "<group>"; };
+		B00000000000000000000A03 /* KeychainTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTokenStore.swift; sourceTree = "<group>"; };
+		B00000000000000000000A02 /* WaitReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitReason.swift; sourceTree = "<group>"; };
+		B00000000000000000000A01 /* Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Format.swift; sourceTree = "<group>"; };
 		B00000000000000000000204 /* StatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusResponse.swift; sourceTree = "<group>"; };
 		B00000000000000000000205 /* QueueItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueItem.swift; sourceTree = "<group>"; };
 		B00000000000000000000206 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
@@ -91,6 +100,7 @@
 		B00000000000000000000228 /* EpisodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodesView.swift; sourceTree = "<group>"; };
 		B00000000000000000000229 /* AttentionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionView.swift; sourceTree = "<group>"; };
 		B00000000000000000000235 /* InspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorTests.swift; sourceTree = "<group>"; };
+		B0000000000000000000A005 /* WaitReasonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitReasonTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000217 /* LogTailer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTailer.swift; sourceTree = "<group>"; };
 		B0000000000000000000022A /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		B0000000000000000000022B /* DependenciesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependenciesView.swift; sourceTree = "<group>"; };
@@ -150,6 +160,8 @@
 		B00000000000000000000051 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000A02 /* WaitReason.swift */,
+				B00000000000000000000A01 /* Format.swift */,
 				B00000000000000000000207 /* EncodingDetails.swift */,
 				B00000000000000000000241 /* ItemProgress.swift */,
 				B00000000000000000000201 /* JSONValue.swift */,
@@ -165,6 +177,7 @@
 		B00000000000000000000052 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000A03 /* KeychainTokenStore.swift */,
 				B00000000000000000000217 /* LogTailer.swift */,
 				B00000000000000000000216 /* AppModel.swift */,
 				B00000000000000000000215 /* NotificationService.swift */,
@@ -179,6 +192,7 @@
 		B00000000000000000000053 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000A04 /* NotConnectedView.swift */,
 				B0000000000000000000022B /* DependenciesView.swift */,
 				B0000000000000000000022A /* LogView.swift */,
 				B00000000000000000000229 /* AttentionView.swift */,
@@ -199,6 +213,7 @@
 			children = (
 				B00000000000000000000236 /* LogTailerTests.swift */,
 				B00000000000000000000235 /* InspectorTests.swift */,
+				B0000000000000000000A005 /* WaitReasonTests.swift */,
 				B00000000000000000000234 /* EventDetectorTests.swift */,
 				B00000000000000000000231 /* Fixtures.swift */,
 				B00000000000000000000232 /* DecodingTests.swift */,
@@ -324,6 +339,10 @@
 				B00000000000000000000301 /* JSONValue.swift in Sources */,
 				B00000000000000000000302 /* Stage.swift in Sources */,
 				B00000000000000000000303 /* SpindleDate.swift in Sources */,
+				B00000000000000000010A04 /* NotConnectedView.swift in Sources */,
+				B00000000000000000010A03 /* KeychainTokenStore.swift in Sources */,
+				B00000000000000000010A02 /* WaitReason.swift in Sources */,
+				B00000000000000000010A01 /* Format.swift in Sources */,
 				B00000000000000000000304 /* StatusResponse.swift in Sources */,
 				B00000000000000000000305 /* QueueItem.swift in Sources */,
 				B00000000000000000000306 /* LogEntry.swift in Sources */,
@@ -345,6 +364,7 @@
 			files = (
 				B00000000000000000000336 /* LogTailerTests.swift in Sources */,
 				B00000000000000000000335 /* InspectorTests.swift in Sources */,
+				B0000000000000000001A005 /* WaitReasonTests.swift in Sources */,
 				B00000000000000000000334 /* EventDetectorTests.swift in Sources */,
 				B00000000000000000000331 /* Fixtures.swift in Sources */,
 				B00000000000000000000332 /* DecodingTests.swift in Sources */,

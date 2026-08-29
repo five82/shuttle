@@ -34,7 +34,7 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         case .queue: return "Filter queue"
         case .attention: return "Filter attention"
         case .log: return "Filter log"
-        case .dependencies: return "Filter dependencies"
+        case .dependencies: return "Filter health"
         }
     }
 
@@ -76,8 +76,10 @@ struct ContentView: View {
         )
         NavigationSplitView {
             List(selection: section) {
-                ForEach(SidebarSection.queueSections) { section in
-                    sidebarRow(section)
+                Section("Queue") {
+                    ForEach(SidebarSection.queueSections) { section in
+                        sidebarRow(section)
+                    }
                 }
                 Section("Daemon") {
                     ForEach(SidebarSection.daemonSections) { section in
@@ -88,6 +90,7 @@ struct ContentView: View {
             .navigationSplitViewColumnWidth(min: 160, ideal: 190, max: 240)
         } detail: {
             VStack(spacing: 0) {
+                StaleBanner()
                 sectionContent
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .inspector(isPresented: inspectorBinding) {
@@ -99,6 +102,7 @@ struct ContentView: View {
                 ConnectionStatusBar(endpoint: settingsStore.settings.baseURLString)
             }
             .navigationTitle(model.section.title)
+            .navigationSubtitle(hostLabel)
         }
         .toolbar {
             ToolbarItemGroup(placement: .principal) {
@@ -130,34 +134,42 @@ struct ContentView: View {
         }
     }
 
-    /// Every section takes the one toolbar search field's text as its filter.
+    /// Every section takes the one toolbar search field's text as its
+    /// filter. Until the first snapshot every section shows the same
+    /// not-connected screen; the sections' own empty states mean "connected
+    /// and empty", never "unknown".
     @ViewBuilder
     private var sectionContent: some View {
-        switch model.section {
-        case .now:
-            NowView(filter: searchText)
-        case .queue:
-            QueueTableView(filter: searchText, toggleInspector: { inspectorVisible.toggle() })
-        case .attention:
-            AttentionView(filter: searchText)
-        case .log:
-            LogView(itemID: nil, showsDaemonOnlyToggle: true, externalFilter: searchText)
-        case .dependencies:
-            DependenciesView(filter: searchText)
+        if monitor.status == nil {
+            NotConnectedView()
+        } else {
+            switch model.section {
+            case .now:
+                NowView(filter: searchText)
+            case .queue:
+                QueueTableView(filter: searchText, showInspector: { inspectorVisible = true })
+            case .attention:
+                AttentionView(filter: searchText)
+            case .log:
+                LogView(itemID: nil, showsDaemonOnlyToggle: true, externalFilter: searchText)
+            case .dependencies:
+                DependenciesView(filter: searchText)
+            }
         }
     }
 
+    /// "host:port" for the title bar; the full URL stays in Settings.
+    private var hostLabel: String {
+        let endpoint = settingsStore.settings.baseURLString
+        guard let url = URL(string: endpoint), let host = url.host else { return "" }
+        if let port = url.port { return "\(host):\(port)" }
+        return host
+    }
+
     private func sidebarRow(_ section: SidebarSection) -> some View {
-        Label {
-            HStack {
-                Text(section.title)
-                Spacer()
-                badge(for: section)
-            }
-        } icon: {
-            Image(systemName: section.systemImage)
-        }
-        .tag(section)
+        Label(section.title, systemImage: section.systemImage)
+            .badge(badgeText(for: section))
+            .tag(section)
     }
 
     private var inspectorBinding: Binding<Bool> {
@@ -167,33 +179,24 @@ struct ContentView: View {
         )
     }
 
-    @ViewBuilder
-    private func badge(for section: SidebarSection) -> some View {
+    /// Sidebar counts: attention and health issues in colour, pending queue
+    /// items in the quiet default. Text? so `.badge` shows nothing at zero.
+    private func badgeText(for section: SidebarSection) -> Text? {
         switch section {
         case .now, .log:
-            EmptyView()
+            return nil
         case .dependencies:
             let missing = monitor.status?.dependencies.filter { !$0.available && !$0.optional }.count ?? 0
             let issues = missing + (monitor.daemonIssue == nil ? 0 : 1)
-            if issues > 0 {
-                Text("\(issues)")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.red)
-            }
+            return issues > 0 ? Text("\(issues)").foregroundStyle(.red).bold() : nil
         case .attention:
-            if monitor.attentionCount > 0 {
-                Text("\(monitor.attentionCount)")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(monitor.attentionItems.contains(where: \.hasFailed) ? .red : .orange)
-            }
+            let count = monitor.attentionCount
+            guard count > 0 else { return nil }
+            let failed = monitor.attentionItems.contains(where: \.hasFailed)
+            return Text("\(count)").foregroundStyle(failed ? .red : .orange).bold()
         case .queue:
             let pending = monitor.activeItems.count + monitor.waitingItems.count
-            if pending > 0 {
-                Text("\(pending)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .help("\(pending) item\(pending == 1 ? "" : "s") still in the pipeline")
-            }
+            return pending > 0 ? Text("\(pending)") : nil
         }
     }
 }

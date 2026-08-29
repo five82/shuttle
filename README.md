@@ -4,12 +4,12 @@ shuttle is a small native macOS app for Apple Silicon that monitors a running [S
 
 - **Menu bar** — the drive state at a glance, an attention count, and a popover with what is running and what needs review.
 - **Notifications** — drive available, item needs review, item failed, item completed, and (off by default) connection lost or restored. Each can be turned off.
-- **Now** — what needs attention, what is running with live progress and time left, what is waiting, what the daemon is holding, what just finished.
-- **Queue** — every item in a sortable, filterable table with progress, ETA, and a context menu for copy and Reveal in Finder.
+- **Now** — what needs attention, what is running with live progress and time left, what is waiting and why (after which stage, or for which resource), what the daemon is holding, what just finished.
+- **Queue** — every item in a sortable, filterable table with an All / Active / Attention / Completed scope, progress, ETA, and a context menu for copy and Reveal in Finder.
 - **Attention** — failed and review items with the reason, one click from the details.
-- **Inspector** — per-item pipeline stages with durations, media and encoder details, output size and validation, per-episode progress for TV, the item's log, and Reveal in Finder when the library is mounted.
+- **Inspector** — per-item pipeline stages with durations and the resource each claims, media and encoder details, output size and validation, per-episode progress for TV, the item's log, and Reveal in Finder when the library is mounted (map the daemon's library path to the mount in Settings > Library).
 - **Log** — the daemon log, tailed live, with a minimum level, daemon-only switch, text filter, follow, and clickable item numbers.
-- **Health** — the daemon's state and last error, its process facts, and the tool checks it ran at startup.
+- **Health** — the daemon's state and last error, its scheduler resources and who holds them, the pipeline template, its process facts, and the tool checks it ran at startup.
 
 ## Expectations
 
@@ -33,7 +33,7 @@ bind = "0.0.0.0:7487"
 token = "choose-a-token"
 ```
 
-On first launch shuttle asks for the daemon's address; enter `http://<linux-host>:7487` and the token in **shuttle > Settings**. The first time shuttle reaches the daemon, macOS asks to allow local network access; shuttle does not work without it.
+On first launch shuttle asks for the daemon's address; enter `http://<linux-host>:7487` and the token in **shuttle > Settings** (the token is stored in your login keychain). The first time shuttle reaches the daemon, macOS asks to allow local network access; shuttle does not work without it.
 
 ## Installing a release
 

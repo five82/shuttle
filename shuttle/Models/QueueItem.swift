@@ -178,7 +178,8 @@ extension QueueItem {
         return 4
     }
 
-    var stageSortKey: String { stage.displayName }
+    /// Pipeline position for the Queue table's Stage column.
+    var stageRank: Int { stage.rank }
 
     /// "Movie" / "TV" for chips.
     var mediaTypeLabel: String? {

@@ -11,7 +11,7 @@ struct ConnectionStatusBar: View {
             HStack(spacing: 10) {
                 leading(at: context.date)
                 Spacer()
-                Text("\(monitor.items.count) items · \(monitor.activeItems.count) active")
+                trailing
             }
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -28,7 +28,7 @@ struct ConnectionStatusBar: View {
             Text("Connecting to \(hostLabel)…")
         case .connected:
             if let last = monitor.lastRefresh {
-                Text("Updated \(Self.ago(last, from: date)) · \(hostLabel)")
+                Text("Updated \(Format.ago(last, from: date))")
                     .monospacedDigit()
                     .help(endpoint)
             } else {
@@ -40,8 +40,8 @@ struct ConnectionStatusBar: View {
                 .foregroundStyle(.red)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .help(error)
-            Text("\(hostLabel) · down since \(since.formatted(date: .omitted, time: .shortened)) · retrying in \(retry)s")
+                .help(SpindleMonitor.hint(for: error).map { "\(error)\n\n\($0)" } ?? error)
+            Text("down since \(since.formatted(date: .omitted, time: .shortened)) · \(retry > 0 ? "retrying in \(retry)s" : "retrying…")")
                 .monospacedDigit()
                 .lineLimit(1)
             Button("Retry") { monitor.refreshNow() }
@@ -52,20 +52,24 @@ struct ConnectionStatusBar: View {
         }
     }
 
+    /// Counts, marked as history while disconnected.
+    @ViewBuilder
+    private var trailing: some View {
+        if monitor.status != nil {
+            let counts = "\(monitor.items.count) items · \(monitor.activeItems.count) active"
+            if let last = monitor.lastRefresh, !monitor.connection.isConnected {
+                Text("\(counts) · as of \(last.formatted(date: .omitted, time: .shortened))")
+            } else {
+                Text(counts)
+            }
+        }
+    }
+
     /// "host:port" — the scheme is noise in a status bar; the full URL is
     /// in the tooltip.
     private var hostLabel: String {
         guard let url = URL(string: endpoint), let host = url.host else { return endpoint }
         if let port = url.port { return "\(host):\(port)" }
         return host
-    }
-
-    static func ago(_ date: Date, from now: Date) -> String {
-        let seconds = Int(now.timeIntervalSince(date).rounded())
-        if seconds < 2 { return "just now" }
-        if seconds < 60 { return "\(seconds) s ago" }
-        let minutes = seconds / 60
-        if minutes < 60 { return "\(minutes) min ago" }
-        return "\(minutes / 60) h ago"
     }
 }

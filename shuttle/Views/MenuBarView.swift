@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// The menu bar popover: drive, running, attention. Read-only; every row
-/// opens the main window at that item.
+/// opens the main window at that item, every chip at the section that
+/// explains it.
 ///
 /// `MenuBarExtra(.window)` sizes its panel from the content's fitting size
 /// and does not always grow when sections appear later, which clipped the
@@ -53,41 +54,65 @@ struct MenuBarView: View {
                 driveChip
             }
             if monitor.attentionCount > 0 {
-                StatusChip(label: "\(monitor.attentionCount)", systemImage: "exclamationmark.triangle.fill", tint: monitor.attentionItems.contains(where: \.hasFailed) ? .red : .orange)
+                ChipButton(help: "Show the items that need attention") {
+                    DeepLink.open(.section(.attention))
+                } label: {
+                    StatusChip(label: "\(monitor.attentionCount)", systemImage: "exclamationmark.triangle.fill", tint: monitor.attentionItems.contains(where: \.hasFailed) ? .red : .orange)
+                }
             }
             switch monitor.connection {
             case .connected:
                 if monitor.status?.running == false {
-                    StatusChip(label: "Daemon stopped", systemImage: "circle.fill", tint: .red)
+                    healthChip("Daemon stopped", systemImage: "circle.fill", tint: .red)
                 } else if monitor.daemonIssue != nil {
-                    StatusChip(label: "Daemon error", systemImage: "exclamationmark.circle.fill", tint: .red)
+                    healthChip("Daemon error", systemImage: "exclamationmark.circle.fill", tint: .red)
                 } else if monitor.status?.isDraining == true {
-                    StatusChip(label: "Draining", systemImage: "circle.fill", tint: .orange)
+                    healthChip("Draining", systemImage: "circle.fill", tint: .orange)
                 }
             case .connecting:
                 StatusChip(label: "Connecting", systemImage: "circle.dotted", tint: .secondary)
             case .disconnected:
                 if settingsStore.settings.isPlaceholderAddress {
-                    StatusChip(label: "Set address in Settings", systemImage: "network", tint: .orange)
+                    SettingsLink {
+                        StatusChip(label: "Set address in Settings", systemImage: "network", tint: .orange)
+                    }
+                    .buttonStyle(.plain)
                 } else {
-                    StatusChip(label: "Disconnected", systemImage: "circle.slash", tint: .red)
+                    healthChip("Disconnected", systemImage: "circle.slash", tint: .red)
                 }
             }
             Spacer()
         }
     }
 
+    private func healthChip(_ label: String, systemImage: String, tint: Color) -> some View {
+        ChipButton(help: monitor.daemonIssue ?? monitor.connection.errorMessage ?? "Show daemon health") {
+            DeepLink.open(.section(.dependencies))
+        } label: {
+            StatusChip(label: label, systemImage: systemImage, tint: tint)
+        }
+    }
+
     @ViewBuilder private var driveChip: some View {
         switch monitor.driveState {
         case .unknown:
-            StatusChip(label: "Drive", systemImage: "opticaldisc", tint: .secondary)
+            healthChip("Drive", systemImage: "opticaldisc", tint: .secondary)
         case .available:
-            StatusChip(label: "Drive available", systemImage: "opticaldisc", tint: .green)
+            ChipButton(help: "The drive is free for the next disc") {
+                DeepLink.open(.section(.now))
+            } label: {
+                StatusChip(label: "Drive available", systemImage: "opticaldisc", tint: .green)
+            }
         case .busy(let holders):
-            let who = holders.first.map { " · #\($0.itemId)" } ?? ""
-            StatusChip(label: "Drive busy\(who)", systemImage: "opticaldisc.fill", tint: .accentColor)
+            let holder = holders.first
+            let who = holder.map { " · #\($0.itemId)" } ?? ""
+            ChipButton(help: holder.map { "Show #\($0.itemId)" } ?? "Drive busy") {
+                DeepLink.open(holder.map { .item($0.itemId) } ?? .section(.now))
+            } label: {
+                StatusChip(label: "Drive busy\(who)", systemImage: "opticaldisc.fill", tint: .accentColor)
+            }
         case .paused:
-            StatusChip(label: "Drive paused", systemImage: "pause.circle", tint: .orange)
+            healthChip("Drive paused", systemImage: "pause.circle", tint: .orange)
         }
     }
 
@@ -97,10 +122,17 @@ struct MenuBarView: View {
     private var sections: some View {
         VStack(alignment: .leading, spacing: 14) {
             if monitor.status == nil {
-                Text(monitor.connection.errorMessage ?? "Connecting…")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(monitor.connection.errorMessage ?? "Connecting…")
+                        .foregroundStyle(.secondary)
+                    if let error = monitor.connection.errorMessage, let hint = SpindleMonitor.hint(for: error) {
+                        Text(hint)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
             } else {
                 if let issue = monitor.daemonIssue {
                     section("Daemon") {
@@ -119,35 +151,39 @@ struct MenuBarView: View {
                             MenuRow(item: item, detail: item.attentionReason ?? "", tint: item.hasFailed ? .red : .orange)
                         }
                         if monitor.attentionItems.count > 5 {
-                            Text("and \(monitor.attentionItems.count - 5) more")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .padding(.leading, 6)
+                            MenuLinkRow(title: "and \(monitor.attentionItems.count - 5) more", help: "Show all in Attention") {
+                                DeepLink.open(.section(.attention))
+                            }
                         }
                     }
                 }
 
                 section("Running") {
                     if monitor.activeItems.isEmpty {
-                        Text("Nothing running.")
+                        Text(idleText)
                             .foregroundStyle(.secondary)
                             .padding(.leading, 6)
                     } else {
                         ForEach(monitor.activeItems) { item in
-                            MenuRow(item: item, detail: item.activityDescription, tint: .accentColor, progress: monitor.progress[item.id])
+                            MenuRow(item: item, detail: item.activityDescription, tint: .accentColor, progress: monitor.taskProgress[item.id] ?? [])
                         }
                     }
                 }
 
                 if !monitor.waitingItems.isEmpty {
-                    Text("\(monitor.waitingItems.count) waiting")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .padding(.leading, 6)
+                    MenuLinkRow(title: "\(monitor.waitingItems.count) waiting", help: "Show the queue") {
+                        DeepLink.open(.section(.queue))
+                    }
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var idleText: String {
+        if monitor.status?.isDraining == true { return "Nothing running — daemon draining." }
+        if monitor.driveState == .paused { return "Nothing running — disc monitor paused." }
+        return "Nothing running."
     }
 
     @ViewBuilder
@@ -207,8 +243,8 @@ struct MenuBarView: View {
     private var freshness: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             if let last = monitor.lastRefresh {
-                Text("Updated \(ConnectionStatusBar.ago(last, from: context.date))")
-                    .foregroundStyle(.secondary)
+                Text(monitor.connection.isConnected ? "Updated \(Format.ago(last, from: context.date))" : "As of \(last.formatted(date: .omitted, time: .shortened))")
+                    .foregroundStyle(monitor.connection.isConnected ? AnyShapeStyle(.secondary) : AnyShapeStyle(.orange))
                     .monospacedDigit()
             }
         }
@@ -231,7 +267,7 @@ private struct MenuRow: View {
     let item: QueueItem
     let detail: String
     let tint: Color
-    var progress: ItemProgress? = nil
+    var progress: [ItemProgress] = []
 
     @State private var hovering = false
 
@@ -256,17 +292,9 @@ private struct MenuRow: View {
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    if let progress {
-                        HStack(spacing: 8) {
-                            ProgressView(value: progress.fraction)
-                                .controlSize(.small)
-                                .accessibilityLabel(progress.accessibilityText)
-                            Text(progress.shortText)
-                                .font(.system(.caption2, design: .monospaced))
-                                .foregroundStyle(.secondary)
-                                .fixedSize()
-                        }
-                        .padding(.top, 2)
+                    if !progress.isEmpty {
+                        ProgressStack(progress: progress, compact: true)
+                            .padding(.top, 2)
                     }
                 }
                 Spacer(minLength: 0)
@@ -281,8 +309,37 @@ private struct MenuRow: View {
             .contentShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         }
         .buttonStyle(.plain)
+        .pointingHandCursor(hovering)
         .onHover { hovering = $0 }
         .help(detail.isEmpty ? "Show #\(item.id) in shuttle" : "\(detail)\n\nClick to show #\(item.id) in shuttle")
+    }
+}
+
+/// A quiet one-line row that opens a section: "3 waiting", "and 2 more".
+private struct MenuLinkRow: View {
+    let title: String
+    let help: String
+    let action: () -> Void
+
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Text(title)
+                Image(systemName: "arrow.right")
+                    .font(.caption2.weight(.semibold))
+            }
+            .font(.callout)
+            .foregroundStyle(hovering ? Color.accentColor : .secondary)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .pointingHandCursor(hovering)
+        .onHover { hovering = $0 }
+        .help(help)
     }
 }
 

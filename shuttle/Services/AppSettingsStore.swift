@@ -12,6 +12,10 @@ struct AppSettings: Equatable, Sendable {
     var notifications: Set<NotificationKind> = Set(NotificationKind.allCases.filter(\.isOnByDefault))
     var menuBarOnly = false
     var pollInterval: TimeInterval = SpindleMonitor.defaultPollInterval
+    /// Where the daemon's library lives as the daemon sees it, e.g. "/mnt/media".
+    var libraryRemotePrefix = ""
+    /// The same directory mounted on this Mac, e.g. "/Volumes/media".
+    var libraryLocalPrefix = ""
 
     static let pollIntervalChoices: [TimeInterval] = [1, 2, 5, 10]
 
@@ -26,6 +30,24 @@ struct AppSettings: Equatable, Sendable {
         baseURLString.trimmingCharacters(in: .whitespacesAndNewlines) == Self.defaultBaseURLString
     }
 
+    /// A daemon-side library path translated through the mount mapping, or
+    /// nil when the mapping is not set or the path is outside it. Whether the
+    /// result exists on this Mac is the caller's question.
+    func localLibraryPath(for remotePath: String) -> String? {
+        let remote = Self.normalized(libraryRemotePrefix)
+        let local = Self.normalized(libraryLocalPrefix)
+        guard !remote.isEmpty, !local.isEmpty else { return nil }
+        if remotePath == remote { return local }
+        guard remotePath.hasPrefix(remote + "/") else { return nil }
+        return local + remotePath.dropFirst(remote.count)
+    }
+
+    private static func normalized(_ prefix: String) -> String {
+        var value = prefix.trimmingCharacters(in: .whitespacesAndNewlines)
+        while value.count > 1, value.hasSuffix("/") { value.removeLast() }
+        return value
+    }
+
     /// The daemon URL, or nil when the string is not an http(s) URL with a host.
     var baseURL: URL? {
         let trimmed = baseURLString.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -37,27 +59,58 @@ struct AppSettings: Equatable, Sendable {
     }
 }
 
+/// Where the API token lives. The Keychain in the app; memory in tests.
+protocol TokenStore: AnyObject {
+    func read() -> String?
+    func write(_ token: String)
+    func delete()
+}
+
+final class InMemoryTokenStore: TokenStore {
+    private var token: String?
+    init(_ token: String? = nil) { self.token = token }
+    func read() -> String? { token }
+    func write(_ token: String) { self.token = token }
+    func delete() { token = nil }
+}
+
 @Observable
 @MainActor
 final class AppSettingsStore {
     private enum Key {
         static let baseURL = "spindleBaseURL"
-        static let token = "spindleAPIToken"
+        /// Pre-Keychain location; read once and cleared on first launch.
+        static let legacyToken = "spindleAPIToken"
         static let menuBarOnly = "menuBarOnly"
         static let pollInterval = "pollInterval"
+        static let libraryRemotePrefix = "libraryRemotePrefix"
+        static let libraryLocalPrefix = "libraryLocalPrefix"
         static func notify(_ kind: NotificationKind) -> String { "notify.\(kind.rawValue)" }
     }
 
     private(set) var settings: AppSettings
     private let defaults: UserDefaults
+    private let tokenStore: TokenStore
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, tokenStore: TokenStore? = nil) {
         self.defaults = defaults
+        let tokenStore = tokenStore ?? (defaults == .standard ? KeychainTokenStore() : InMemoryTokenStore())
+        self.tokenStore = tokenStore
+        var token = tokenStore.read() ?? ""
+        if let legacy = defaults.string(forKey: Key.legacyToken) {
+            if token.isEmpty, !legacy.isEmpty {
+                token = legacy
+                tokenStore.write(legacy)
+            }
+            defaults.removeObject(forKey: Key.legacyToken)
+        }
         var loaded = AppSettings(
             baseURLString: defaults.string(forKey: Key.baseURL) ?? AppSettings.defaultBaseURLString,
-            token: defaults.string(forKey: Key.token) ?? ""
+            token: token
         )
         loaded.menuBarOnly = defaults.bool(forKey: Key.menuBarOnly)
+        loaded.libraryRemotePrefix = defaults.string(forKey: Key.libraryRemotePrefix) ?? ""
+        loaded.libraryLocalPrefix = defaults.string(forKey: Key.libraryLocalPrefix) ?? ""
         if let interval = defaults.object(forKey: Key.pollInterval) as? Double, interval >= 1 {
             loaded.pollInterval = interval
         }
@@ -78,7 +131,14 @@ final class AppSettingsStore {
 
     func updateToken(_ token: String) {
         settings.token = token
-        defaults.set(token, forKey: Key.token)
+        if token.isEmpty { tokenStore.delete() } else { tokenStore.write(token) }
+    }
+
+    func updateLibraryMapping(remote: String, local: String) {
+        settings.libraryRemotePrefix = remote
+        settings.libraryLocalPrefix = local
+        defaults.set(remote, forKey: Key.libraryRemotePrefix)
+        defaults.set(local, forKey: Key.libraryLocalPrefix)
     }
 
     func setNotification(_ kind: NotificationKind, enabled: Bool) {
@@ -103,9 +163,11 @@ final class AppSettingsStore {
     func resetToDefaults() {
         settings = .defaults
         defaults.removeObject(forKey: Key.baseURL)
-        defaults.removeObject(forKey: Key.token)
+        tokenStore.delete()
         defaults.removeObject(forKey: Key.menuBarOnly)
         defaults.removeObject(forKey: Key.pollInterval)
+        defaults.removeObject(forKey: Key.libraryRemotePrefix)
+        defaults.removeObject(forKey: Key.libraryLocalPrefix)
         for kind in NotificationKind.allCases {
             defaults.removeObject(forKey: Key.notify(kind))
         }

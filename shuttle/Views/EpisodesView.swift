@@ -60,8 +60,13 @@ extension Episode {
         return states
     }
 
-    var mappingDescription: String? {
+    /// Only when the match tells the operator something: it differs from
+    /// the planned number, or confidence is below the review threshold.
+    func mappingDescription(threshold: Double?) -> String? {
         guard let matched = matchedEpisode, matched > 0 else { return nil }
+        let differs = matched != episode || (matchedEpisodeEnd ?? 0) != (episodeEnd ?? 0)
+        let low = matchConfidence.map { $0 < (threshold ?? 0.8) } ?? false
+        guard differs || low else { return nil }
         var value = "matched E\(String(format: "%02d", matched))"
         if let end = matchedEpisodeEnd, end > matched { value += String(format: "–%02d", end) }
         if let confidence = matchConfidence, confidence > 0 {
@@ -69,10 +74,42 @@ extension Episode {
         }
         return value
     }
+
+    var mappingDescription: String? { mappingDescription(threshold: nil) }
+
+    /// "en · opensubtitles" or "en · 2 issues".
+    var subtitleDescription: String? {
+        var parts: [String] = []
+        if let language = subtitleLanguage, !language.isEmpty { parts.append(language) }
+        let issues = (subtitleSevereIssues ?? []) + (subtitleReviewIssues ?? [])
+        if !issues.isEmpty {
+            parts.append(issues.count == 1 ? issues[0] : "\(issues.count) subtitle issues")
+        } else if let source = subtitleSource, !source.isEmpty {
+            parts.append(source.lowercased())
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
 }
 
 struct EpisodesView: View {
     let item: QueueItem
+
+    /// What the four letters on every row mean, once, at the top.
+    private var legend: some View {
+        HStack(spacing: 10) {
+            ForEach(EpisodeAsset.allCases, id: \.letter) { asset in
+                HStack(spacing: 3) {
+                    Text(asset.letter)
+                        .font(.system(.caption, design: .monospaced).weight(.semibold))
+                    Text(asset.title.lowercased())
+                        .font(.caption)
+                }
+                .foregroundStyle(.tertiary)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Legend: R ripped, E encoded, S subtitled, F final")
+    }
 
     var body: some View {
         if item.episodeList.isEmpty {
@@ -84,10 +121,11 @@ struct EpisodesView: View {
                         Text("\(totals.planned) planned · \(totals.ripped) ripped · \(totals.encoded) encoded · \(totals.final) final")
                             .font(.callout)
                             .foregroundStyle(.secondary)
-                            .padding(.bottom, 4)
                     }
+                    legend
+                        .padding(.bottom, 4)
                     ForEach(item.episodeList) { episode in
-                        EpisodeRow(episode: episode, active: episode.active == true)
+                        EpisodeRow(episode: episode, active: episode.active == true, threshold: item.contentId?.reviewThreshold)
                     }
                 }
                 .padding(14)
@@ -100,6 +138,7 @@ struct EpisodesView: View {
 private struct EpisodeRow: View {
     let episode: Episode
     let active: Bool
+    var threshold: Double? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -111,9 +150,14 @@ private struct EpisodeRow: View {
                 Text(episode.title ?? episode.sourceTitle ?? episode.outputBasename ?? "")
                     .lineLimit(1)
                 Spacer()
+                if let runtime = episode.runtimeSeconds, runtime > 0 {
+                    Text(Format.duration(Double(runtime)))
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundStyle(.tertiary)
+                }
                 assetGrid
             }
-            let details = [episode.mappingDescription, episode.reviewReason, episode.errorMessage]
+            let details = [episode.mappingDescription(threshold: threshold), episode.subtitleDescription, episode.reviewReason, episode.errorMessage]
                 .compactMap { $0 }
                 .filter { !$0.isEmpty }
             if !details.isEmpty {
@@ -138,6 +182,8 @@ private struct EpisodeRow: View {
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(tint(for: state))
                 .help("\(asset.title): \(String(describing: state))")
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(asset.title) \(String(describing: state))")
             }
         }
     }

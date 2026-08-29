@@ -61,7 +61,11 @@ struct LogView: View {
             Divider()
 
             if let error = tailer.lastError, tailer.entries.isEmpty {
-                emptyState("Log Unavailable", systemImage: "doc.text.magnifyingglass", description: error)
+                emptyState("Log Unavailable", systemImage: "doc.text.magnifyingglass", description: SpindleMonitor.hint(for: error).map { "\(error) \($0)" } ?? error)
+            } else if tailer.isLoading, tailer.entries.isEmpty {
+                ProgressView("Loading log…")
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if rows.isEmpty {
                 emptyState(
                     needle.isEmpty ? "No Entries" : "No Matches",
@@ -79,6 +83,7 @@ struct LogView: View {
                         .id(entry.id)
                     }
                     .listStyle(.plain)
+                    .autoPauseFollow($follow)
                     .onChange(of: rows.last?.id) { _, last in
                         if follow, let last {
                             proxy.scrollTo(last, anchor: .bottom)
@@ -271,10 +276,7 @@ private struct LogRow: View {
                     .foregroundStyle(levelTint)
                     .frame(width: 44, alignment: .leading)
                 if showsItem, let id = entry.itemID, id > 0 {
-                    Button("#\(id)") { focusItem(id) }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(Color.accentColor)
-                        .help("Show #\(id) in the inspector")
+                    ItemLink(id: id, action: focusItem)
                 }
                 if let stage = entry.stage, !stage.isEmpty {
                     Text(stage)
@@ -325,11 +327,14 @@ private struct LogRow: View {
         }
     }
 
+    /// The row as shown: time, level, item, stage, component, message, fields.
     private var line: String {
         var parts = [entry.ts, entry.levelValue.rawValue]
         if let id = entry.itemID, id > 0 { parts.append("#\(id)") }
+        if let stage = entry.stage, !stage.isEmpty { parts.append(stage) }
         if let component = entry.component, !component.isEmpty { parts.append(component) }
-        parts.append(entry.summary)
+        parts.append(entry.msg)
+        parts += entry.fieldPairs.map { "\($0.key)=\($0.value)" }
         return parts.joined(separator: " ")
     }
 
@@ -354,6 +359,43 @@ private struct LogRow: View {
         case .warn: return .orange
         case .error: return .red
         case .unknown: return .secondary
+        }
+    }
+}
+
+/// "#21" in accent, with a pointing hand: the log's link to an item.
+private struct ItemLink: View {
+    let id: Int64
+    let action: (Int64) -> Void
+
+    @State private var hovering = false
+
+    var body: some View {
+        Button("#\(id)") { action(id) }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.accentColor)
+            .underline(hovering)
+            .pointingHandCursor(hovering)
+            .onHover { hovering = $0 }
+            .help("Show #\(id) in the inspector")
+    }
+}
+
+private extension View {
+    /// Scrolling away from the bottom turns follow off; scrolling back to
+    /// the bottom turns it on again. Needs the scroll geometry API, so on
+    /// macOS 14 the Follow button and the "N new" pill remain the controls.
+    @ViewBuilder
+    func autoPauseFollow(_ follow: Binding<Bool>) -> some View {
+        if #available(macOS 15, *) {
+            onScrollGeometryChange(for: Bool.self) { geometry in
+                let bottom = geometry.contentOffset.y + geometry.containerSize.height
+                return bottom >= geometry.contentSize.height - 24
+            } action: { _, atBottom in
+                if follow.wrappedValue != atBottom { follow.wrappedValue = atBottom }
+            }
+        } else {
+            self
         }
     }
 }
