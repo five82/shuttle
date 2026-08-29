@@ -9,7 +9,7 @@ struct shuttleApp: App {
     private var monitor: SpindleMonitor { model.monitor }
 
     var body: some Scene {
-        WindowGroup(id: MainWindow.id) {
+        Window("shuttle", id: MainWindow.id) {
             ContentView()
                 .environment(model)
                 .environment(settingsStore)
