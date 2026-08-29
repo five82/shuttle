@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+XCODE_DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+APP_DIR="$ROOT_DIR/build/Debug"
+APP_PATH="$APP_DIR/shuttle.app"
+
+cd "$ROOT_DIR"
+
+DEVELOPER_DIR="$XCODE_DEVELOPER_DIR" xcodebuild \
+  -project shuttle.xcodeproj \
+  -scheme shuttle \
+  -configuration Debug \
+  -destination 'platform=macOS,arch=arm64' \
+  CONFIGURATION_BUILD_DIR="$APP_DIR" \
+  build
+
+if pgrep -x shuttle >/dev/null; then
+  osascript -e 'tell application "shuttle" to quit' >/dev/null 2>&1 || true
+
+  for _ in {1..30}; do
+    if ! pgrep -x shuttle >/dev/null; then
+      break
+    fi
+    sleep 0.1
+  done
+fi
+
+open "$APP_PATH"

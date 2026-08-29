@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+XCODE_DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+BUILD_DIR="$ROOT_DIR/build/Release"
+PACKAGE_DIR="$ROOT_DIR/build/package"
+DIST_DIR="$ROOT_DIR/build/dist"
+APP_NAME="shuttle.app"
+BUILT_APP="$BUILD_DIR/$APP_NAME"
+STAGED_APP="$PACKAGE_DIR/$APP_NAME"
+
+cd "$ROOT_DIR"
+
+VERSION="$(awk -F ' = ' '/MARKETING_VERSION = / { gsub(/;$/, "", $2); print $2; exit }' shuttle.xcodeproj/project.pbxproj)"
+if [[ -z "$VERSION" ]]; then
+  printf 'error: could not determine MARKETING_VERSION\n' >&2
+  exit 1
+fi
+
+ZIP_NAME="shuttle-$VERSION-macos-arm64.zip"
+ZIP_PATH="$DIST_DIR/$ZIP_NAME"
+
+rm -rf "$PACKAGE_DIR"
+mkdir -p "$PACKAGE_DIR" "$DIST_DIR"
+rm -f "$ZIP_PATH"
+
+DEVELOPER_DIR="$XCODE_DEVELOPER_DIR" xcodebuild \
+  -project shuttle.xcodeproj \
+  -scheme shuttle \
+  -configuration Release \
+  -destination 'platform=macOS,arch=arm64' \
+  CONFIGURATION_BUILD_DIR="$BUILD_DIR" \
+  build
+
+ditto "$BUILT_APP" "$STAGED_APP"
+
+(
+  cd "$PACKAGE_DIR"
+  ditto -c -k --keepParent "$APP_NAME" "$ZIP_PATH"
+)
+
+printf '\nPackaged: %s\n' "$ZIP_PATH"

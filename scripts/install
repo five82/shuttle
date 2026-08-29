@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+XCODE_DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+BUILD_DIR="$ROOT_DIR/build/Release"
+APP_NAME="shuttle.app"
+BUILT_APP="$BUILD_DIR/$APP_NAME"
+DEST_DIR="$HOME/Applications"
+DEST_APP="$DEST_DIR/$APP_NAME"
+
+mkdir -p "$DEST_DIR"
+
+cd "$ROOT_DIR"
+
+DEVELOPER_DIR="$XCODE_DEVELOPER_DIR" xcodebuild \
+  -project shuttle.xcodeproj \
+  -scheme shuttle \
+  -configuration Release \
+  -destination 'platform=macOS,arch=arm64' \
+  CONFIGURATION_BUILD_DIR="$BUILD_DIR" \
+  build
+
+if pgrep -x shuttle >/dev/null; then
+  osascript -e 'tell application "shuttle" to quit' >/dev/null 2>&1 || true
+
+  for _ in {1..30}; do
+    if ! pgrep -x shuttle >/dev/null; then
+      break
+    fi
+    sleep 0.1
+  done
+fi
+
+rm -rf "$DEST_APP"
+ditto "$BUILT_APP" "$DEST_APP"
+touch "$DEST_APP"
+
+/System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister \
+  -f -R "$DEST_APP" >/dev/null 2>&1 || true
+
+printf '\nInstalled: %s\n' "$DEST_APP"
+printf 'Open with: open %q\n' "$DEST_APP"
