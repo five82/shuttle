@@ -37,7 +37,7 @@ You can change the API address and token in **shuttle > Settings**. The first ti
 
 ## Installing a release
 
-Release builds are currently unsigned and not notarized. macOS Gatekeeper will warn that it cannot verify the developer. Only open shuttle if you trust the downloaded release.
+Release builds are signed with an Apple Development certificate but are not notarized, so macOS Gatekeeper will warn that it cannot verify the developer. Only open shuttle if you trust the downloaded release.
 
 After downloading and unzipping `shuttle.app`, you can open it with one of these methods:
 
@@ -64,6 +64,7 @@ Adjust the path if you installed shuttle somewhere else, for example `~/Applicat
 
 - Apple Silicon Mac
 - Xcode at `/Applications/Xcode.app`
+- An Apple Development signing certificate for the team pinned in the project (`DEVELOPMENT_TEAM`); to build under your own team, change it in Xcode under Signing & Capabilities. Do not leave it empty — an ad-hoc signed app loses its Local Network permission every time it is rebuilt.
 - A running Spindle daemon if you want to run shuttle against real data
 
 ## Build and run from source

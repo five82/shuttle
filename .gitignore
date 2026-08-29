@@ -63,3 +63,17 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
+
+# Signing material and local overrides — never commit these.
+*.p12
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile
+*.local.xcconfig
+ExportOptions*.plist
+AuthKey_*.p8
+
+# Local Xcode / macOS noise
+DerivedData/
+.DS_Store

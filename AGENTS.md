@@ -116,3 +116,9 @@ Avoid blocking the main actor during network requests.
 When adding new Swift files, ensure they are included in the `shuttle` target (or `shuttleTests` for tests) in `shuttle.xcodeproj/project.pbxproj`.
 
 Do not edit generated build products under `build/`.
+
+## Signing
+
+The project pins `DEVELOPMENT_TEAM` and `CODE_SIGN_IDENTITY = "Apple Development"` with automatic signing, like takeup-ios. Keep it that way. macOS grants Local Network access per code-signing identity; an ad-hoc signed build gets a new identity on every `scripts/install`, macOS silently drops the previous grant, and every request fails with "The Internet connection appears to be offline" even though the daemon is reachable. If that symptom appears anyway, toggle shuttle in System Settings > Privacy & Security > Local Network.
+
+Never commit signing material: certificates, private keys, provisioning profiles, App Store Connect API keys, or export options are all in `.gitignore`. A team ID is not a secret and may live in the project file.
