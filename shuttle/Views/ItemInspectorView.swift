@@ -45,6 +45,7 @@ struct ItemInspectorView: View {
                     LogView(itemID: item.id, compact: true)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .onChange(of: item.isEpisodic) { _, episodic in
                 if !episodic, tab == .episodes { tab = .overview }
             }

@@ -19,8 +19,11 @@ struct LogView: View {
                 content(tailer)
             } else {
                 ProgressView()
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .task(id: itemID) {
             let tailer = LogTailer(clientProvider: { settingsStore.makeClient() }, itemID: itemID)
             self.tailer = tailer
@@ -39,48 +42,20 @@ struct LogView: View {
         let rows = needle.isEmpty ? tailer.entries : tailer.entries.filter { $0.summary.lowercased().contains(needle) }
 
         VStack(spacing: 0) {
-            HStack(spacing: 10) {
-                Picker("Level", selection: $tailer.minimumLevel) {
-                    ForEach(LogLevel.filterable, id: \.self) { level in
-                        Text(level.rawValue.capitalized).tag(level)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(width: compact ? 200 : 260)
-                .help("Minimum level")
-
-                if showsDaemonOnlyToggle {
-                    Toggle("Daemon only", isOn: $tailer.daemonOnly)
-                        .toggleStyle(.checkbox)
-                        .help("Hide per-item entries")
-                }
-
-                TextField("Filter", text: $search)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 260)
-
-                Spacer()
-
-                Toggle(isOn: $follow) {
-                    Label("Follow", systemImage: "arrow.down.to.line")
-                }
-                .toggleStyle(.button)
-                .help("Keep the newest entry in view")
-            }
-            .controlSize(.small)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            toolbar(tailer)
+                .controlSize(.small)
+                .padding(.horizontal, compact ? 10 : 12)
+                .padding(.vertical, 6)
 
             Divider()
 
             if let error = tailer.lastError, tailer.entries.isEmpty {
-                ContentUnavailableView("Log Unavailable", systemImage: "doc.text.magnifyingglass", description: Text(error))
+                emptyState("Log Unavailable", systemImage: "doc.text.magnifyingglass", description: error)
             } else if rows.isEmpty {
-                ContentUnavailableView(
+                emptyState(
                     needle.isEmpty ? "No Entries" : "No Matches",
                     systemImage: needle.isEmpty ? "doc.text" : "magnifyingglass",
-                    description: Text(needle.isEmpty ? "Nothing at \(tailer.minimumLevel.rawValue.capitalized) or above yet." : "No entries contain “\(search)”.")
+                    description: needle.isEmpty ? "Nothing at \(tailer.minimumLevel.rawValue.capitalized) or above yet." : "No entries contain “\(search)”."
                 )
             } else {
                 ScrollViewReader { proxy in
@@ -115,9 +90,99 @@ struct LogView: View {
             }
             .font(.caption)
             .foregroundStyle(.secondary)
-            .padding(.horizontal, 12)
+            .padding(.horizontal, compact ? 10 : 12)
             .padding(.vertical, 4)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: Toolbar
+
+    @ViewBuilder
+    private func toolbar(_ tailer: LogTailer) -> some View {
+        @Bindable var tailer = tailer
+        if compact {
+            VStack(spacing: 6) {
+                HStack(spacing: 8) {
+                    levelPicker($tailer.minimumLevel)
+                    Spacer(minLength: 0)
+                    followToggle
+                }
+                filterField
+            }
+        } else {
+            HStack(spacing: 10) {
+                levelPicker($tailer.minimumLevel)
+                    .frame(width: 260)
+                if showsDaemonOnlyToggle {
+                    Toggle("Daemon only", isOn: $tailer.daemonOnly)
+                        .toggleStyle(.checkbox)
+                        .help("Hide per-item entries")
+                }
+                filterField
+                    .frame(maxWidth: 260)
+                Spacer()
+                followToggle
+            }
+        }
+    }
+
+    private func levelPicker(_ selection: Binding<LogLevel>) -> some View {
+        Picker("Level", selection: selection) {
+            ForEach(LogLevel.filterable, id: \.self) { level in
+                Text(level.rawValue.capitalized).tag(level)
+            }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .help("Minimum level")
+    }
+
+    private var filterField: some View {
+        TextField("Filter", text: $search)
+            .textFieldStyle(.roundedBorder)
+    }
+
+    @ViewBuilder
+    private var followToggle: some View {
+        let toggle = Toggle(isOn: $follow) {
+            Label("Follow", systemImage: "arrow.down.to.line")
+        }
+        .toggleStyle(.button)
+        .help("Keep the newest entry in view")
+        if compact {
+            toggle.labelStyle(.iconOnly)
+        } else {
+            toggle.labelStyle(.titleAndIcon)
+        }
+    }
+
+    // MARK: Empty state
+
+    /// Fills the log area so the surrounding layout never collapses toward
+    /// the vertical centre; smaller in the inspector.
+    @ViewBuilder
+    private func emptyState(_ title: String, systemImage: String, description: String) -> some View {
+        Group {
+            if compact {
+                VStack(spacing: 6) {
+                    Image(systemName: systemImage)
+                        .font(.title2)
+                        .foregroundStyle(.tertiary)
+                    Text(title)
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(20)
+            } else {
+                ContentUnavailableView(title, systemImage: systemImage, description: Text(description))
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
