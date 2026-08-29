@@ -58,7 +58,22 @@ final class SpindleMonitor {
     private(set) var consecutiveFailures = 0
 
     /// Selection is item-ID-sticky across polls; cleared if the item disappears.
-    var selectedItemID: Int64?
+    var selectedItemID: Int64? {
+        didSet {
+            guard oldValue != selectedItemID else { return }
+            selectedItemDetail = nil
+            detailTask?.cancel()
+            detailTask = nil
+            if selectedItemID != nil {
+                detailTask = Task { [weak self] in await self?.fetchSelectedItemDetail() }
+            }
+        }
+    }
+
+    /// The selected item from `GET /api/queue/{id}`, which adds the rip
+    /// spec. Refreshed with every poll while the selection holds.
+    private(set) var selectedItemDetail: QueueItem?
+    private var detailTask: Task<Void, Never>?
 
     /// Transitions detected by the most recent successful poll.
     private(set) var lastEvents: [MonitorEvent] = []
@@ -150,10 +165,25 @@ final class SpindleMonitor {
             async let queue = client.queue()
             let snapshot = try await (status, queue)
             apply(status: snapshot.0, items: snapshot.1)
+            await fetchSelectedItemDetail(using: client)
             return true
         } catch {
             recordFailure(Self.describe(error))
             return false
+        }
+    }
+
+    /// Waits for the detail fetch started by a selection change, if any.
+    func awaitPendingDetail() async {
+        await detailTask?.value
+    }
+
+    /// Non-fatal: a failed detail fetch leaves the list item on screen.
+    func fetchSelectedItemDetail(using client: SpindleAPI? = nil) async {
+        guard let id = selectedItemID, let client = client ?? clientProvider() else { return }
+        guard let detail = try? await client.item(id: id) else { return }
+        if selectedItemID == id {
+            selectedItemDetail = detail
         }
     }
 

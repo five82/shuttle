@@ -32,6 +32,12 @@
 		B00000000000000000000316 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000216 /* AppModel.swift */; };
 		B00000000000000000000325 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000225 /* MenuBarView.swift */; };
 		B00000000000000000000334 /* EventDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000234 /* EventDetectorTests.swift */; };
+		B00000000000000000000307 /* EncodingDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000207 /* EncodingDetails.swift */; };
+		B00000000000000000000326 /* ItemInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000226 /* ItemInspectorView.swift */; };
+		B00000000000000000000327 /* PipelineStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000227 /* PipelineStripView.swift */; };
+		B00000000000000000000328 /* EpisodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000228 /* EpisodesView.swift */; };
+		B00000000000000000000329 /* AttentionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000229 /* AttentionView.swift */; };
+		B00000000000000000000335 /* InspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000235 /* InspectorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +79,12 @@
 		B00000000000000000000216 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		B00000000000000000000225 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		B00000000000000000000234 /* EventDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetectorTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000207 /* EncodingDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingDetails.swift; sourceTree = "<group>"; };
+		B00000000000000000000226 /* ItemInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemInspectorView.swift; sourceTree = "<group>"; };
+		B00000000000000000000227 /* PipelineStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineStripView.swift; sourceTree = "<group>"; };
+		B00000000000000000000228 /* EpisodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodesView.swift; sourceTree = "<group>"; };
+		B00000000000000000000229 /* AttentionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionView.swift; sourceTree = "<group>"; };
+		B00000000000000000000235 /* InspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,6 +140,7 @@
 		B00000000000000000000051 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000207 /* EncodingDetails.swift */,
 				B00000000000000000000201 /* JSONValue.swift */,
 				B00000000000000000000202 /* Stage.swift */,
 				B00000000000000000000203 /* SpindleDate.swift */,
@@ -154,6 +167,10 @@
 		B00000000000000000000053 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000229 /* AttentionView.swift */,
+				B00000000000000000000228 /* EpisodesView.swift */,
+				B00000000000000000000227 /* PipelineStripView.swift */,
+				B00000000000000000000226 /* ItemInspectorView.swift */,
 				B00000000000000000000225 /* MenuBarView.swift */,
 				B00000000000000000000221 /* StatusChips.swift */,
 				B00000000000000000000222 /* NowView.swift */,
@@ -166,6 +183,7 @@
 		B0000000000000000000010D /* shuttleTests */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000235 /* InspectorTests.swift */,
 				B00000000000000000000234 /* EventDetectorTests.swift */,
 				B00000000000000000000231 /* Fixtures.swift */,
 				B00000000000000000000232 /* DecodingTests.swift */,
@@ -275,6 +293,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000307 /* EncodingDetails.swift in Sources */,
+				B00000000000000000000326 /* ItemInspectorView.swift in Sources */,
+				B00000000000000000000327 /* PipelineStripView.swift in Sources */,
+				B00000000000000000000328 /* EpisodesView.swift in Sources */,
+				B00000000000000000000329 /* AttentionView.swift in Sources */,
 				B00000000000000000000314 /* EventDetector.swift in Sources */,
 				B00000000000000000000315 /* NotificationService.swift in Sources */,
 				B00000000000000000000316 /* AppModel.swift in Sources */,
@@ -301,6 +324,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000335 /* InspectorTests.swift in Sources */,
 				B00000000000000000000334 /* EventDetectorTests.swift in Sources */,
 				B00000000000000000000331 /* Fixtures.swift in Sources */,
 				B00000000000000000000332 /* DecodingTests.swift in Sources */,

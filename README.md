@@ -6,6 +6,8 @@ shuttle is a small native macOS app for Apple Silicon that monitors a running [S
 - **Notifications** — drive available, item needs review, item failed, item completed. Each can be turned off.
 - **Now** — what needs attention, what is running with live progress, what the daemon is holding, what just finished.
 - **Queue** — every item in a sortable, filterable table.
+- **Attention** — failed and review items with the reason, one click from the details.
+- **Inspector** — per-item pipeline progress, media and encoder details, output size and validation, per-episode progress for TV, and Reveal in Finder when the library is mounted.
 
 ## Expectations
 

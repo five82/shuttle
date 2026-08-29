@@ -36,6 +36,7 @@ struct QueueTableView: View {
                 Text(item.displayTitle)
                     .fontWeight(item.needsAttention ? .semibold : .regular)
             }
+            .width(min: 180, ideal: 280)
 
             TableColumn("Stage", value: \.stageSortKey) { item in
                 StageLabel(item: item)

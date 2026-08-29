@@ -136,17 +136,20 @@ extension QueueItem {
 
     /// The single line an operator needs to know why this item needs them.
     var attentionReason: String? {
-        if hasFailed {
-            if let message = errorMessage, !message.isEmpty {
-                if let at = failedAtStage { return "Failed at \(at.displayName.lowercased()): \(message)" }
-                return message
-            }
-            if let at = failedAtStage { return "Failed at \(at.displayName.lowercased())" }
-            return "Failed"
+        if let task = taskList.first(where: { $0.state == .failed }) {
+            let error = task.error?.trimmingCharacters(in: .whitespaces) ?? ""
+            return error.isEmpty ? "\(task.type.displayName) failed" : "\(task.type.displayName) failed: \(error)"
         }
-        if needsReview {
-            return reviewReasons?.first ?? "Needs review"
+        if needsReview, let reasons = reviewReasons, !reasons.isEmpty {
+            return reasons.joined(separator: "; ")
         }
+        if let message = errorMessage?.trimmingCharacters(in: .whitespaces), !message.isEmpty {
+            if let at = failedAtStage { return "\(at.displayName) failed: \(message)" }
+            return message
+        }
+        if let at = failedAtStage { return "\(at.displayName) failed" }
+        if hasFailed { return "Failed" }
+        if needsReview { return "Needs review" }
         return nil
     }
 

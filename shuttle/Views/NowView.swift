@@ -3,6 +3,7 @@ import SwiftUI
 /// The landing view: what needs me, what is running, what the daemon is
 /// holding, what just finished.
 struct NowView: View {
+    @Environment(AppModel.self) private var model
     @Environment(SpindleMonitor.self) private var monitor
 
     var body: some View {
@@ -21,6 +22,8 @@ struct NowView: View {
                         NowSection("Needs attention") {
                             ForEach(monitor.attentionItems) { item in
                                 AttentionRow(item: item)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { model.focus(itemID: item.id) }
                             }
                         }
                     }
@@ -31,6 +34,8 @@ struct NowView: View {
                         } else {
                             ForEach(monitor.activeItems) { item in
                                 ActiveRow(item: item)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { model.focus(itemID: item.id) }
                             }
                         }
                     }
@@ -39,6 +44,8 @@ struct NowView: View {
                         NowSection("Waiting · \(monitor.waitingItems.count)") {
                             ForEach(monitor.waitingItems) { item in
                                 WaitingRow(item: item)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { model.focus(itemID: item.id) }
                             }
                         }
                     }
@@ -53,6 +60,8 @@ struct NowView: View {
                         NowSection("Recently completed") {
                             ForEach(monitor.recentlyCompleted) { item in
                                 CompletedRow(item: item)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { model.focus(itemID: item.id) }
                             }
                         }
                     }

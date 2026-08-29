@@ -23,7 +23,8 @@ Important paths:
 - `shuttle/Services/EventDetector.swift` — pure snapshot diff → `MonitorEvent`s
 - `shuttle/Services/NotificationService.swift` — user notifications, Dock badge, `shuttle://` deep links
 - `shuttle/Services/AppSettingsStore.swift` — UserDefaults-backed settings
-- `shuttle/Views/` — SwiftUI subviews, including `MenuBarView` for the menu bar popover
+- `shuttle/Models/EncodingDetails.swift` — typed view of the raw `encoding` blob, decoded on demand
+- `shuttle/Views/` — SwiftUI subviews: `NowView`, `QueueTableView`, `AttentionView`, `ItemInspectorView` (Overview + Episodes), `PipelineStripView`, `EpisodesView`, `MenuBarView`, `StatusChips`, `ConnectionStatusBar`
 - `shuttle/Info.plist` — merged into the generated Info.plist; holds the ATS exception and local-network usage string
 - `shuttleTests/` — unit tests; `shuttleTests/Fixtures/*.json` are real responses captured from a live daemon
 - `scripts/build` — debug build
@@ -86,6 +87,13 @@ Decoding tests assert specific values from those captures (item IDs, counts); up
 - Events come only from `EventDetector`, which diffs consecutive snapshots and ignores items it has not seen before, so a daemon restart or `spindle queue clear` never replays notifications. Keep it pure and keep its tests exhaustive.
 - Opening the main window from outside a view (notification tap, menu bar row, Dock reopen) goes through the `shuttle://main` / `shuttle://item/<id>` URL scheme, because `openWindow` only exists inside views. `ContentView.onOpenURL` routes to `AppModel.handle`.
 - "Show in menu bar only" switches the activation policy to `.accessory`; the app keeps polling either way.
+
+## Inspector rules
+
+- Overview is a fixed section skeleton — Attention, Pipeline, Media, Output, Episodes, Meta — in that order for every item. Rows appear or disappear by data presence, never by state branching, so positions stay learnable.
+- The pipeline strip is built from `status.pipeline` (the daemon's template) joined with the item's tasks; the item's own task order is only a fallback. Never hardcode the stage list.
+- The inspector reads `monitor.selectedItemDetail` (from `GET /api/queue/{id}`, which adds `ripSpec`) and falls back to the list item, so it renders instantly and refines on the next poll.
+- Reveal in Finder appears only when the final path exists on this Mac; otherwise Copy Path. Neither touches the daemon.
 
 ## Performance / UI rules
 

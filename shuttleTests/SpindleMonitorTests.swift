@@ -7,6 +7,8 @@ final class MockSpindleAPI: SpindleAPI, @unchecked Sendable {
     var queueResult: Result<[QueueItem], Error>
     var statusCalls = 0
     var queueCalls = 0
+    var itemCalls = 0
+    var detail: QueueItem?
 
     init(status: StatusResponse, queue: [QueueItem]) {
         statusResult = .success(status)
@@ -26,6 +28,8 @@ final class MockSpindleAPI: SpindleAPI, @unchecked Sendable {
     }
 
     func item(id: Int64) async throws -> QueueItem {
+        itemCalls += 1
+        if let detail, detail.id == id { return detail }
         guard let item = try queueResult.get().first(where: { $0.id == id }) else {
             throw SpindleClientError.httpStatus(404)
         }
@@ -216,6 +220,30 @@ final class SpindleMonitorTests: XCTestCase {
         api.queueResult = .failure(SpindleClientError.unreachable("down"))
         await monitor.refresh()
         XCTAssertEqual(snapshots, 2, "failed polls don't report snapshots")
+    }
+
+    func testSelectionFetchesDetailAndRefreshesIt() async throws {
+        struct Envelope: Decodable { var item: QueueItem }
+        let detail = try Fixtures.decode(Envelope.self, from: "item").item
+        let api = MockSpindleAPI(status: try Fixtures.status(), queue: try Fixtures.queue())
+        api.detail = detail
+        let monitor = makeMonitor(api)
+        await monitor.refresh()
+        XCTAssertNil(monitor.selectedItemDetail)
+
+        monitor.selectedItemID = 21
+        await monitor.awaitPendingDetail()
+        XCTAssertEqual(api.itemCalls, 1, "selecting fetches the detail once")
+        XCTAssertEqual(monitor.selectedItemDetail?.id, 21)
+        XCTAssertNotNil(monitor.selectedItemDetail?.ripSpec, "detail carries the rip spec the list omits")
+
+        await monitor.refresh()
+        XCTAssertEqual(api.itemCalls, 2, "each poll refreshes the selected detail")
+
+        monitor.selectedItemID = nil
+        XCTAssertNil(monitor.selectedItemDetail)
+        await monitor.refresh()
+        XCTAssertEqual(api.itemCalls, 2, "no detail fetch without a selection")
     }
 
     func testStartPollsAndStopCancels() async throws {

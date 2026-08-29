@@ -90,7 +90,7 @@ final class DecodingTests: XCTestCase {
         XCTAssertTrue(item.hasFailed)
         XCTAssertTrue(item.needsAttention)
         XCTAssertEqual(item.failedAtStage, .encoding)
-        XCTAssertEqual(item.attentionReason, "Failed at encoding: reel: exit status 3")
+        XCTAssertEqual(item.attentionReason, "Encoding failed: reel: exit status 3")
         XCTAssertEqual(item.priorityRank, 0)
         XCTAssertFalse(item.isActive)
         XCTAssertEqual(item.taskList.last?.state, .failed)

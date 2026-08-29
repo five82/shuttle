@@ -3,6 +3,7 @@ import SwiftUI
 enum SidebarSection: String, CaseIterable, Identifiable {
     case now
     case queue
+    case attention
 
     var id: String { rawValue }
 
@@ -10,13 +11,17 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         switch self {
         case .now: return "Now"
         case .queue: return "Queue"
+        case .attention: return "Attention"
         }
     }
+
+    var showsInspector: Bool { self != .now }
 
     var systemImage: String {
         switch self {
         case .now: return "gauge.with.dots.needle.33percent"
         case .queue: return "list.bullet.rectangle"
+        case .attention: return "exclamationmark.triangle"
         }
     }
 }
@@ -27,6 +32,7 @@ struct ContentView: View {
     @Environment(AppSettingsStore.self) private var settingsStore
 
     @State private var searchText = ""
+    @State private var inspectorVisible = true
 
     var body: some View {
         @Bindable var model = model
@@ -56,9 +62,15 @@ struct ContentView: View {
                         NowView()
                     case .queue:
                         QueueTableView(filter: searchText)
+                    case .attention:
+                        AttentionView()
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .inspector(isPresented: inspectorBinding) {
+                    ItemInspectorView()
+                        .inspectorColumnWidth(min: 320, ideal: 380, max: 560)
+                }
 
                 Divider()
                 ConnectionStatusBar(endpoint: settingsStore.settings.baseURLString)
@@ -69,9 +81,22 @@ struct ContentView: View {
             ToolbarItemGroup(placement: .principal) {
                 StatusChips()
             }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    inspectorVisible.toggle()
+                } label: {
+                    Label("Inspector", systemImage: "sidebar.trailing")
+                }
+                .help("Show or hide the inspector (⌥⌘I)")
+                .keyboardShortcut("i", modifiers: [.option, .command])
+                .disabled(!model.section.showsInspector || monitor.selectedItemID == nil)
+            }
+        }
+        .onChange(of: monitor.selectedItemID) { _, id in
+            if id != nil { inspectorVisible = true }
         }
         .searchable(text: $searchText, placement: .toolbar, prompt: "Filter queue")
-        .frame(minWidth: 900, minHeight: 600)
+        .frame(minWidth: 1100, minHeight: 620)
         .onOpenURL { url in
             if let link = DeepLink(url: url) {
                 model.handle(link)
@@ -79,10 +104,19 @@ struct ContentView: View {
         }
     }
 
+    private var inspectorBinding: Binding<Bool> {
+        Binding(
+            get: { inspectorVisible && model.section.showsInspector && monitor.selectedItemID != nil },
+            set: { inspectorVisible = $0 }
+        )
+    }
+
     @ViewBuilder
     private func badge(for section: SidebarSection) -> some View {
         switch section {
         case .now:
+            EmptyView()
+        case .attention:
             if monitor.attentionCount > 0 {
                 Text("\(monitor.attentionCount)")
                     .font(.caption.weight(.semibold))
