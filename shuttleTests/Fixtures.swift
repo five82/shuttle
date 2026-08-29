@@ -33,7 +33,6 @@ enum Fixtures {
       "discTitle": "BROKEN_DISC",
       "displayTitle": "Broken Disc (1999)",
       "stage": "failed",
-      "inProgress": false,
       "failedAtStage": "encoding",
       "errorMessage": "reel: exit status 3",
       "createdAt": "2026-08-28 10:00:00",

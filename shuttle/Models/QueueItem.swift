@@ -1,14 +1,15 @@
 import Foundation
 
 /// One queue item as returned by `GET /api/queue` and `GET /api/queue/{id}`.
-/// `ripSpec` is present only on single-item GETs.
+/// `ripSpec` is present only on single-item GETs. `stage` is the scheduler's
+/// coarse position and lags during overlap windows; `tasks` carry the live
+/// truth, so running vs waiting is derived from task state alone.
 struct QueueItem: Codable, Identifiable, Hashable, Sendable {
     var id: Int64
     var discTitle: String
     var displayTitle: String
     var discNumber: Int?
     var stage: Stage
-    var inProgress: Bool
     var failedAtStage: Stage?
     var errorMessage: String?
     var createdAt: String
@@ -130,7 +131,7 @@ extension QueueItem {
 
     var hasFailed: Bool { stage == .failed }
     var isCompleted: Bool { stage == .completed }
-    var isActive: Bool { inProgress || !runningTasks.isEmpty }
+    var isActive: Bool { !runningTasks.isEmpty }
     var isWaiting: Bool { !isActive && !stage.isTerminal }
     var needsAttention: Bool { needsReview || hasFailed }
 

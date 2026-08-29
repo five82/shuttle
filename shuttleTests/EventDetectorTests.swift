@@ -8,10 +8,11 @@ final class EventDetectorTests: XCTestCase {
         item.displayTitle = "Item \(id)"
         item.stage = stage
         item.needsReview = review
-        item.inProgress = running
         item.failedAtStage = nil
         item.errorMessage = nil
-        item.tasks = nil
+        item.tasks = running
+            ? [PipelineTask(type: stage, state: .running, progress: TaskProgress(percent: 0, message: ""))]
+            : nil
         return item
     }
 

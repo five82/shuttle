@@ -56,7 +56,6 @@ final class InspectorTests: XCTestCase {
         XCTAssertEqual(progress.elapsedText(at: started.addingTimeInterval(125)), "2m")
 
         item.tasks = nil
-        item.inProgress = true
         XCTAssertNil(item.progress, "no running task, no progress")
     }
 

@@ -258,7 +258,6 @@ final class SpindleMonitorTests: XCTestCase {
 
         let index = try XCTUnwrap(items.firstIndex { $0.id == 21 })
         items[index].stage = .completed
-        items[index].inProgress = false
         items[index].tasks = nil
         api.queueResult = .success(items)
         await monitor.refresh()

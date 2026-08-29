@@ -28,7 +28,6 @@ final class DecodingTests: XCTestCase {
 
         let active = try XCTUnwrap(items.first { $0.id == 21 })
         XCTAssertEqual(active.stage, .encoding)
-        XCTAssertTrue(active.inProgress)
         XCTAssertTrue(active.isActive)
         XCTAssertEqual(active.runningTasks.map(\.type), [.encoding])
         XCTAssertEqual(active.taskList.count, 8)
@@ -99,7 +98,7 @@ final class DecodingTests: XCTestCase {
 
     func testUnknownStageAndStateDecodeInsteadOfFailing() throws {
         let json = """
-        {"id": 5, "discTitle": "x", "displayTitle": "x", "stage": "frobnicate", "inProgress": false,
+        {"id": 5, "discTitle": "x", "displayTitle": "x", "stage": "frobnicate",
          "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z", "needsReview": false,
          "tasks": [{"type": "frobnicate", "state": "queued", "progress": {"percent": 0, "message": ""}}]}
         """
