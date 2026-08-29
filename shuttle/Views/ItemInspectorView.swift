@@ -9,7 +9,7 @@ struct ItemInspectorView: View {
     @Environment(SpindleMonitor.self) private var monitor
 
     enum Tab: String, CaseIterable, Identifiable {
-        case overview, episodes
+        case overview, episodes, log
         var id: String { rawValue }
     }
 
@@ -26,24 +26,27 @@ struct ItemInspectorView: View {
             VStack(spacing: 0) {
                 header(item)
                 Divider()
-                if item.isEpisodic {
-                    Picker("", selection: $tab) {
-                        Text("Overview").tag(Tab.overview)
+                Picker("", selection: $tab) {
+                    Text("Overview").tag(Tab.overview)
+                    if item.isEpisodic {
                         Text("Episodes · \(item.episodeList.count)").tag(Tab.episodes)
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .padding(10)
+                    Text("Log").tag(Tab.log)
                 }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .padding(10)
                 switch tab {
                 case .overview:
                     OverviewView(item: item, pipeline: monitor.status?.pipelineStages ?? [])
                 case .episodes:
                     EpisodesView(item: item)
+                case .log:
+                    LogView(itemID: item.id, compact: true)
                 }
             }
             .onChange(of: item.isEpisodic) { _, episodic in
-                if !episodic { tab = .overview }
+                if !episodic, tab == .episodes { tab = .overview }
             }
         } else {
             ContentUnavailableView("No Selection", systemImage: "sidebar.trailing", description: Text("Select an item in the queue."))

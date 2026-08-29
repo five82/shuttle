@@ -4,6 +4,11 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     case now
     case queue
     case attention
+    case log
+    case dependencies
+
+    static let queueSections: [SidebarSection] = [.now, .queue, .attention]
+    static let daemonSections: [SidebarSection] = [.log, .dependencies]
 
     var id: String { rawValue }
 
@@ -12,16 +17,20 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         case .now: return "Now"
         case .queue: return "Queue"
         case .attention: return "Attention"
+        case .log: return "Log"
+        case .dependencies: return "Dependencies"
         }
     }
 
-    var showsInspector: Bool { self != .now }
+    var showsInspector: Bool { self == .queue || self == .attention }
 
     var systemImage: String {
         switch self {
         case .now: return "gauge.with.dots.needle.33percent"
         case .queue: return "list.bullet.rectangle"
         case .attention: return "exclamationmark.triangle"
+        case .log: return "doc.text.magnifyingglass"
+        case .dependencies: return "checklist"
         }
     }
 }
@@ -41,17 +50,15 @@ struct ContentView: View {
             set: { model.section = $0 ?? .now }
         )
         NavigationSplitView {
-            List(SidebarSection.allCases, selection: section) { section in
-                Label {
-                    HStack {
-                        Text(section.title)
-                        Spacer()
-                        badge(for: section)
-                    }
-                } icon: {
-                    Image(systemName: section.systemImage)
+            List(selection: section) {
+                ForEach(SidebarSection.queueSections) { section in
+                    sidebarRow(section)
                 }
-                .tag(section)
+                Section("Daemon") {
+                    ForEach(SidebarSection.daemonSections) { section in
+                        sidebarRow(section)
+                    }
+                }
             }
             .navigationSplitViewColumnWidth(min: 160, ideal: 190, max: 240)
         } detail: {
@@ -64,6 +71,10 @@ struct ContentView: View {
                         QueueTableView(filter: searchText)
                     case .attention:
                         AttentionView()
+                    case .log:
+                        LogView(itemID: nil, showsDaemonOnlyToggle: true)
+                    case .dependencies:
+                        DependenciesView()
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -104,6 +115,19 @@ struct ContentView: View {
         }
     }
 
+    private func sidebarRow(_ section: SidebarSection) -> some View {
+        Label {
+            HStack {
+                Text(section.title)
+                Spacer()
+                badge(for: section)
+            }
+        } icon: {
+            Image(systemName: section.systemImage)
+        }
+        .tag(section)
+    }
+
     private var inspectorBinding: Binding<Bool> {
         Binding(
             get: { inspectorVisible && model.section.showsInspector && monitor.selectedItemID != nil },
@@ -114,8 +138,14 @@ struct ContentView: View {
     @ViewBuilder
     private func badge(for section: SidebarSection) -> some View {
         switch section {
-        case .now:
+        case .now, .log:
             EmptyView()
+        case .dependencies:
+            if let missing = monitor.status?.dependencies.filter({ !$0.available && !$0.optional }).count, missing > 0 {
+                Text("\(missing)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.red)
+            }
         case .attention:
             if monitor.attentionCount > 0 {
                 Text("\(monitor.attentionCount)")

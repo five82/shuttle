@@ -257,7 +257,8 @@ private struct ShuttleHelpView: View {
                 HelpCard(title: "Quick Start", systemImage: "play.circle") {
                     HelpBullet("Enable Spindle's HTTP API with [api] bind and token in its config, then enter the same address and token in shuttle > Settings.")
                     HelpBullet("Now shows what needs attention, what is running, and what the daemon is holding. Queue lists every item; click a column header to sort. Attention is the triage list.")
-                    HelpBullet("Select an item to open the inspector (⌥⌘I): pipeline progress, media and encoder details, output, and per-episode progress for TV.")
+                    HelpBullet("Select an item to open the inspector (⌥⌘I): pipeline progress, media and encoder details, output, per-episode progress for TV, and the item's log.")
+                    HelpBullet("Log tails the daemon log; Dependencies shows the tool checks the daemon ran at startup.")
                     HelpBullet("shuttle never changes anything. Use the spindle CLI to retry, remove, or stop items.")
                 }
 

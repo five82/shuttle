@@ -7,7 +7,32 @@ protocol SpindleAPI: Sendable {
     func status() async throws -> StatusResponse
     func queue() async throws -> [QueueItem]
     func item(id: Int64) async throws -> QueueItem
-    func logs(since: UInt64?, limit: Int?, itemID: Int64?) async throws -> LogsResponse
+    func logs(_ query: LogQuery) async throws -> LogsResponse
+}
+
+/// Read-only filters for `GET /api/logs`.
+struct LogQuery: Equatable, Sendable {
+    /// Cursor from a previous response's `next`; entries with seq >= since. nil = initial window.
+    var since: UInt64? = nil
+    var limit: Int? = nil
+    /// Most recent entries first window; ignored by the daemon when `since` is set.
+    var tail = false
+    var itemID: Int64? = nil
+    var minimumLevel: LogLevel? = nil
+    var component: String? = nil
+    var daemonOnly = false
+
+    var queryItems: [URLQueryItem] {
+        var items: [URLQueryItem] = []
+        if let since { items.append(URLQueryItem(name: "since", value: String(since))) }
+        if let limit { items.append(URLQueryItem(name: "limit", value: String(limit))) }
+        if tail { items.append(URLQueryItem(name: "tail", value: "1")) }
+        if let itemID { items.append(URLQueryItem(name: "item", value: String(itemID))) }
+        if let minimumLevel { items.append(URLQueryItem(name: "level", value: minimumLevel.queryValue)) }
+        if let component, !component.isEmpty { items.append(URLQueryItem(name: "component", value: component)) }
+        if daemonOnly { items.append(URLQueryItem(name: "daemon_only", value: "1")) }
+        return items
+    }
 }
 
 enum SpindleClientError: LocalizedError, Equatable {
@@ -65,12 +90,8 @@ struct SpindleClient: SpindleAPI {
         return envelope.item
     }
 
-    func logs(since: UInt64? = nil, limit: Int? = nil, itemID: Int64? = nil) async throws -> LogsResponse {
-        var query: [URLQueryItem] = []
-        if let since { query.append(URLQueryItem(name: "since", value: String(since))) }
-        if let limit { query.append(URLQueryItem(name: "limit", value: String(limit))) }
-        if let itemID { query.append(URLQueryItem(name: "item", value: String(itemID))) }
-        return try await get("/api/logs", query: query)
+    func logs(_ query: LogQuery) async throws -> LogsResponse {
+        try await get("/api/logs", query: query.queryItems)
     }
 
     // MARK: - Transport

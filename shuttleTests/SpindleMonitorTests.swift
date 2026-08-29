@@ -36,8 +36,13 @@ final class MockSpindleAPI: SpindleAPI, @unchecked Sendable {
         return item
     }
 
-    func logs(since: UInt64?, limit: Int?, itemID: Int64?) async throws -> LogsResponse {
-        LogsResponse(events: [], next: 0)
+    /// Scripted by the query's `since`; unscripted queries return nothing.
+    var logScript: [UInt64?: LogsResponse] = [:]
+    var logQueries: [LogQuery] = []
+
+    func logs(_ query: LogQuery) async throws -> LogsResponse {
+        logQueries.append(query)
+        return logScript[query.since] ?? LogsResponse(events: [], next: query.since ?? 0)
     }
 }
 

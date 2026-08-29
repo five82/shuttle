@@ -1,13 +1,15 @@
 # shuttle
 
-shuttle is a small native macOS app for Apple Silicon that monitors a running [Spindle](https://github.com/five82/spindle) daemon. It is read-only: it shows daemon status and the queue, tells you when the drive is free or something needs you, and never controls the daemon.
+shuttle is a small native macOS app for Apple Silicon that monitors a running [Spindle](https://github.com/five82/spindle) daemon. It is read-only: it shows daemon status, the queue, and logs, tells you when the drive is free or something needs you, and never controls the daemon.
 
 - **Menu bar** — the drive state at a glance, an attention count, and a popover with what is running and what needs review.
 - **Notifications** — drive available, item needs review, item failed, item completed. Each can be turned off.
 - **Now** — what needs attention, what is running with live progress, what the daemon is holding, what just finished.
 - **Queue** — every item in a sortable, filterable table.
 - **Attention** — failed and review items with the reason, one click from the details.
-- **Inspector** — per-item pipeline progress, media and encoder details, output size and validation, per-episode progress for TV, and Reveal in Finder when the library is mounted.
+- **Inspector** — per-item pipeline progress, media and encoder details, output size and validation, per-episode progress for TV, the item's log, and Reveal in Finder when the library is mounted.
+- **Log** — the daemon log, tailed live, with a minimum level, daemon-only switch, text filter, and follow.
+- **Dependencies** — the daemon's process facts and the tool checks it ran at startup.
 
 ## Expectations
 

@@ -38,6 +38,10 @@
 		B00000000000000000000328 /* EpisodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000228 /* EpisodesView.swift */; };
 		B00000000000000000000329 /* AttentionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000229 /* AttentionView.swift */; };
 		B00000000000000000000335 /* InspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000235 /* InspectorTests.swift */; };
+		B00000000000000000000317 /* LogTailer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000217 /* LogTailer.swift */; };
+		B0000000000000000000032A /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000022A /* LogView.swift */; };
+		B0000000000000000000032B /* DependenciesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000022B /* DependenciesView.swift */; };
+		B00000000000000000000336 /* LogTailerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000236 /* LogTailerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +89,10 @@
 		B00000000000000000000228 /* EpisodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodesView.swift; sourceTree = "<group>"; };
 		B00000000000000000000229 /* AttentionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionView.swift; sourceTree = "<group>"; };
 		B00000000000000000000235 /* InspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000217 /* LogTailer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTailer.swift; sourceTree = "<group>"; };
+		B0000000000000000000022A /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		B0000000000000000000022B /* DependenciesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependenciesView.swift; sourceTree = "<group>"; };
+		B00000000000000000000236 /* LogTailerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTailerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,6 +162,7 @@
 		B00000000000000000000052 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000217 /* LogTailer.swift */,
 				B00000000000000000000216 /* AppModel.swift */,
 				B00000000000000000000215 /* NotificationService.swift */,
 				B00000000000000000000214 /* EventDetector.swift */,
@@ -167,6 +176,8 @@
 		B00000000000000000000053 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B0000000000000000000022B /* DependenciesView.swift */,
+				B0000000000000000000022A /* LogView.swift */,
 				B00000000000000000000229 /* AttentionView.swift */,
 				B00000000000000000000228 /* EpisodesView.swift */,
 				B00000000000000000000227 /* PipelineStripView.swift */,
@@ -183,6 +194,7 @@
 		B0000000000000000000010D /* shuttleTests */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000236 /* LogTailerTests.swift */,
 				B00000000000000000000235 /* InspectorTests.swift */,
 				B00000000000000000000234 /* EventDetectorTests.swift */,
 				B00000000000000000000231 /* Fixtures.swift */,
@@ -293,6 +305,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000317 /* LogTailer.swift in Sources */,
+				B0000000000000000000032A /* LogView.swift in Sources */,
+				B0000000000000000000032B /* DependenciesView.swift in Sources */,
 				B00000000000000000000307 /* EncodingDetails.swift in Sources */,
 				B00000000000000000000326 /* ItemInspectorView.swift in Sources */,
 				B00000000000000000000327 /* PipelineStripView.swift in Sources */,
@@ -324,6 +339,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000336 /* LogTailerTests.swift in Sources */,
 				B00000000000000000000335 /* InspectorTests.swift in Sources */,
 				B00000000000000000000334 /* EventDetectorTests.swift in Sources */,
 				B00000000000000000000331 /* Fixtures.swift in Sources */,

@@ -22,9 +22,10 @@ Important paths:
 - `shuttle/Services/SpindleMonitor.swift` — poll loop, atomic snapshot, backoff, derived state, event emission
 - `shuttle/Services/EventDetector.swift` — pure snapshot diff → `MonitorEvent`s
 - `shuttle/Services/NotificationService.swift` — user notifications, Dock badge, `shuttle://` deep links
+- `shuttle/Services/LogTailer.swift` — one per visible log view; tail window then `since` cursor catch-up
 - `shuttle/Services/AppSettingsStore.swift` — UserDefaults-backed settings
 - `shuttle/Models/EncodingDetails.swift` — typed view of the raw `encoding` blob, decoded on demand
-- `shuttle/Views/` — SwiftUI subviews: `NowView`, `QueueTableView`, `AttentionView`, `ItemInspectorView` (Overview + Episodes), `PipelineStripView`, `EpisodesView`, `MenuBarView`, `StatusChips`, `ConnectionStatusBar`
+- `shuttle/Views/` — SwiftUI subviews: `NowView`, `QueueTableView`, `AttentionView`, `ItemInspectorView` (Overview + Episodes), `PipelineStripView`, `EpisodesView`, `LogView` (daemon log and per-item tab), `DependenciesView`, `MenuBarView`, `StatusChips`, `ConnectionStatusBar`
 - `shuttle/Info.plist` — merged into the generated Info.plist; holds the ATS exception and local-network usage string
 - `shuttleTests/` — unit tests; `shuttleTests/Fixtures/*.json` are real responses captured from a live daemon
 - `scripts/build` — debug build
@@ -94,6 +95,13 @@ Decoding tests assert specific values from those captures (item IDs, counts); up
 - The pipeline strip is built from `status.pipeline` (the daemon's template) joined with the item's tasks; the item's own task order is only a fallback. Never hardcode the stage list.
 - The inspector reads `monitor.selectedItemDetail` (from `GET /api/queue/{id}`, which adds `ripSpec`) and falls back to the list item, so it renders instantly and refines on the next poll.
 - Reveal in Finder appears only when the final path exists on this Mac; otherwise Copy Path. Neither touches the daemon.
+
+## Log rules
+
+- `GET /api/logs` cursor semantics: the first request uses `tail=1&limit=N`; every later request passes `since=<next>` (inclusive, `seq >= since`) and the daemon returns oldest-first, so the cursor never skips a burst larger than the limit. `LogTailer` owns this; never re-implement it in a view.
+- Filters the daemon applies (`level` minimum, `item`, `daemon_only`) restart the tail from scratch. Text search is local and never hits the daemon.
+- The tailer buffer is capped at `LogTailer.bufferLimit`; a `LogView` starts its tailer on appear and stops it on disappear, so closed views cost nothing.
+- Default minimum level is Info; Debug is opt-in because reel's verbose lines dominate.
 
 ## Performance / UI rules
 
