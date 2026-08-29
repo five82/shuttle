@@ -11,6 +11,17 @@ Guidance for coding agents working on shuttle.
 
 shuttle is a native macOS SwiftUI app: a read-only monitor for a running [Spindle](https://github.com/five82/spindle) daemon.
 
+## Related Repos
+
+| Repo | Path | Role |
+|------|------|------|
+| flyer | `~/projects/flyer/` | Read-only terminal UI for Spindle |
+| reel | `~/projects/reel/` | AV1 encoder embedded by Spindle |
+| shuttle | `~/projects/shuttle/` | Read-only native macOS monitor for Spindle (this repo) |
+| spindle | `~/projects/spindle/` | Daemon + CLI; shuttle polls its HTTP API |
+
+GitHub: [flyer](https://github.com/five82/flyer) | [reel](https://github.com/five82/reel) | [shuttle](https://github.com/five82/shuttle) | [spindle](https://github.com/five82/spindle)
+
 Important paths:
 
 - `shuttle.xcodeproj/` — Xcode project
