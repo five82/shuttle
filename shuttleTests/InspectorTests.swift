@@ -20,7 +20,75 @@ final class InspectorTests: XCTestCase {
         XCTAssertEqual(item.tmdbID, 106646)
         XCTAssertFalse(item.isEpisodic)
         XCTAssertEqual(item.source?.summary, "The Wolf of Wall Street (2h 59m)")
-        XCTAssertEqual(item.fileStateSummary, "RIP")
+        XCTAssertEqual(item.fileStateSummary, "Ripped")
+    }
+
+    func testFileStateSummaryWording() throws {
+        var item = try Fixtures.failedItem()
+        item.episodeTotals = EpisodeTotals(planned: 1, ripped: 1, encoded: 1, final: 1)
+        XCTAssertEqual(item.fileStateSummary, "Ripped · Encoded · Final")
+        item.episodeTotals = EpisodeTotals(planned: 8, ripped: 8, encoded: 3, final: 0)
+        XCTAssertEqual(item.fileStateSummary, "Ripped 8 · Encoded 3")
+        item.episodeTotals = EpisodeTotals(planned: 2, ripped: 0, encoded: 0, final: 0)
+        XCTAssertNil(item.fileStateSummary)
+    }
+
+    func testItemProgressFromRunningEncode() throws {
+        var item = try XCTUnwrap(try Fixtures.queue().first { $0.id == 21 })
+        var progress = try XCTUnwrap(item.progress)
+        XCTAssertEqual(progress.stage, .encoding)
+        XCTAssertFalse(progress.hasStarted, "the capture had no percent yet")
+        XCTAssertEqual(progress.shortText, "Starting…")
+        XCTAssertEqual(progress.detailText, "Starting…")
+        XCTAssertNil(progress.etaText)
+
+        item.encoding = .object([
+            "percent": .number(66.4), "eta_seconds": .number(2572), "average_speed": .number(1.3177),
+            "current_frame": .number(177_507), "total_frames": .number(258_775),
+        ])
+        progress = try XCTUnwrap(item.progress)
+        XCTAssertEqual(progress.fraction, 0.664, accuracy: 0.001, "falls back to the encoder's percent when the task reports 0")
+        XCTAssertEqual(progress.shortText, "66% · 42m 52s left")
+        XCTAssertEqual(progress.detailText, "66% · 1.3x · 177,507 / 258,775 frames · 42m 52s left")
+        XCTAssertEqual(progress.accessibilityText, "Encoding, 66 percent, 42m 52s left")
+
+        let started = try XCTUnwrap(item.tasks?.first { $0.type == .encoding }?.startedDate)
+        XCTAssertEqual(progress.elapsedText(at: started.addingTimeInterval(125)), "2m 5s")
+
+        item.tasks = nil
+        item.inProgress = true
+        XCTAssertNil(item.progress, "no running task, no progress")
+    }
+
+    func testItemProgressPrefersByteCountsForRips() throws {
+        var item = try Fixtures.failedItem()
+        item.tasks = [PipelineTask(type: .ripping, state: .running, progress: TaskProgress(percent: 25, message: "Copying", bytesCopied: 10_000_000_000, totalBytes: 40_000_000_000))]
+        let progress = try XCTUnwrap(item.progress)
+        XCTAssertEqual(progress.shortText, "10 GB / 40 GB")
+        XCTAssertEqual(progress.detailText, "25% · 10 GB / 40 GB")
+    }
+
+    func testPipelineCellsCarryTimingAndReviewFlag() throws {
+        let status = try Fixtures.status()
+        let review = try XCTUnwrap(try Fixtures.queue().first { $0.id == 19 })
+        let cells = PipelineCell.cells(for: review, pipeline: status.pipelineStages)
+        XCTAssertEqual(cells.filter(\.flagged).map(\.stage), [.organizing], "the stage that routed to review is flagged")
+
+        let running = try XCTUnwrap(try Fixtures.queue().first { $0.id == 21 })
+        let ripping = try XCTUnwrap(PipelineCell.cells(for: running, pipeline: status.pipelineStages).first { $0.stage == .ripping })
+        XCTAssertNotNil(ripping.startedAt)
+        XCTAssertNotNil(ripping.finishedAt)
+        XCTAssertEqual(ripping.duration(at: .distantFuture), ripping.finishedAt!.timeIntervalSince(ripping.startedAt!))
+        let encoding = try XCTUnwrap(PipelineCell.cells(for: running, pipeline: status.pipelineStages).first { $0.stage == .encoding })
+        XCTAssertEqual(encoding.duration(at: encoding.startedAt!.addingTimeInterval(90)), 90, "running stages measure to now")
+        XCTAssertFalse(PipelineCell.cells(for: running, pipeline: status.pipelineStages).contains(where: \.flagged))
+    }
+
+    func testSearchableTextIncludesAttentionReason() throws {
+        let review = try XCTUnwrap(try Fixtures.queue().first { $0.id == 19 })
+        XCTAssertTrue(review.searchableText.contains("audio stream"))
+        XCTAssertTrue(review.searchableText.contains("#19"))
+        XCTAssertEqual(review.mediaTypeLabel, "Movie")
     }
 
     func testEncodingSummaries() {

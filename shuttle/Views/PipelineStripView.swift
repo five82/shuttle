@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// One cell of the pipeline strip: a stage from the daemon's template
-/// joined with the item's task for it, if any.
+/// One row of the pipeline list: a stage from the daemon's template joined
+/// with the item's task for it, if any.
 struct PipelineCell: Identifiable, Equatable {
     var stage: Stage
     var state: TaskState?
@@ -9,8 +9,21 @@ struct PipelineCell: Identifiable, Equatable {
     var message: String
     var error: String?
     var attempts: Int
+    var startedAt: Date?
+    var finishedAt: Date?
+    /// The stage that handed a completed item to review, tinted so the list
+    /// agrees with the Review chip instead of reading all-green.
+    var flagged = false
 
     var id: String { stage.rawValue }
+
+    /// Wall time the task took, or has taken so far.
+    func duration(at now: Date) -> TimeInterval? {
+        guard let startedAt else { return nil }
+        let end = finishedAt ?? (state == .running ? now : nil)
+        guard let end, end > startedAt else { return nil }
+        return end.timeIntervalSince(startedAt)
+    }
 
     /// Stages come from `status.pipeline` so a new Spindle stage renders
     /// without a shuttle release; the item's own task order is the fallback.
@@ -20,7 +33,7 @@ struct PipelineCell: Identifiable, Equatable {
         for task in item.taskList where !order.contains(task.type) {
             order.append(task.type)
         }
-        return order.map { stage in
+        var cells = order.map { stage in
             let task = tasks[stage]
             var state = task?.state
             if state == nil, item.isCompleted { state = .done }
@@ -30,64 +43,88 @@ struct PipelineCell: Identifiable, Equatable {
                 percent: task?.progress.percent ?? 0,
                 message: task?.progress.message ?? "",
                 error: task?.error,
-                attempts: task?.attempts ?? 0
+                attempts: task?.attempts ?? 0,
+                startedAt: task?.startedDate,
+                finishedAt: task?.finishedDate
             )
+        }
+        if item.needsReview, let last = cells.lastIndex(where: { $0.state == .done }) {
+            cells[last].flagged = true
+        }
+        return cells
+    }
+}
+
+/// The pipeline as a vertical list: state, stage, and how long it took —
+/// one line per stage, so the DAG reads top to bottom instead of wrapping.
+struct PipelineListView: View {
+    let cells: [PipelineCell]
+    var progress: ItemProgress?
+
+    var body: some View {
+        let now = Date()
+        VStack(alignment: .leading, spacing: 3) {
+            ForEach(cells) { cell in
+                PipelineRow(cell: cell, progress: cell.state == .running ? progress : nil, now: now)
+            }
         }
     }
 }
 
-struct PipelineStripView: View {
-    let cells: [PipelineCell]
+private struct PipelineRow: View {
+    let cell: PipelineCell
+    let progress: ItemProgress?
+    let now: Date
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            FlowLayout(spacing: 4) {
-                ForEach(cells) { cell in
-                    PipelineCellView(cell: cell)
-                }
-            }
-            ForEach(cells.filter { $0.state == .running && !$0.message.isEmpty }) { cell in
-                HStack(spacing: 6) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: symbol)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(tint)
+                .frame(width: 90, alignment: .trailing)
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(cell.stage.displayName)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.accentColor)
-                    Text(cell.message)
-                        .font(.caption)
+                        .font(.callout)
+                        .foregroundStyle(cell.state == .running ? Color.accentColor : (cell.flagged ? .orange : .primary))
+                    Spacer(minLength: 8)
+                    Text(trailing)
+                        .font(.system(.caption, design: .monospaced))
                         .foregroundStyle(.secondary)
+                }
+                if let note {
+                    Text(note)
+                        .font(.caption)
+                        .foregroundStyle(cell.state == .failed ? .red : .secondary)
                         .lineLimit(2)
                 }
             }
         }
-    }
-}
-
-private struct PipelineCellView: View {
-    let cell: PipelineCell
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: symbol)
-                .font(.system(size: 9, weight: .bold))
-            Text(label)
-        }
-        .font(.system(.caption, design: .monospaced))
-        .foregroundStyle(tint)
-        .padding(.horizontal, 7)
-        .padding(.vertical, 3)
-        .background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 5))
         .help(helpText)
     }
 
-    private var label: String {
-        if cell.state == .running, cell.percent > 0 {
-            return "\(cell.stage.displayName) \(Int(cell.percent.rounded()))%"
+    /// "1h 12m", "66% · 43 min left", or "" for stages that never ran.
+    private var trailing: String {
+        if cell.state == .running {
+            if let progress { return progress.shortText }
+            if cell.percent > 0 { return "\(Int(cell.percent.rounded()))%" }
+            return cell.duration(at: now).map(EncodingDetails.duration) ?? "running"
         }
-        return cell.stage.displayName
+        if let duration = cell.duration(at: now) { return EncodingDetails.duration(duration) }
+        return ""
+    }
+
+    private var note: String? {
+        if cell.state == .running, !cell.message.isEmpty { return cell.message }
+        if cell.state == .failed, let error = cell.error, !error.isEmpty { return error }
+        if cell.flagged { return "Routed to review" }
+        if cell.attempts > 1 { return "\(cell.attempts) attempts" }
+        return nil
     }
 
     private var symbol: String {
         switch cell.state {
-        case .done: return "checkmark"
+        case .done: return cell.flagged ? "exclamationmark.triangle.fill" : "checkmark"
         case .running: return "circle.fill"
         case .failed: return "xmark"
         case .pending, .none, .unknown: return "circle"
@@ -96,7 +133,7 @@ private struct PipelineCellView: View {
 
     private var tint: Color {
         switch cell.state {
-        case .done: return .green
+        case .done: return cell.flagged ? .orange : .green
         case .running: return .accentColor
         case .failed: return .red
         case .pending, .none, .unknown: return .secondary
@@ -105,45 +142,10 @@ private struct PipelineCellView: View {
 
     private var helpText: String {
         var parts = [cell.stage.displayName, cell.state?.rawValue ?? "not scheduled"]
+        if let started = cell.startedAt { parts.append("started \(started.formatted(date: .abbreviated, time: .shortened))") }
+        if let finished = cell.finishedAt { parts.append("finished \(finished.formatted(date: .abbreviated, time: .shortened))") }
         if cell.attempts > 1 { parts.append("\(cell.attempts) attempts") }
         if let error = cell.error, !error.isEmpty { parts.append(error) }
         return parts.joined(separator: " · ")
-    }
-}
-
-/// Wraps children onto multiple lines. Enough for chips; not a general layout.
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 4
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? .infinity
-        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0, maxX: CGFloat = 0
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x > 0, x + size.width > width {
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-            maxX = max(maxX, x - spacing)
-        }
-        return CGSize(width: proposal.width ?? maxX, height: y + rowHeight)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = bounds.minX, y = bounds.minY, rowHeight: CGFloat = 0
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x > bounds.minX, x + size.width > bounds.maxX {
-                x = bounds.minX
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
     }
 }

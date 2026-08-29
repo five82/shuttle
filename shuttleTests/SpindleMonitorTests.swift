@@ -78,6 +78,10 @@ final class SpindleMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.waitingItems.map(\.id), [22, 23, 24])
         XCTAssertEqual(monitor.recentlyCompleted.count, 5)
         XCTAssertEqual(monitor.recentlyCompleted.first?.id, 20)
+        XCTAssertFalse(monitor.recentlyCompleted.contains { $0.id == 19 }, "review items are attention, not recently completed")
+        XCTAssertEqual(Array(monitor.progress.keys), [21])
+        XCTAssertEqual(monitor.progress[21]?.stage, .encoding)
+        XCTAssertNil(monitor.daemonIssue)
         XCTAssertEqual(monitor.driveState, .available)
         XCTAssertEqual(monitor.resources.map(\.name), ["drive", "encode", "gpu"])
         XCTAssertEqual(monitor.resources.first { $0.name == "encode" }?.status.used, 1)
@@ -165,6 +169,49 @@ final class SpindleMonitorTests: XCTestCase {
         api.queueResult = .success(items.filter { $0.id != 21 })
         await monitor.refresh()
         XCTAssertNil(monitor.selectedItemID)
+    }
+
+    func testDaemonIssueFromStatus() throws {
+        var status = try Fixtures.status()
+        XCTAssertNil(SpindleMonitor.daemonIssue(from: status))
+        status.workflow.lastError = "  disc monitor crashed "
+        XCTAssertEqual(SpindleMonitor.daemonIssue(from: status), "Workflow error: disc monitor crashed")
+        status.running = false
+        XCTAssertEqual(SpindleMonitor.daemonIssue(from: status), "The daemon reports it is not running.", "stopped outranks the error text")
+    }
+
+    func testConnectionEventsFireOnlyAroundAnOutage() async throws {
+        let api = MockSpindleAPI(status: try Fixtures.status(), queue: try Fixtures.queue())
+        let monitor = makeMonitor(api)
+        var received: [MonitorEvent] = []
+        monitor.onEvents = { received.append(contentsOf: $0) }
+
+        api.statusResult = .failure(SpindleClientError.unreachable("refused"))
+        await monitor.refresh()
+        XCTAssertEqual(received, [], "never connected, so nothing was lost")
+
+        api.statusResult = .success(try Fixtures.status())
+        await monitor.refresh()
+        XCTAssertEqual(received, [], "first successful poll seeds without a reconnect notice")
+
+        api.statusResult = .failure(SpindleClientError.unreachable("refused"))
+        await monitor.refresh()
+        await monitor.refresh()
+        XCTAssertEqual(received.map(\.kind), [.connection], "one notice per outage, not per failed poll")
+        guard case .disconnected(let message)? = received.first else { return XCTFail("expected disconnected") }
+        XCTAssertTrue(message.contains("unreachable"))
+
+        api.statusResult = .success(try Fixtures.status())
+        await monitor.refresh()
+        XCTAssertEqual(received, [.disconnected(message), .reconnected])
+        XCTAssertEqual(monitor.lastEvents, [.reconnected])
+    }
+
+    func testPollIntervalIsSettable() {
+        let monitor = makeMonitor(nil)
+        XCTAssertEqual(monitor.pollInterval, 2)
+        monitor.pollInterval = 5
+        XCTAssertEqual(monitor.pollInterval, 5)
     }
 
     func testDriveStateFromStatus() throws {

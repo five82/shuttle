@@ -38,6 +38,14 @@ final class NotificationService: NSObject {
                 content.title = "Completed · \(item.displayTitle)"
                 content.body = "Ready in the library."
                 content.userInfo = ["itemID": item.id]
+            case .disconnected(let error):
+                content.title = "Lost connection to Spindle"
+                content.body = error
+                content.sound = nil
+            case .reconnected:
+                content.title = "Reconnected to Spindle"
+                content.body = "Polling resumed."
+                content.sound = nil
             }
 
             let identifier = "\(event.kind.rawValue)-\(event.item?.id ?? 0)-\(Date().timeIntervalSince1970)"

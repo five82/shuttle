@@ -39,6 +39,15 @@ final class EventDetectorTests: XCTestCase {
         XCTAssertEqual(EventDetector.events(previousDrive: .available, previousItems: [failed], drive: .available, items: [failed]), [])
     }
 
+    func testNotificationDefaults() {
+        XCTAssertEqual(NotificationKind.allCases.filter { !$0.isOnByDefault }, [.connection])
+        XCTAssertEqual(MonitorEvent.disconnected("x").kind, .connection)
+        XCTAssertEqual(MonitorEvent.reconnected.kind, .connection)
+        XCTAssertNil(MonitorEvent.reconnected.item)
+        XCTAssertFalse(AppSettings.defaults.notifies(.connection))
+        XCTAssertTrue(AppSettings.defaults.notifies(.completed))
+    }
+
     func testNewAndRemovedItemsAreSilent() throws {
         let failed = try item(7, stage: .failed)
         let completed = try item(8, stage: .completed)

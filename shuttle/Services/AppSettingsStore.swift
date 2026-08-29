@@ -7,8 +7,11 @@ struct AppSettings: Equatable, Sendable {
 
     var baseURLString: String
     var token: String
-    var notifications: Set<NotificationKind> = Set(NotificationKind.allCases)
+    var notifications: Set<NotificationKind> = Set(NotificationKind.allCases.filter(\.isOnByDefault))
     var menuBarOnly = false
+    var pollInterval: TimeInterval = SpindleMonitor.defaultPollInterval
+
+    static let pollIntervalChoices: [TimeInterval] = [1, 2, 5, 10]
 
     func notifies(_ kind: NotificationKind) -> Bool {
         notifications.contains(kind)
@@ -32,6 +35,7 @@ final class AppSettingsStore {
         static let baseURL = "spindleBaseURL"
         static let token = "spindleAPIToken"
         static let menuBarOnly = "menuBarOnly"
+        static let pollInterval = "pollInterval"
         static func notify(_ kind: NotificationKind) -> String { "notify.\(kind.rawValue)" }
     }
 
@@ -45,9 +49,12 @@ final class AppSettingsStore {
             token: defaults.string(forKey: Key.token) ?? ""
         )
         loaded.menuBarOnly = defaults.bool(forKey: Key.menuBarOnly)
+        if let interval = defaults.object(forKey: Key.pollInterval) as? Double, interval >= 1 {
+            loaded.pollInterval = interval
+        }
         for kind in NotificationKind.allCases {
-            if let enabled = defaults.object(forKey: Key.notify(kind)) as? Bool, !enabled {
-                loaded.notifications.remove(kind)
+            if let enabled = defaults.object(forKey: Key.notify(kind)) as? Bool {
+                if enabled { loaded.notifications.insert(kind) } else { loaded.notifications.remove(kind) }
             }
         }
         settings = loaded
@@ -79,11 +86,17 @@ final class AppSettingsStore {
         defaults.set(enabled, forKey: Key.menuBarOnly)
     }
 
+    func setPollInterval(_ interval: TimeInterval) {
+        settings.pollInterval = interval
+        defaults.set(interval, forKey: Key.pollInterval)
+    }
+
     func resetToDefaults() {
         settings = .defaults
         defaults.removeObject(forKey: Key.baseURL)
         defaults.removeObject(forKey: Key.token)
         defaults.removeObject(forKey: Key.menuBarOnly)
+        defaults.removeObject(forKey: Key.pollInterval)
         for kind in NotificationKind.allCases {
             defaults.removeObject(forKey: Key.notify(kind))
         }

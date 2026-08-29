@@ -33,6 +33,7 @@
 		B00000000000000000000325 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000225 /* MenuBarView.swift */; };
 		B00000000000000000000334 /* EventDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000234 /* EventDetectorTests.swift */; };
 		B00000000000000000000307 /* EncodingDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000207 /* EncodingDetails.swift */; };
+		B00000000000000000000341 /* ItemProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000241 /* ItemProgress.swift */; };
 		B00000000000000000000326 /* ItemInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000226 /* ItemInspectorView.swift */; };
 		B00000000000000000000327 /* PipelineStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000227 /* PipelineStripView.swift */; };
 		B00000000000000000000328 /* EpisodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000228 /* EpisodesView.swift */; };
@@ -84,6 +85,7 @@
 		B00000000000000000000225 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		B00000000000000000000234 /* EventDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetectorTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000207 /* EncodingDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingDetails.swift; sourceTree = "<group>"; };
+		B00000000000000000000241 /* ItemProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemProgress.swift; sourceTree = "<group>"; };
 		B00000000000000000000226 /* ItemInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemInspectorView.swift; sourceTree = "<group>"; };
 		B00000000000000000000227 /* PipelineStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineStripView.swift; sourceTree = "<group>"; };
 		B00000000000000000000228 /* EpisodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodesView.swift; sourceTree = "<group>"; };
@@ -149,6 +151,7 @@
 			isa = PBXGroup;
 			children = (
 				B00000000000000000000207 /* EncodingDetails.swift */,
+				B00000000000000000000241 /* ItemProgress.swift */,
 				B00000000000000000000201 /* JSONValue.swift */,
 				B00000000000000000000202 /* Stage.swift */,
 				B00000000000000000000203 /* SpindleDate.swift */,
@@ -309,6 +312,7 @@
 				B0000000000000000000032A /* LogView.swift in Sources */,
 				B0000000000000000000032B /* DependenciesView.swift in Sources */,
 				B00000000000000000000307 /* EncodingDetails.swift in Sources */,
+				B00000000000000000000341 /* ItemProgress.swift in Sources */,
 				B00000000000000000000326 /* ItemInspectorView.swift in Sources */,
 				B00000000000000000000327 /* PipelineStripView.swift in Sources */,
 				B00000000000000000000328 /* EpisodesView.swift in Sources */,

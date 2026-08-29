@@ -18,11 +18,25 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         case .queue: return "Queue"
         case .attention: return "Attention"
         case .log: return "Log"
-        case .dependencies: return "Dependencies"
+        case .dependencies: return "Health"
         }
     }
 
-    var showsInspector: Bool { self == .queue || self == .attention }
+    /// Sections where selecting an item opens the inspector beside it.
+    var showsInspector: Bool { self == .now || self == .queue || self == .attention }
+
+    /// What the toolbar search field filters in this section. One field is
+    /// always present: adding and removing it per section makes SwiftUI
+    /// re-insert the toolbar item and AppKit throws on the duplicate.
+    var searchPrompt: String {
+        switch self {
+        case .now: return "Filter now"
+        case .queue: return "Filter queue"
+        case .attention: return "Filter attention"
+        case .log: return "Filter log"
+        case .dependencies: return "Filter dependencies"
+        }
+    }
 
     var systemImage: String {
         switch self {
@@ -30,7 +44,18 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         case .queue: return "list.bullet.rectangle"
         case .attention: return "exclamationmark.triangle"
         case .log: return "doc.text.magnifyingglass"
-        case .dependencies: return "checklist"
+        case .dependencies: return "heart.text.square"
+        }
+    }
+
+    /// ⌘1 … ⌘5, in sidebar order.
+    var shortcutKey: KeyEquivalent {
+        switch self {
+        case .now: return "1"
+        case .queue: return "2"
+        case .attention: return "3"
+        case .log: return "4"
+        case .dependencies: return "5"
         }
     }
 }
@@ -41,7 +66,7 @@ struct ContentView: View {
     @Environment(AppSettingsStore.self) private var settingsStore
 
     @State private var searchText = ""
-    @State private var inspectorVisible = true
+    @SceneStorage("inspectorVisible") private var inspectorVisible = true
 
     var body: some View {
         @Bindable var model = model
@@ -63,25 +88,12 @@ struct ContentView: View {
             .navigationSplitViewColumnWidth(min: 160, ideal: 190, max: 240)
         } detail: {
             VStack(spacing: 0) {
-                Group {
-                    switch model.section {
-                    case .now:
-                        NowView()
-                    case .queue:
-                        QueueTableView(filter: searchText)
-                    case .attention:
-                        AttentionView()
-                    case .log:
-                        LogView(itemID: nil, showsDaemonOnlyToggle: true)
-                    case .dependencies:
-                        DependenciesView()
+                sectionContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .inspector(isPresented: inspectorBinding) {
+                        ItemInspectorView()
+                            .inspectorColumnWidth(min: 320, ideal: 380, max: 560)
                     }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .inspector(isPresented: inspectorBinding) {
-                    ItemInspectorView()
-                        .inspectorColumnWidth(min: 320, ideal: 380, max: 560)
-                }
 
                 Divider()
                 ConnectionStatusBar(endpoint: settingsStore.settings.baseURLString)
@@ -106,12 +118,32 @@ struct ContentView: View {
         .onChange(of: monitor.selectedItemID) { _, id in
             if id != nil { inspectorVisible = true }
         }
-        .searchable(text: $searchText, placement: .toolbar, prompt: "Filter queue")
-        .frame(minWidth: 1100, minHeight: 620)
+        .onChange(of: model.section) { _, _ in
+            searchText = ""
+        }
+        .searchable(text: $searchText, placement: .toolbar, prompt: model.section.searchPrompt)
+        .frame(minWidth: 900, minHeight: 600)
         .onOpenURL { url in
             if let link = DeepLink(url: url) {
                 model.handle(link)
             }
+        }
+    }
+
+    /// Every section takes the one toolbar search field's text as its filter.
+    @ViewBuilder
+    private var sectionContent: some View {
+        switch model.section {
+        case .now:
+            NowView(filter: searchText)
+        case .queue:
+            QueueTableView(filter: searchText, toggleInspector: { inspectorVisible.toggle() })
+        case .attention:
+            AttentionView(filter: searchText)
+        case .log:
+            LogView(itemID: nil, showsDaemonOnlyToggle: true, externalFilter: searchText)
+        case .dependencies:
+            DependenciesView(filter: searchText)
         }
     }
 
@@ -141,8 +173,10 @@ struct ContentView: View {
         case .now, .log:
             EmptyView()
         case .dependencies:
-            if let missing = monitor.status?.dependencies.filter({ !$0.available && !$0.optional }).count, missing > 0 {
-                Text("\(missing)")
+            let missing = monitor.status?.dependencies.filter { !$0.available && !$0.optional }.count ?? 0
+            let issues = missing + (monitor.daemonIssue == nil ? 0 : 1)
+            if issues > 0 {
+                Text("\(issues)")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.red)
             }
@@ -153,10 +187,12 @@ struct ContentView: View {
                     .foregroundStyle(monitor.attentionItems.contains(where: \.hasFailed) ? .red : .orange)
             }
         case .queue:
-            if !monitor.items.isEmpty {
-                Text("\(monitor.items.count)")
+            let pending = monitor.activeItems.count + monitor.waitingItems.count
+            if pending > 0 {
+                Text("\(pending)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .help("\(pending) item\(pending == 1 ? "" : "s") still in the pipeline")
             }
         }
     }

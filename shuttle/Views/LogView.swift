@@ -1,17 +1,25 @@
+import AppKit
 import SwiftUI
 
-/// Log tail with a level picker, optional daemon-only switch, local text
-/// filter, and follow. Used for the daemon log and the inspector's Log tab.
+/// Log tail with a minimum-level picker, optional daemon-only switch, local
+/// text filter, and follow. Used for the daemon log and the inspector's Log
+/// tab. When `externalFilter` is set the toolbar search field owns the text
+/// filter and no local field is shown.
 struct LogView: View {
+    @Environment(AppModel.self) private var model
     @Environment(AppSettingsStore.self) private var settingsStore
 
     let itemID: Int64?
     var showsDaemonOnlyToggle = false
     var compact = false
+    var externalFilter: String? = nil
 
     @State private var tailer: LogTailer?
     @State private var follow = true
     @State private var search = ""
+    /// The newest seq the operator has seen; new entries past it are counted
+    /// while follow is off.
+    @State private var seenSeq: UInt64 = 0
 
     var body: some View {
         Group {
@@ -35,11 +43,14 @@ struct LogView: View {
         }
     }
 
+    private var filterText: String { externalFilter ?? search }
+
     @ViewBuilder
     private func content(_ tailer: LogTailer) -> some View {
         @Bindable var tailer = tailer
-        let needle = search.trimmingCharacters(in: .whitespaces).lowercased()
+        let needle = filterText.trimmingCharacters(in: .whitespaces).lowercased()
         let rows = needle.isEmpty ? tailer.entries : tailer.entries.filter { $0.summary.lowercased().contains(needle) }
+        let unseen = follow ? 0 : rows.filter { $0.seq > seenSeq }.count
 
         VStack(spacing: 0) {
             toolbar(tailer)
@@ -55,24 +66,55 @@ struct LogView: View {
                 emptyState(
                     needle.isEmpty ? "No Entries" : "No Matches",
                     systemImage: needle.isEmpty ? "doc.text" : "magnifyingglass",
-                    description: needle.isEmpty ? "Nothing at \(tailer.minimumLevel.rawValue.capitalized) or above yet." : "No entries contain “\(search)”."
+                    description: needle.isEmpty ? "Nothing at \(tailer.minimumLevel.rawValue.capitalized) or above yet." : "No entries contain “\(filterText)”."
                 )
             } else {
                 ScrollViewReader { proxy in
                     List(rows) { entry in
-                        LogRow(entry: entry, showsItem: itemID == nil, compact: compact)
-                            .listRowInsets(EdgeInsets(top: 3, leading: 10, bottom: 3, trailing: 10))
-                            .id(entry.id)
+                        LogRow(entry: entry, showsItem: itemID == nil, compact: compact) { id in
+                            model.focus(itemID: id)
+                        }
+                        .listRowInsets(EdgeInsets(top: 3, leading: 10, bottom: 3, trailing: 10))
+                        .listRowBackground(rowBackground(entry))
+                        .id(entry.id)
                     }
                     .listStyle(.plain)
                     .onChange(of: rows.last?.id) { _, last in
-                        if follow, let last { proxy.scrollTo(last, anchor: .bottom) }
+                        if follow, let last {
+                            proxy.scrollTo(last, anchor: .bottom)
+                            seenSeq = last
+                        }
                     }
                     .onChange(of: follow) { _, on in
-                        if on, let last = rows.last?.id { proxy.scrollTo(last, anchor: .bottom) }
+                        if on, let last = rows.last?.id {
+                            proxy.scrollTo(last, anchor: .bottom)
+                            seenSeq = last
+                        } else if !on, let last = rows.last?.id {
+                            seenSeq = last
+                        }
                     }
                     .onAppear {
-                        if let last = rows.last?.id { proxy.scrollTo(last, anchor: .bottom) }
+                        if let last = rows.last?.id {
+                            proxy.scrollTo(last, anchor: .bottom)
+                            seenSeq = last
+                        }
+                    }
+                    .overlay(alignment: .bottom) {
+                        if unseen > 0 {
+                            Button {
+                                follow = true
+                            } label: {
+                                Label("\(unseen) new", systemImage: "arrow.down")
+                                    .font(.caption.weight(.semibold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(.regularMaterial, in: Capsule())
+                                    .overlay(Capsule().stroke(.quaternary, lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.bottom, 8)
+                            .help("Scroll to the newest entries and follow")
+                        }
                     }
                 }
             }
@@ -86,7 +128,11 @@ struct LogView: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                Text("Level ≥ \(tailer.minimumLevel.rawValue)")
+                if follow {
+                    Label("Following", systemImage: "arrow.down.to.line")
+                } else {
+                    Label("Paused", systemImage: "pause")
+                }
             }
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -94,6 +140,14 @@ struct LogView: View {
             .padding(.vertical, 4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func rowBackground(_ entry: LogEntry) -> Color {
+        switch entry.levelValue {
+        case .error: return Color.red.opacity(0.08)
+        case .warn: return Color.orange.opacity(0.07)
+        default: return .clear
+        }
     }
 
     // MARK: Toolbar
@@ -108,10 +162,14 @@ struct LogView: View {
                     Spacer(minLength: 0)
                     followToggle
                 }
-                filterField
+                if externalFilter == nil {
+                    filterField
+                }
             }
         } else {
             HStack(spacing: 10) {
+                Text("Min level")
+                    .foregroundStyle(.secondary)
                 levelPicker($tailer.minimumLevel)
                     .frame(width: 260)
                 if showsDaemonOnlyToggle {
@@ -119,8 +177,10 @@ struct LogView: View {
                         .toggleStyle(.checkbox)
                         .help("Hide per-item entries")
                 }
-                filterField
-                    .frame(maxWidth: 260)
+                if externalFilter == nil {
+                    filterField
+                        .frame(maxWidth: 260)
+                }
                 Spacer()
                 followToggle
             }
@@ -128,14 +188,14 @@ struct LogView: View {
     }
 
     private func levelPicker(_ selection: Binding<LogLevel>) -> some View {
-        Picker("Level", selection: selection) {
+        Picker("Minimum level", selection: selection) {
             ForEach(LogLevel.filterable, id: \.self) { level in
                 Text(level.rawValue.capitalized).tag(level)
             }
         }
         .pickerStyle(.segmented)
         .labelsHidden()
-        .help("Minimum level")
+        .help("Show this level and above")
     }
 
     private var filterField: some View {
@@ -190,19 +250,37 @@ private struct LogRow: View {
     let entry: LogEntry
     let showsItem: Bool
     let compact: Bool
+    let focusItem: (Int64) -> Void
+
+    @State private var expanded = false
+
+    /// Keys shown inline; everything else folds behind "+N fields".
+    private static let inlineKeys: Set<String> = ["message", "error", "event_type", "episode_key", "stage", "path", "reason"]
 
     var body: some View {
+        let pairs = entry.fieldPairs
+        let inline = pairs.filter { Self.inlineKeys.contains($0.key) }
+        let folded = pairs.filter { !Self.inlineKeys.contains($0.key) }
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(time)
                     .foregroundStyle(.secondary)
+                    .help(entry.timestamp?.formatted(date: .complete, time: .complete) ?? entry.ts)
                 Text(entry.levelValue.rawValue)
                     .fontWeight(.bold)
                     .foregroundStyle(levelTint)
                     .frame(width: 44, alignment: .leading)
                 if showsItem, let id = entry.itemID, id > 0 {
-                    Text("#\(id)")
+                    Button("#\(id)") { focusItem(id) }
+                        .buttonStyle(.plain)
                         .foregroundStyle(Color.accentColor)
+                        .help("Show #\(id) in the inspector")
+                }
+                if let stage = entry.stage, !stage.isEmpty {
+                    Text(stage)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 4)
+                        .background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 3))
                 }
                 if let component = entry.component, !component.isEmpty {
                     Text(component)
@@ -212,21 +290,61 @@ private struct LogRow: View {
                     .foregroundStyle(entry.levelValue >= .warn ? levelTint : .primary)
                     .textSelection(.enabled)
             }
-            let pairs = entry.fieldPairs
             if !pairs.isEmpty {
-                Text(pairs.map { "\($0.key)=\($0.value)" }.joined(separator: "  "))
-                    .foregroundStyle(entry.levelValue == .error ? .red : .secondary)
-                    .textSelection(.enabled)
-                    .lineLimit(compact ? 3 : nil)
-                    .padding(.leading, compact ? 0 : 60)
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    let shown = expanded ? pairs : inline
+                    if !shown.isEmpty {
+                        Text(shown.map { "\($0.key)=\($0.value)" }.joined(separator: "  "))
+                            .foregroundStyle(entry.levelValue == .error ? .red : .secondary)
+                            .textSelection(.enabled)
+                            .lineLimit(expanded ? nil : (compact ? 3 : 2))
+                            .truncationMode(.middle)
+                    }
+                    if !folded.isEmpty {
+                        Button(expanded ? "less" : "+\(folded.count) field\(folded.count == 1 ? "" : "s")") {
+                            expanded.toggle()
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.tertiary)
+                        .help(expanded ? "Hide the other fields" : folded.map { "\($0.key)=\($0.value)" }.joined(separator: "\n"))
+                    }
+                }
+                .padding(.leading, compact ? 0 : 60)
             }
         }
         .font(.system(compact ? .caption : .callout, design: .monospaced))
+        .contextMenu {
+            Button("Copy Line") { copy(line) }
+            if !pairs.isEmpty {
+                Button("Copy Fields") { copy(pairs.map { "\($0.key)=\($0.value)" }.joined(separator: "\n")) }
+            }
+            if showsItem, let id = entry.itemID, id > 0 {
+                Divider()
+                Button("Show #\(id)") { focusItem(id) }
+            }
+        }
     }
 
+    private var line: String {
+        var parts = [entry.ts, entry.levelValue.rawValue]
+        if let id = entry.itemID, id > 0 { parts.append("#\(id)") }
+        if let component = entry.component, !component.isEmpty { parts.append(component) }
+        parts.append(entry.summary)
+        return parts.joined(separator: " ")
+    }
+
+    private func copy(_ string: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(string, forType: .string)
+    }
+
+    /// Time only for today; date prefix once the tail crosses midnight.
     private var time: String {
         guard let date = entry.timestamp else { return entry.ts }
-        return date.formatted(date: .omitted, time: .standard)
+        if Calendar.current.isDateInToday(date) {
+            return date.formatted(date: .omitted, time: .standard)
+        }
+        return date.formatted(.dateTime.month(.abbreviated).day().hour().minute().second())
     }
 
     private var levelTint: Color {

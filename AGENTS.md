@@ -14,7 +14,7 @@ shuttle is a native macOS SwiftUI app: a read-only monitor for a running [Spindl
 Important paths:
 
 - `shuttle.xcodeproj/` — Xcode project
-- `shuttle/ContentView.swift` — main window layout (sidebar + Now / Queue)
+- `shuttle/ContentView.swift` — main window layout (sidebar + sections, per-section toolbar search, ⌘1–5)
 - `shuttle/shuttleApp.swift` — scenes (main window, menu bar extra, settings, help), app delegate
 - `shuttle/Models/` — value types decoded from the Spindle API
 - `shuttle/Services/AppModel.swift` — process-wide owner of settings, monitor, notifications; started from the app delegate so polling runs with no window open
@@ -25,7 +25,8 @@ Important paths:
 - `shuttle/Services/LogTailer.swift` — one per visible log view; tail window then `since` cursor catch-up
 - `shuttle/Services/AppSettingsStore.swift` — UserDefaults-backed settings
 - `shuttle/Models/EncodingDetails.swift` — typed view of the raw `encoding` blob, decoded on demand
-- `shuttle/Views/` — SwiftUI subviews: `NowView`, `QueueTableView`, `AttentionView`, `ItemInspectorView` (Overview + Episodes), `PipelineStripView`, `EpisodesView`, `LogView` (daemon log and per-item tab), `DependenciesView`, `MenuBarView`, `StatusChips`, `ConnectionStatusBar`
+- `shuttle/Models/ItemProgress.swift` — per-item live progress (fraction, ETA, speed, frames, elapsed), derived once per snapshot into `SpindleMonitor.progress`
+- `shuttle/Views/` — SwiftUI subviews: `NowView`, `QueueTableView`, `AttentionView`, `ItemInspectorView` (Overview + Episodes), `PipelineStripView` (the per-stage list with durations), `EpisodesView`, `LogView` (daemon log and per-item tab), `DependenciesView` (the Health section: daemon state + dependency checks), `MenuBarView`, `StatusChips`, `ConnectionStatusBar`
 - `shuttle/Info.plist` — merged into the generated Info.plist; holds the ATS exception and local-network usage string
 - `shuttleTests/` — unit tests; `shuttleTests/Fixtures/*.json` are real responses captured from a live daemon
 - `scripts/build` — debug build
@@ -85,14 +86,15 @@ Decoding tests assert specific values from those captures (item IDs, counts); up
 ## Surfaces and navigation
 
 - The menu bar extra and notifications are primary; the main window is secondary. Anything that changes what a poll means (new derived state, new event) must show up in all three.
-- Events come only from `EventDetector`, which diffs consecutive snapshots and ignores items it has not seen before, so a daemon restart or `spindle queue clear` never replays notifications. Keep it pure and keep its tests exhaustive.
-- Opening the main window from outside a view (notification tap, menu bar row, Dock reopen) goes through the `shuttle://main` / `shuttle://item/<id>` URL scheme, because `openWindow` only exists inside views. `ContentView.onOpenURL` routes to `AppModel.handle`.
-- "Show in menu bar only" switches the activation policy to `.accessory`; the app keeps polling either way.
+- Item and drive events come only from `EventDetector`, which diffs consecutive snapshots and ignores items it has not seen before, so a daemon restart or `spindle queue clear` never replays notifications. Keep it pure and keep its tests exhaustive. Connection lost/restored events come from the monitor's own poll outcome and are off by default in Settings.
+- Daemon-level problems (`status.running == false`, `workflow.lastError`) are derived into `SpindleMonitor.daemonIssue` and shown in the toolbar chip, the Now banner, the menu bar, and Health.
+- Opening the main window from outside a view (notification tap, menu bar row, Dock reopen) goes through the `shuttle://main` / `shuttle://item/<id>` URL scheme, because `openWindow` only exists inside views. `ContentView.onOpenURL` routes to `AppModel.handle`. `AppModel.focus` stays in the current section when it shows the inspector (Now, Queue, Attention) and otherwise switches to Queue.
+- "Show in menu bar only" switches the activation policy to `.accessory`; the app keeps polling either way. The popover footer's ⋯ menu carries Refresh, Settings, and Quit so accessory mode is never a dead end.
 
 ## Inspector rules
 
 - Overview is a fixed section skeleton — Attention, Pipeline, Media, Output, Episodes, Meta — in that order for every item. Rows appear or disappear by data presence, never by state branching, so positions stay learnable.
-- The pipeline strip is built from `status.pipeline` (the daemon's template) joined with the item's tasks; the item's own task order is only a fallback. Never hardcode the stage list.
+- The pipeline list is built from `status.pipeline` (the daemon's template) joined with the item's tasks; the item's own task order is only a fallback. Never hardcode the stage list. Each row shows the task's duration from `startedAt`/`finishedAt`; the stage that handed a completed item to review is tinted orange.
 - The inspector reads `monitor.selectedItemDetail` (from `GET /api/queue/{id}`, which adds `ripSpec`) and falls back to the list item, so it renders instantly and refines on the next poll.
 - Reveal in Finder appears only when the final path exists on this Mac; otherwise Copy Path. Neither touches the daemon.
 
@@ -105,7 +107,7 @@ Decoding tests assert specific values from those captures (item IDs, counts); up
 
 ## Performance / UI rules
 
-Keep SwiftUI `body` code cheap. Avoid synchronous network calls or JSON decoding from render paths.
+Keep SwiftUI `body` code cheap. Avoid synchronous network calls or JSON decoding from render paths. Live progress (ETA, speed, frames) is decoded once per snapshot into `SpindleMonitor.progress`; rows read that dictionary rather than `item.encodingDetails`.
 
 Polling, decoding, and log tailing should be asynchronous and cancellable, and should back off when the daemon is unreachable.
 

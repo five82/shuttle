@@ -44,20 +44,45 @@ struct MenuBarView: View {
 
     // MARK: Header
 
+    /// Drive first — that is what the icon encodes — then attention, then a
+    /// daemon chip only when the daemon is not simply running.
     private var header: some View {
         HStack(spacing: 8) {
+            if monitor.connection.isConnected {
+                driveChip
+            }
+            if monitor.attentionCount > 0 {
+                StatusChip(label: "\(monitor.attentionCount)", systemImage: "exclamationmark.triangle.fill", tint: monitor.attentionItems.contains(where: \.hasFailed) ? .red : .orange)
+            }
             switch monitor.connection {
             case .connected:
-                StatusChip(label: "Daemon running", systemImage: "circle.fill", tint: .green)
+                if monitor.status?.running == false {
+                    StatusChip(label: "Daemon stopped", systemImage: "circle.fill", tint: .red)
+                } else if monitor.daemonIssue != nil {
+                    StatusChip(label: "Daemon error", systemImage: "exclamationmark.circle.fill", tint: .red)
+                } else if monitor.status?.isDraining == true {
+                    StatusChip(label: "Draining", systemImage: "circle.fill", tint: .orange)
+                }
             case .connecting:
                 StatusChip(label: "Connecting", systemImage: "circle.dotted", tint: .secondary)
             case .disconnected:
                 StatusChip(label: "Disconnected", systemImage: "circle.slash", tint: .red)
             }
-            if monitor.attentionCount > 0 {
-                StatusChip(label: "\(monitor.attentionCount)", systemImage: "exclamationmark.triangle.fill", tint: .orange)
-            }
             Spacer()
+        }
+    }
+
+    @ViewBuilder private var driveChip: some View {
+        switch monitor.driveState {
+        case .unknown:
+            StatusChip(label: "Drive", systemImage: "opticaldisc", tint: .secondary)
+        case .available:
+            StatusChip(label: "Drive available", systemImage: "opticaldisc", tint: .green)
+        case .busy(let holders):
+            let who = holders.first.map { " · #\($0.itemId)" } ?? ""
+            StatusChip(label: "Drive busy\(who)", systemImage: "opticaldisc.fill", tint: .accentColor)
+        case .paused:
+            StatusChip(label: "Drive paused", systemImage: "pause.circle", tint: .orange)
         }
     }
 
@@ -72,6 +97,15 @@ struct MenuBarView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
+                if let issue = monitor.daemonIssue {
+                    section("Daemon") {
+                        Label(issue, systemImage: "exclamationmark.circle.fill")
+                            .foregroundStyle(.red)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.leading, 6)
+                    }
+                }
+
                 driveSection
 
                 if !monitor.attentionItems.isEmpty {
@@ -95,7 +129,7 @@ struct MenuBarView: View {
                             .padding(.leading, 6)
                     } else {
                         ForEach(monitor.activeItems) { item in
-                            MenuRow(item: item, detail: item.activityDescription, tint: .accentColor, progress: item.progressFraction)
+                            MenuRow(item: item, detail: item.activityDescription, tint: .accentColor, progress: monitor.progress[item.id])
                         }
                     }
                 }
@@ -123,7 +157,7 @@ struct MenuBarView: View {
                     Label("Available — insert a disc", systemImage: "opticaldisc")
                         .foregroundStyle(.green)
                 case .paused:
-                    Label("Paused", systemImage: "pause.circle")
+                    Label("Paused — new discs are ignored", systemImage: "pause.circle")
                         .foregroundStyle(.orange)
                 case .busy(let holders):
                     let ids = holders.map { "#\($0.itemId)" }.joined(separator: ", ")
@@ -139,13 +173,28 @@ struct MenuBarView: View {
     // MARK: Footer
 
     private var footer: some View {
-        HStack {
+        HStack(spacing: 10) {
             Button("Open shuttle") {
                 openWindow(id: MainWindow.id)
                 NSApp.activate(ignoringOtherApps: true)
             }
             Spacer()
             freshness
+            Menu {
+                Button("Refresh Now") { monitor.refreshNow() }
+                    .keyboardShortcut("r")
+                SettingsLink { Text("Settings…") }
+                    .keyboardShortcut(",")
+                Divider()
+                Button("Quit shuttle") { NSApp.terminate(nil) }
+                    .keyboardShortcut("q")
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .help("Refresh, Settings, Quit")
         }
         .font(.callout)
     }
@@ -177,7 +226,7 @@ private struct MenuRow: View {
     let item: QueueItem
     let detail: String
     let tint: Color
-    var progress: Double? = nil
+    var progress: ItemProgress? = nil
 
     @State private var hovering = false
 
@@ -189,7 +238,7 @@ private struct MenuRow: View {
                 Text("#\(item.id)")
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(tint)
-                    .frame(width: 34, alignment: .leading)
+                    .frame(minWidth: 34, alignment: .leading)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.displayTitle)
                         .fontWeight(.medium)
@@ -203,9 +252,16 @@ private struct MenuRow: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     if let progress {
-                        ProgressView(value: progress)
-                            .controlSize(.small)
-                            .padding(.top, 2)
+                        HStack(spacing: 8) {
+                            ProgressView(value: progress.fraction)
+                                .controlSize(.small)
+                                .accessibilityLabel(progress.accessibilityText)
+                            Text(progress.shortText)
+                                .font(.system(.caption2, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                                .fixedSize()
+                        }
+                        .padding(.top, 2)
                     }
                 }
                 Spacer(minLength: 0)
@@ -221,7 +277,7 @@ private struct MenuRow: View {
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
-        .help("Show #\(item.id) in shuttle")
+        .help(detail.isEmpty ? "Show #\(item.id) in shuttle" : "\(detail)\n\nClick to show #\(item.id) in shuttle")
     }
 }
 

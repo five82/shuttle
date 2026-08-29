@@ -89,8 +89,14 @@ final class SpindleMonitor {
     private(set) var recentlyCompleted: [QueueItem] = []
     private(set) var driveState: DriveState = .unknown
     private(set) var resources: [NamedResource] = []
+    /// Live progress for every active item, keyed by ID.
+    private(set) var progress: [Int64: ItemProgress] = [:]
+    /// A daemon-level problem the operator should see: stopped, or a
+    /// workflow error. nil while everything is fine.
+    private(set) var daemonIssue: String?
 
-    let pollInterval: TimeInterval
+    /// Seconds between polls while connected. Settable from Settings.
+    var pollInterval: TimeInterval
     let maxBackoff: TimeInterval
 
     private let clientProvider: ClientProvider
@@ -204,6 +210,7 @@ final class SpindleMonitor {
         consecutiveFailures += 1
         let current = now()
         let since: Date
+        let wasConnected = connection.isConnected
         if case .disconnected(_, let previous, _) = connection {
             since = previous
         } else {
@@ -211,6 +218,10 @@ final class SpindleMonitor {
         }
         let retry = current.addingTimeInterval(Self.backoff(failures: consecutiveFailures, base: pollInterval, max: maxBackoff))
         connection = .disconnected(error: message, since: since, nextRetry: retry)
+        if wasConnected {
+            lastEvents = [.disconnected(message)]
+            onEvents?(lastEvents)
+        }
     }
 
     private func apply(status newStatus: StatusResponse, items newItems: [QueueItem]) {
@@ -223,9 +234,11 @@ final class SpindleMonitor {
         status = newStatus
         items = newItems
         lastRefresh = current
+        var reconnected = false
         if case .connected = connection {
             // keep the original connect time
         } else {
+            if case .disconnected = connection, hadSnapshot { reconnected = true }
             connection = .connected(since: current)
         }
 
@@ -239,8 +252,12 @@ final class SpindleMonitor {
         }
         waitingItems = newItems.filter(\.isWaiting).sorted { $0.id < $1.id }
         recentlyCompleted = Array(
-            newItems.filter(\.isCompleted).sorted { $0.updatedDate > $1.updatedDate }.prefix(5)
+            newItems.filter { $0.isCompleted && !$0.needsReview }.sorted { $0.updatedDate > $1.updatedDate }.prefix(5)
         )
+        progress = Dictionary(uniqueKeysWithValues: activeItems.compactMap { item in
+            item.progress.map { (item.id, $0) }
+        })
+        daemonIssue = Self.daemonIssue(from: newStatus)
         resources = (newStatus.scheduler?.resources ?? [:])
             .map { NamedResource(name: $0.key, status: $0.value) }
             .sorted { $0.name < $1.name }
@@ -253,12 +270,19 @@ final class SpindleMonitor {
                 drive: driveState,
                 items: newItems
             )
-            lastEvents = events
-            if !events.isEmpty {
-                onEvents?(events)
+            lastEvents = reconnected ? [.reconnected] + events : events
+            if !lastEvents.isEmpty {
+                onEvents?(lastEvents)
             }
         }
         onSnapshot?()
+    }
+
+    static func daemonIssue(from status: StatusResponse) -> String? {
+        if !status.running { return "The daemon reports it is not running." }
+        let error = status.workflow.lastError.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !error.isEmpty { return "Workflow error: \(error)" }
+        return nil
     }
 
     static func driveState(from status: StatusResponse) -> DriveState {

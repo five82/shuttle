@@ -6,8 +6,12 @@ enum NotificationKind: String, CaseIterable, Identifiable, Sendable {
     case needsReview
     case failed
     case completed
+    case connection
 
     var id: String { rawValue }
+
+    /// Connection notices are opt-in; the others are on until turned off.
+    var isOnByDefault: Bool { self != .connection }
 
     var title: String {
         switch self {
@@ -15,6 +19,7 @@ enum NotificationKind: String, CaseIterable, Identifiable, Sendable {
         case .needsReview: return "Item needs review"
         case .failed: return "Item failed"
         case .completed: return "Item completed"
+        case .connection: return "Connection lost or restored"
         }
     }
 
@@ -24,17 +29,21 @@ enum NotificationKind: String, CaseIterable, Identifiable, Sendable {
         case .needsReview: return "An item finished but was routed to review."
         case .failed: return "An item stopped before completing."
         case .completed: return "An item reached the library."
+        case .connection: return "shuttle stopped reaching the daemon, or reached it again after an outage."
         }
     }
 }
 
-/// A transition worth telling the operator about, derived by diffing two
-/// consecutive snapshots.
+/// A transition worth telling the operator about. Item and drive events
+/// come from diffing two consecutive snapshots; connection events come from
+/// the monitor's own poll outcome.
 enum MonitorEvent: Equatable, Sendable {
     case driveAvailable
     case needsReview(QueueItem)
     case failed(QueueItem)
     case completed(QueueItem)
+    case disconnected(String)
+    case reconnected
 
     var kind: NotificationKind {
         switch self {
@@ -42,12 +51,13 @@ enum MonitorEvent: Equatable, Sendable {
         case .needsReview: return .needsReview
         case .failed: return .failed
         case .completed: return .completed
+        case .disconnected, .reconnected: return .connection
         }
     }
 
     var item: QueueItem? {
         switch self {
-        case .driveAvailable: return nil
+        case .driveAvailable, .disconnected, .reconnected: return nil
         case .needsReview(let item), .failed(let item), .completed(let item): return item
         }
     }

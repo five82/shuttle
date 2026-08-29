@@ -4,6 +4,13 @@ import SwiftUI
 /// row opens it in the inspector.
 struct AttentionView: View {
     @Environment(SpindleMonitor.self) private var monitor
+    var filter = ""
+
+    private var rows: [QueueItem] {
+        let needle = filter.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !needle.isEmpty else { return monitor.attentionItems }
+        return monitor.attentionItems.filter { $0.searchableText.contains(needle) }
+    }
 
     var body: some View {
         @Bindable var monitor = monitor
@@ -13,8 +20,10 @@ struct AttentionView: View {
             } description: {
                 Text("Failed and review items will appear here.")
             }
+        } else if rows.isEmpty {
+            ContentUnavailableView("No Matches", systemImage: "magnifyingglass")
         } else {
-            List(monitor.attentionItems, selection: $monitor.selectedItemID) { item in
+            List(rows, selection: $monitor.selectedItemID) { item in
                 AttentionListRow(item: item)
                     .tag(item.id)
             }
@@ -32,10 +41,10 @@ private struct AttentionListRow: View {
             Text("#\(item.id)")
                 .font(.system(.callout, design: .monospaced))
                 .foregroundStyle(.secondary)
-                .frame(width: 44, alignment: .leading)
+                .frame(minWidth: 44, alignment: .leading)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 8) {
-                    Text(item.displayTitle).fontWeight(.semibold)
+                    ItemTitle(item: item, weight: .semibold)
                     Text(item.hasFailed ? "Failed" : "Review")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(tint)
@@ -48,6 +57,7 @@ private struct AttentionListRow: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
+                        .help(reason)
                 }
             }
             Spacer()

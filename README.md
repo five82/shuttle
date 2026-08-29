@@ -3,13 +3,13 @@
 shuttle is a small native macOS app for Apple Silicon that monitors a running [Spindle](https://github.com/five82/spindle) daemon. It is read-only: it shows daemon status, the queue, and logs, tells you when the drive is free or something needs you, and never controls the daemon.
 
 - **Menu bar** — the drive state at a glance, an attention count, and a popover with what is running and what needs review.
-- **Notifications** — drive available, item needs review, item failed, item completed. Each can be turned off.
-- **Now** — what needs attention, what is running with live progress, what the daemon is holding, what just finished.
-- **Queue** — every item in a sortable, filterable table.
+- **Notifications** — drive available, item needs review, item failed, item completed, and (off by default) connection lost or restored. Each can be turned off.
+- **Now** — what needs attention, what is running with live progress and time left, what is waiting, what the daemon is holding, what just finished.
+- **Queue** — every item in a sortable, filterable table with progress, ETA, and a context menu for copy and Reveal in Finder.
 - **Attention** — failed and review items with the reason, one click from the details.
-- **Inspector** — per-item pipeline progress, media and encoder details, output size and validation, per-episode progress for TV, the item's log, and Reveal in Finder when the library is mounted.
-- **Log** — the daemon log, tailed live, with a minimum level, daemon-only switch, text filter, and follow.
-- **Dependencies** — the daemon's process facts and the tool checks it ran at startup.
+- **Inspector** — per-item pipeline stages with durations, media and encoder details, output size and validation, per-episode progress for TV, the item's log, and Reveal in Finder when the library is mounted.
+- **Log** — the daemon log, tailed live, with a minimum level, daemon-only switch, text filter, follow, and clickable item numbers.
+- **Health** — the daemon's state and last error, its process facts, and the tool checks it ran at startup.
 
 ## Expectations
 
@@ -88,7 +88,7 @@ open shuttle.xcodeproj
 1. Start Spindle with its HTTP API enabled.
 2. Launch shuttle and point it at the daemon in **shuttle > Settings** if it is not on the default address.
 3. Allow notifications when macOS asks, if you want to be told when the drive is free.
-4. Optional: turn on **Show in menu bar only** in Settings to hide the Dock icon.
+4. Optional: turn on **Show in menu bar only** and **Launch at login** in Settings. In menu-bar-only mode the popover's ⋯ menu has Settings and Quit.
 5. Open **Help > shuttle Help** (`⌘?`) for the current usage notes and troubleshooting.
 
 shuttle only reads from Spindle's API. Use the `spindle` CLI to control the daemon or queue.

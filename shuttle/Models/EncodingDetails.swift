@@ -185,14 +185,16 @@ extension QueueItem {
         return paths.count > 1 ? (first as NSString).deletingLastPathComponent + "/" : first
     }
 
-    /// "RIP ENC FIN" — which artifacts exist, from the episode totals.
+    /// "Ripped · Encoded · Final" — which artifacts exist, from the episode
+    /// totals. Counts are added for batches: "Ripped 8 · Encoded 3".
     var fileStateSummary: String? {
         guard let totals = episodeTotals else { return nil }
+        let batch = totals.planned > 1
         var parts: [String] = []
-        if totals.ripped > 0 { parts.append("RIP") }
-        if totals.encoded > 0 { parts.append("ENC") }
-        if totals.final > 0 { parts.append("FIN") }
-        return parts.isEmpty ? nil : parts.joined(separator: " ")
+        if totals.ripped > 0 { parts.append(batch ? "Ripped \(totals.ripped)" : "Ripped") }
+        if totals.encoded > 0 { parts.append(batch ? "Encoded \(totals.encoded)" : "Encoded") }
+        if totals.final > 0 { parts.append(batch ? "Final \(totals.final)" : "Final") }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 }
 

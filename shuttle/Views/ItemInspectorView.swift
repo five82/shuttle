@@ -38,7 +38,7 @@ struct ItemInspectorView: View {
                 .padding(10)
                 switch tab {
                 case .overview:
-                    OverviewView(item: item, pipeline: monitor.status?.pipelineStages ?? [])
+                    OverviewView(item: item, pipeline: monitor.status?.pipelineStages ?? [], progress: monitor.progress[item.id])
                 case .episodes:
                     EpisodesView(item: item)
                 case .log:
@@ -56,17 +56,33 @@ struct ItemInspectorView: View {
 
     private func header(_ item: QueueItem) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("#\(item.id)")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                Text("#\(item.id)")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString("\(item.id)", forType: .string)
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                        .font(.caption2)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.tertiary)
+                .help("Copy ID")
+                Spacer()
+                Text("Updated \(item.updatedDate, format: .relative(presentation: .named))")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
             Text(item.displayTitle)
                 .font(.title3.weight(.semibold))
                 .lineLimit(2)
                 .textSelection(.enabled)
             HStack(spacing: 6) {
                 StatusChip(label: stageLabel(item), systemImage: stageSymbol(item), tint: stageTint(item))
-                if let type = item.mediaType {
-                    StatusChip(label: type.uppercased(), systemImage: type == "tv" ? "tv" : "film", tint: .secondary)
+                if let type = item.mediaTypeLabel {
+                    StatusChip(label: type, systemImage: item.mediaType == "tv" ? "tv" : "film", tint: .secondary)
                 }
                 if let disc = item.discNumber, disc > 0 {
                     StatusChip(label: "Disc \(disc)", systemImage: "opticaldisc", tint: .secondary)
@@ -81,6 +97,7 @@ struct ItemInspectorView: View {
         if item.hasFailed { return "Failed" }
         if item.needsReview { return "Review" }
         if item.isActive { return item.activityDescription.components(separatedBy: " · ").first ?? item.stage.displayName }
+        if item.isWaiting { return "Queued · \(item.stage.displayName)" }
         return item.stage.displayName
     }
 
@@ -106,6 +123,7 @@ struct ItemInspectorView: View {
 private struct OverviewView: View {
     let item: QueueItem
     let pipeline: [PipelineStageInfo]
+    let progress: ItemProgress?
 
     var body: some View {
         let encoding = item.encodingDetails
@@ -113,7 +131,7 @@ private struct OverviewView: View {
             VStack(alignment: .leading, spacing: 18) {
                 attention(encoding)
                 InspectorSection("Pipeline") {
-                    PipelineStripView(cells: PipelineCell.cells(for: item, pipeline: pipeline))
+                    PipelineListView(cells: PipelineCell.cells(for: item, pipeline: pipeline), progress: progress)
                 }
                 media(encoding)
                 output(encoding)
@@ -133,15 +151,22 @@ private struct OverviewView: View {
         if item.needsAttention || !warning.isEmpty || !failingSteps.isEmpty {
             InspectorSection("Attention", tint: item.hasFailed ? .red : .orange) {
                 if item.needsReview {
-                    InspectorRow("Review", item.reviewReasons?.joined(separator: "; ") ?? "Needs operator review", tint: .orange)
+                    let reasons = item.reviewReasons?.filter { !$0.isEmpty } ?? []
+                    if reasons.isEmpty {
+                        InspectorRow("Review", "Needs operator review", tint: .orange)
+                    } else {
+                        ForEach(Array(reasons.enumerated()), id: \.offset) { index, reason in
+                            ReasonRow(label: index == 0 ? "Review" : "", reason: reason, tint: .orange)
+                        }
+                    }
                 }
                 if let task = item.failedTask {
                     InspectorRow("Failed", "\(task.type.displayName)\(task.attempts.map { $0 > 1 ? " · \($0) attempts" : "" } ?? "")", tint: .red)
                     if let error = task.error, !error.isEmpty {
-                        InspectorRow("Error", error)
+                        ReasonRow(label: "Error", reason: error, tint: nil)
                     }
                 } else if let message = item.errorMessage, !message.isEmpty {
-                    InspectorRow("Error", message, tint: .red)
+                    ReasonRow(label: "Error", reason: message, tint: .red)
                 }
                 if let issue = encoding?.error {
                     if let title = issue.title, !title.isEmpty, title != item.errorMessage {
@@ -223,6 +248,7 @@ private struct OverviewView: View {
             return counts.sorted { $0.key < $1.key }.map { item.episodeList.count == 1 ? $0.key : "\($0.value) \($0.key)" }.joined(separator: " · ")
         }()
         let rows: [(String, String, Color?)] = [
+            ("Progress", progress?.detailText ?? "", Color.accentColor),
             ("Est", encoding?.sizeEstimate ?? "", Color.accentColor),
             ("Size", encoding?.sizeResult ?? "", nil),
             ("Encode", encoding?.encodeStats ?? "", nil),
@@ -271,8 +297,11 @@ private struct OverviewView: View {
                 InspectorRow("Disc title", item.discTitle)
             }
             if let fingerprint = item.discFingerprint, !fingerprint.isEmpty {
-                InspectorRow("Fingerprint", String(fingerprint.prefix(12)) + "…", monospaced: true)
-                    .help(fingerprint)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    InspectorRow("Fingerprint", String(fingerprint.prefix(12)) + "…", monospaced: true)
+                        .help(fingerprint)
+                    CopyButton(text: fingerprint, help: "Copy fingerprint")
+                }
             }
             if item.userStopped == true {
                 InspectorRow("Stopped", "by operator", tint: .orange)
@@ -305,6 +334,10 @@ struct InspectorSection<Content: View>: View {
     }
 }
 
+/// Width of the trailing-aligned label column shared by every row style,
+/// wide enough for "Disc monitor" and "Fingerprint".
+let inspectorLabelWidth: CGFloat = 90
+
 struct InspectorRow: View {
     let label: String
     let value: String
@@ -323,7 +356,8 @@ struct InspectorRow: View {
             Text(label)
                 .font(.callout)
                 .foregroundStyle(.secondary)
-                .frame(width: 72, alignment: .trailing)
+                .lineLimit(1)
+                .frame(width: inspectorLabelWidth, alignment: .trailing)
             Text(value)
                 .font(monospaced ? .system(.callout, design: .monospaced) : .callout)
                 .foregroundStyle(tint ?? .primary)
@@ -331,6 +365,71 @@ struct InspectorRow: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+}
+
+/// A daemon reason string such as "final_validation: main: audio stream 0
+/// duration …" with its machine-y prefix set off from the message, so the
+/// eye lands on the part that says what happened.
+private struct ReasonRow: View {
+    let label: String
+    let reason: String
+    let tint: Color?
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(label)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .frame(width: inspectorLabelWidth, alignment: .trailing)
+            text
+                .font(.callout)
+                .textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var text: Text {
+        let (prefix, message) = Self.split(reason)
+        var body = Text(message).foregroundStyle(tint ?? .primary)
+        if let prefix {
+            body = Text(prefix).font(.system(.caption, design: .monospaced).weight(.semibold)).foregroundStyle(.secondary) + Text("\n") + body
+        }
+        return body
+    }
+
+    /// Splits leading "token: token: " segments — no spaces inside — from
+    /// the human message. Returns nil prefix when there is nothing to split.
+    static func split(_ reason: String) -> (String?, String) {
+        var rest = Substring(reason)
+        var parts: [String] = []
+        while let range = rest.range(of: ": ") {
+            let token = rest[..<range.lowerBound]
+            guard !token.isEmpty, !token.contains(" "), token.count <= 32 else { break }
+            parts.append(String(token))
+            rest = rest[range.upperBound...]
+        }
+        guard !parts.isEmpty, !rest.isEmpty else { return (nil, reason) }
+        return (parts.joined(separator: " · "), String(rest))
+    }
+}
+
+struct CopyButton: View {
+    let text: String
+    let help: String
+
+    var body: some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(text, forType: .string)
+        } label: {
+            Image(systemName: "doc.on.doc")
+                .font(.caption2)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.tertiary)
+        .help(help)
     }
 }
 
@@ -342,7 +441,7 @@ private struct ValidationStepRow: View {
             Image(systemName: step.passed == true ? "checkmark" : "xmark")
                 .font(.caption.weight(.bold))
                 .foregroundStyle(step.passed == true ? .green : .red)
-                .frame(width: 72, alignment: .trailing)
+                .frame(width: inspectorLabelWidth, alignment: .trailing)
             VStack(alignment: .leading, spacing: 1) {
                 Text(step.name ?? "Check").font(.callout)
                 if let details = step.details, !details.isEmpty {
@@ -354,7 +453,7 @@ private struct ValidationStepRow: View {
 }
 
 /// The final path with Reveal in Finder when the library is reachable from
-/// this Mac, or Copy Path when it is not.
+/// this Mac, or Copy Path plus a note saying why not.
 private struct OutputPathRow: View {
     let path: String
 
@@ -368,7 +467,7 @@ private struct OutputPathRow: View {
             Text("Path")
                 .font(.callout)
                 .foregroundStyle(.secondary)
-                .frame(width: 72, alignment: .trailing)
+                .frame(width: inspectorLabelWidth, alignment: .trailing)
             VStack(alignment: .leading, spacing: 4) {
                 Text(path)
                     .font(.system(.caption, design: .monospaced))
@@ -384,6 +483,11 @@ private struct OutputPathRow: View {
                     Button("Copy Path") {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(path, forType: .string)
+                    }
+                    if localURL == nil {
+                        Text("Library not mounted on this Mac")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
                     }
                 }
                 .controlSize(.small)

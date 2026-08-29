@@ -179,6 +179,24 @@ extension QueueItem {
     }
 
     var stageSortKey: String { stage.displayName }
+
+    /// "Movie" / "TV" for chips.
+    var mediaTypeLabel: String? {
+        switch mediaType {
+        case "tv": return "TV"
+        case "movie": return "Movie"
+        case let other?: return other.capitalized
+        case nil: return nil
+        }
+    }
+
+    /// Text the queue filter matches against: title, disc title, stage, ID,
+    /// and the attention reason so "audio stream" finds the failing item.
+    var searchableText: String {
+        [displayTitle, discTitle, stage.displayName, "#\(id)", attentionReason ?? ""]
+            .joined(separator: " ")
+            .lowercased()
+    }
 }
 
 extension PipelineTask {
