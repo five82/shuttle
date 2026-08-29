@@ -60,7 +60,7 @@ struct StatusChip: View {
             .foregroundStyle(tint)
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
-            .background(tint.opacity(0.12), in: Capsule())
+            .background(Color.primary.opacity(0.07), in: Capsule())
             .lineLimit(1)
     }
 }

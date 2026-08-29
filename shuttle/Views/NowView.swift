@@ -136,10 +136,18 @@ private struct AttentionRow: View {
                 .foregroundStyle(tint)
         }
         .padding(10)
-        .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.leading, 4)
+        .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(tint)
+                .frame(width: 3)
+                .padding(.vertical, 8)
+                .padding(.leading, 6)
+        }
         .overlay(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(tint.opacity(0.35), lineWidth: 1)
+                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
         )
     }
 }
@@ -210,7 +218,7 @@ private struct ResourcesRow: View {
                     .foregroundStyle(busy ? Color.accentColor : .secondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background((busy ? Color.accentColor : Color.secondary).opacity(0.12), in: RoundedRectangle(cornerRadius: 5))
+                    .background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 5))
             }
         }
     }

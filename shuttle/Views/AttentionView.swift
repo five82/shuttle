@@ -41,7 +41,7 @@ private struct AttentionListRow: View {
                         .foregroundStyle(tint)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 1)
-                        .background(tint.opacity(0.12), in: Capsule())
+                        .background(Color.primary.opacity(0.07), in: Capsule())
                 }
                 if let reason = item.attentionReason {
                     Text(reason)

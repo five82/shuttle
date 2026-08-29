@@ -74,7 +74,7 @@ private struct PipelineCellView: View {
         .foregroundStyle(tint)
         .padding(.horizontal, 7)
         .padding(.vertical, 3)
-        .background(tint.opacity(cell.state == nil || cell.state == .pending ? 0.08 : 0.14), in: RoundedRectangle(cornerRadius: 5))
+        .background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 5))
         .help(helpText)
     }
 
