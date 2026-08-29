@@ -22,18 +22,18 @@ This repository is shared as is. shuttle is a personal tool. I've open sourced i
 ## User requirements
 
 - Apple Silicon Mac running macOS 14 or newer
-- A Spindle daemon with its HTTP API enabled, by default at `http://127.0.0.1:7487`
+- A Spindle daemon on a Linux host on your LAN, with its HTTP API bound to a reachable interface (Spindle does not run on macOS)
 - The daemon's API bearer token, if one is configured
 
-In Spindle's config, expose the API with:
+In Spindle's config, expose the API on the network:
 
 ```toml
 [api]
-bind = "127.0.0.1:7487"
+bind = "0.0.0.0:7487"
 token = "choose-a-token"
 ```
 
-You can change the API address and token in **shuttle > Settings**. The first time shuttle reaches a daemon on your LAN, macOS asks to allow local network access; shuttle does not work without it.
+On first launch shuttle asks for the daemon's address; enter `http://<linux-host>:7487` and the token in **shuttle > Settings**. The first time shuttle reaches the daemon, macOS asks to allow local network access; shuttle does not work without it.
 
 ## Installing a release
 

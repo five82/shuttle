@@ -9,6 +9,7 @@ import SwiftUI
 /// has a definite height and long lists scroll instead of overflowing.
 struct MenuBarView: View {
     @Environment(SpindleMonitor.self) private var monitor
+    @Environment(AppSettingsStore.self) private var settingsStore
     @Environment(\.openWindow) private var openWindow
 
     @State private var bodyHeight: CGFloat = 0
@@ -66,7 +67,11 @@ struct MenuBarView: View {
             case .connecting:
                 StatusChip(label: "Connecting", systemImage: "circle.dotted", tint: .secondary)
             case .disconnected:
-                StatusChip(label: "Disconnected", systemImage: "circle.slash", tint: .red)
+                if settingsStore.settings.isPlaceholderAddress {
+                    StatusChip(label: "Set address in Settings", systemImage: "network", tint: .orange)
+                } else {
+                    StatusChip(label: "Disconnected", systemImage: "circle.slash", tint: .red)
+                }
             }
             Spacer()
         }

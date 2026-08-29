@@ -6,6 +6,7 @@ import SwiftUI
 struct NowView: View {
     @Environment(AppModel.self) private var model
     @Environment(SpindleMonitor.self) private var monitor
+    @Environment(AppSettingsStore.self) private var settingsStore
     var filter = ""
 
     private var needle: String { filter.trimmingCharacters(in: .whitespaces).lowercased() }
@@ -15,7 +16,16 @@ struct NowView: View {
     }
 
     var body: some View {
-        if monitor.status == nil, case .disconnected(let error, _, _) = monitor.connection {
+        if monitor.status == nil, settingsStore.settings.isPlaceholderAddress {
+            ContentUnavailableView {
+                Label("Set the Daemon Address", systemImage: "network")
+            } description: {
+                Text("Spindle runs on a Linux host on your network. Enter its address, such as http://spindle.local:7487, and its API token in Settings.")
+            } actions: {
+                SettingsLink { Text("Open Settings…") }
+                    .buttonStyle(.borderedProminent)
+            }
+        } else if monitor.status == nil, case .disconnected(let error, _, _) = monitor.connection {
             ContentUnavailableView {
                 Label("Not Connected", systemImage: "antenna.radiowaves.left.and.right.slash")
             } description: {

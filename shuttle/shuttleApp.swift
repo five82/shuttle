@@ -47,6 +47,7 @@ struct shuttleApp: App {
         MenuBarExtra {
             MenuBarView()
                 .environment(monitor)
+                .environment(settingsStore)
         } label: {
             MenuBarLabel()
                 .environment(monitor)
@@ -157,7 +158,11 @@ private struct ShuttleSettingsView: View {
                     .help(revealToken ? "Hide the token" : "Show the token")
                 }
 
-                if !baseURLString.isEmpty, AppSettings(baseURLString: baseURLString, token: "").baseURL == nil {
+                if baseURLString.isEmpty || baseURLString == AppSettings.defaultBaseURLString {
+                    Label("Spindle runs on a Linux host, not this Mac. Enter its network address, such as http://spindle.local:7487.", systemImage: "info.circle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if AppSettings(baseURLString: baseURLString, token: "").baseURL == nil {
                     Label("Enter an http:// or https:// address with a host.", systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
                         .foregroundStyle(.orange)
@@ -335,7 +340,7 @@ private struct ShuttleHelpView: View {
                     .foregroundStyle(.secondary)
 
                 HelpCard(title: "Quick Start", systemImage: "play.circle") {
-                    HelpBullet("Enable Spindle's HTTP API with [api] bind and token in its config, then enter the same address and token in shuttle > Settings.")
+                    HelpBullet("Spindle runs on a Linux host. Enable its HTTP API with [api] bind = \"0.0.0.0:7487\" and a token in its config, then enter http://<host>:7487 and the token in shuttle > Settings.")
                     HelpBullet("Now shows what needs attention, what is running with progress and time left, what is waiting, and what just finished. Queue lists every item; click a column header to sort, right-click a row for Copy and Reveal. Attention is the triage list.")
                     HelpBullet("Select an item to open the inspector (⌥⌘I): each pipeline stage with how long it took, media and encoder details, output, per-episode progress for TV, and the item's log.")
                     HelpBullet("Log tails the daemon log; click an item number to jump to that item. Health shows the daemon's state, its last error, and the tool checks it ran at startup.")

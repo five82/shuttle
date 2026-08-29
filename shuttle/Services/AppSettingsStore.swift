@@ -2,6 +2,8 @@ import Foundation
 import Observation
 
 struct AppSettings: Equatable, Sendable {
+    /// A safe placeholder for a public repo, not a working address: Spindle
+    /// runs on a Linux host, so a real setup always replaces this.
     static let defaultBaseURLString = "http://127.0.0.1:7487"
     static let defaults = AppSettings(baseURLString: defaultBaseURLString, token: "")
 
@@ -15,6 +17,13 @@ struct AppSettings: Equatable, Sendable {
 
     func notifies(_ kind: NotificationKind) -> Bool {
         notifications.contains(kind)
+    }
+
+    /// True until the user replaces the loopback placeholder. Spindle never
+    /// runs on the Mac, so the placeholder can never connect; views use this to
+    /// ask for the address instead of reporting a connection failure.
+    var isPlaceholderAddress: Bool {
+        baseURLString.trimmingCharacters(in: .whitespacesAndNewlines) == Self.defaultBaseURLString
     }
 
     /// The daemon URL, or nil when the string is not an http(s) URL with a host.
