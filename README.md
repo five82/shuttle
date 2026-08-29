@@ -7,9 +7,8 @@ shuttle is a small native macOS app for Apple Silicon that monitors a running [S
 This repository is shared as is. shuttle is a personal tool. I've open sourced it because I believe in sharing but I'm not an active maintainer.
 
 - Personal-first: Things will change and break as I iterate.
-- Best-effort only: This is a part-time hobby project and I work on it when I'm able to. I may be slow to respond to questions or may not respond at all.
-- PRs: Pull requests are welcome if they align with the project's goals but I may be slow to review them or may not accept changes that don't fit my own use case.
-- “Vibe coded”: I’m not a Swift developer and this project started as (and remains) a vibe-coding experiment. Expect rough edges.
+- Best-effort only: Part time hobby project. I may be slow to respond to questions or may not respond at all.
+- This project started as and remains an experiment. Expect rough edges.
 
 ## User requirements
 
@@ -25,7 +24,7 @@ bind = "127.0.0.1:7487"
 token = "choose-a-token"
 ```
 
-You can change the API address and token in **shuttle > Settings**.
+You can change the API address and token in **shuttle > Settings**. The first time shuttle reaches a daemon on your LAN, macOS asks to allow local network access; shuttle does not work without it.
 
 ## Installing a release
 

@@ -1,0 +1,296 @@
+{
+    "item": {
+        "id": 21,
+        "discTitle": "The Wolf of Wall Street (2013)",
+        "displayTitle": "The Wolf of Wall Street (2013)",
+        "stage": "encoding",
+        "inProgress": true,
+        "createdAt": "2026-08-28T14:52:12Z",
+        "updatedAt": "2026-08-29T01:21:07Z",
+        "discFingerprint": "e775cd48c71ecb452e7bf919e78ef5c693872c58e1a3e993f06feea0435698f7",
+        "needsReview": false,
+        "metadata": {
+            "id": 106646,
+            "title": "The Wolf of Wall Street",
+            "media_type": "movie",
+            "year": "2013",
+            "movie": true
+        },
+        "ripSpec": {
+            "version": 1,
+            "fingerprint": "e775cd48c71ecb452e7bf919e78ef5c693872c58e1a3e993f06feea0435698f7",
+            "content_key": "",
+            "metadata": {
+                "id": 106646,
+                "title": "The Wolf of Wall Street",
+                "overview": "A New York stockbroker refuses to cooperate in a large securities fraud case involving corruption on Wall Street, corporate banking world and mob infiltration. Based on Jordan Belfort's autobiography.",
+                "media_type": "movie",
+                "year": "2013",
+                "release_date": "2013-12-25",
+                "vote_average": 8,
+                "vote_count": 26319,
+                "movie": true,
+                "disc_source": "bluray"
+            },
+            "titles": [
+                {
+                    "id": 0,
+                    "name": "The Wolf of Wall Street",
+                    "duration": 10793,
+                    "chapters": 24,
+                    "playlist": "00800.mpls",
+                    "segment_count": 1,
+                    "segment_map": "7",
+                    "title_hash": "995f9dbf9fef5355f884aa7ea0b8860e87fdcf737333e3d27a99834a8c6180ac"
+                },
+                {
+                    "id": 1,
+                    "name": "The Wolf of Wall Street",
+                    "duration": 681,
+                    "chapters": 0,
+                    "playlist": "00067.m2ts",
+                    "segment_count": 1,
+                    "segment_map": "67",
+                    "title_hash": "7ff10e08628d61eb5667625bc41d2afd989a5e7045e5c0a3c27faba356e12d83"
+                },
+                {
+                    "id": 2,
+                    "name": "The Wolf of Wall Street",
+                    "duration": 1021,
+                    "chapters": 0,
+                    "playlist": "00018.m2ts",
+                    "segment_count": 1,
+                    "segment_map": "18",
+                    "title_hash": "9f59bfd079e17da00432666950bf068ded3c4bea7f789216d5c62a7c3599ad65"
+                },
+                {
+                    "id": 3,
+                    "name": "The Wolf of Wall Street",
+                    "duration": 10793,
+                    "chapters": 0,
+                    "playlist": "00007.m2ts",
+                    "segment_count": 1,
+                    "segment_map": "7",
+                    "title_hash": "995f9dbf9fef5355f884aa7ea0b8860e87fdcf737333e3d27a99834a8c6180ac"
+                },
+                {
+                    "id": 4,
+                    "name": "The Wolf of Wall Street",
+                    "duration": 658,
+                    "chapters": 0,
+                    "playlist": "00068.m2ts",
+                    "segment_count": 1,
+                    "segment_map": "68",
+                    "title_hash": "fc1632ecb312dd48105063d832fda8a2eb88113f6188122e0421022187133871"
+                }
+            ],
+            "episodes": null,
+            "assets": {
+                "ripped": [
+                    {
+                        "episode_key": "main",
+                        "title_id": 0,
+                        "path": "/home/ken/.local/share/spindle/staging/E775CD48C71ECB452E7BF919E78EF5C693872C58E1A3E993F06FEEA0435698F7/ripped/The Wolf of Wall Street_t00.mkv",
+                        "status": "completed"
+                    }
+                ],
+                "transcript": [
+                    {
+                        "episode_key": "main",
+                        "title_id": 0,
+                        "path": "/home/ken/.local/share/spindle/staging/E775CD48C71ECB452E7BF919E78EF5C693872C58E1A3E993F06FEEA0435698F7/transcripts/main/audio.srt",
+                        "status": "completed"
+                    }
+                ]
+            },
+            "attributes": {
+                "audio_analysis": {
+                    "primary_track": {
+                        "index": 0
+                    },
+                    "excluded_tracks": [
+                        {
+                            "index": 1,
+                            "reason": "duplicate/core of primary",
+                            "similarity": 0.9997254348675144
+                        },
+                        {
+                            "index": 2,
+                            "reason": "duplicate/core of primary",
+                            "similarity": 0.976880786183316
+                        }
+                    ],
+                    "per_episode": [
+                        {
+                            "episode_key": "main",
+                            "excluded_tracks": [
+                                {
+                                    "index": 1,
+                                    "reason": "duplicate/core of primary",
+                                    "similarity": 0.9997254348675144
+                                },
+                                {
+                                    "index": 2,
+                                    "reason": "duplicate/core of primary",
+                                    "similarity": 0.976880786183316
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "subtitle_generation_results": [
+                    {
+                        "episode_key": "main",
+                        "source": "opensubtitles",
+                        "subtitle_path": "/home/ken/.local/share/spindle/staging/E775CD48C71ECB452E7BF919E78EF5C693872C58E1A3E993F06FEEA0435698F7/subtitles/main.en.srt",
+                        "segments": 3730,
+                        "duration_sec": 10793.077,
+                        "language": "en",
+                        "validation_result": "passed",
+                        "qc_observations": [
+                            "high_reading_speed",
+                            "unbalanced_line_breaks",
+                            "short_cue_duration",
+                            "line_too_long"
+                        ]
+                    }
+                ]
+            }
+        },
+        "tasks": [
+            {
+                "type": "identification",
+                "state": "done",
+                "progress": {
+                    "percent": 0,
+                    "message": ""
+                }
+            },
+            {
+                "type": "ripping",
+                "state": "done",
+                "attempts": 1,
+                "dependsOn": [
+                    "identification"
+                ],
+                "startedAt": "2026-08-28T15:44:29Z",
+                "finishedAt": "2026-08-28T15:44:30Z",
+                "progress": {
+                    "percent": 100,
+                    "message": "Restoring from cache...",
+                    "bytesCopied": 85082276600,
+                    "totalBytes": 85082276600
+                }
+            },
+            {
+                "type": "episode_identification",
+                "state": "done",
+                "attempts": 1,
+                "dependsOn": [
+                    "ripping"
+                ],
+                "startedAt": "2026-08-28T15:44:30Z",
+                "finishedAt": "2026-08-28T15:44:30Z",
+                "progress": {
+                    "percent": 0,
+                    "message": ""
+                }
+            },
+            {
+                "type": "encoding",
+                "state": "running",
+                "attempts": 1,
+                "dependsOn": [
+                    "identification"
+                ],
+                "startedAt": "2026-08-29T01:20:53Z",
+                "progress": {
+                    "percent": 0,
+                    "message": "Phase 1/1 - Encoding The Wolf of Wall Street_t00.mkv"
+                },
+                "activeAssetKey": "main"
+            },
+            {
+                "type": "analysis",
+                "state": "done",
+                "attempts": 1,
+                "dependsOn": [
+                    "episode_identification"
+                ],
+                "startedAt": "2026-08-28T15:53:19Z",
+                "finishedAt": "2026-08-28T16:11:50Z",
+                "progress": {
+                    "percent": 0,
+                    "message": ""
+                }
+            },
+            {
+                "type": "subtitling",
+                "state": "done",
+                "attempts": 1,
+                "dependsOn": [
+                    "analysis"
+                ],
+                "startedAt": "2026-08-28T16:11:50Z",
+                "finishedAt": "2026-08-28T16:11:59Z",
+                "progress": {
+                    "percent": 92,
+                    "message": "Phase 1/1 - Syncing subtitles (main)"
+                }
+            },
+            {
+                "type": "apply",
+                "state": "pending",
+                "dependsOn": [
+                    "subtitling",
+                    "encoding"
+                ],
+                "progress": {
+                    "percent": 0,
+                    "message": ""
+                }
+            },
+            {
+                "type": "organizing",
+                "state": "pending",
+                "dependsOn": [
+                    "apply"
+                ],
+                "progress": {
+                    "percent": 0,
+                    "message": ""
+                }
+            }
+        ],
+        "encoding": {
+            "substage": "chunking",
+            "input_file": "The Wolf of Wall Street_t00.mkv",
+            "resolution": "3840x1600",
+            "dynamic_range": "HDR",
+            "encoder": "SVT-AV1",
+            "preset": "6",
+            "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+            "tune": "0",
+            "audio_codec": "Opus",
+            "crop_filter": "crop=3840:1600:0:280",
+            "crop_required": true,
+            "crop_message": "Black bars detected",
+            "original_size": 85082276600
+        },
+        "episodeTotals": {
+            "planned": 1,
+            "ripped": 1,
+            "encoded": 0,
+            "final": 0
+        },
+        "subtitleGeneration": {
+            "opensubtitles": 1,
+            "skipped": 0
+        },
+        "source": {
+            "titleId": 0,
+            "name": "The Wolf of Wall Street",
+            "durationSeconds": 10793
+        }
+    }
+}

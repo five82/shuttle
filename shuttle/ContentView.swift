@@ -1,25 +1,92 @@
 import SwiftUI
 
-struct ContentView: View {
-    var body: some View {
-        NavigationSplitView {
-            List {
-                Label("Status", systemImage: "gauge.with.dots.needle.33percent")
-                Label("Queue", systemImage: "list.bullet.rectangle")
-                Label("Logs", systemImage: "doc.text.magnifyingglass")
-            }
-            .navigationSplitViewColumnWidth(min: 200, ideal: 240)
-        } detail: {
-            ContentUnavailableView(
-                "Not Connected",
-                systemImage: "antenna.radiowaves.left.and.right.slash",
-                description: Text("shuttle is a read-only monitor for a Spindle daemon.")
-            )
+enum SidebarSection: String, CaseIterable, Identifiable {
+    case now
+    case queue
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .now: return "Now"
+        case .queue: return "Queue"
         }
-        .frame(minWidth: 900, minHeight: 600)
+    }
+
+    var systemImage: String {
+        switch self {
+        case .now: return "gauge.with.dots.needle.33percent"
+        case .queue: return "list.bullet.rectangle"
+        }
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView: View {
+    @Environment(SpindleMonitor.self) private var monitor
+    @Environment(AppSettingsStore.self) private var settingsStore
+
+    @State private var section: SidebarSection? = .now
+    @State private var searchText = ""
+
+    var body: some View {
+        NavigationSplitView {
+            List(SidebarSection.allCases, selection: $section) { section in
+                Label {
+                    HStack {
+                        Text(section.title)
+                        Spacer()
+                        badge(for: section)
+                    }
+                } icon: {
+                    Image(systemName: section.systemImage)
+                }
+                .tag(section)
+            }
+            .navigationSplitViewColumnWidth(min: 160, ideal: 190, max: 240)
+        } detail: {
+            VStack(spacing: 0) {
+                Group {
+                    switch section ?? .now {
+                    case .now:
+                        NowView()
+                    case .queue:
+                        QueueTableView(filter: searchText)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                Divider()
+                ConnectionStatusBar(endpoint: settingsStore.settings.baseURLString)
+            }
+            .navigationTitle(section?.title ?? "shuttle")
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .principal) {
+                StatusChips()
+            }
+        }
+        .searchable(text: $searchText, placement: .toolbar, prompt: "Filter queue")
+        .frame(minWidth: 900, minHeight: 600)
+        .task {
+            monitor.start()
+        }
+    }
+
+    @ViewBuilder
+    private func badge(for section: SidebarSection) -> some View {
+        switch section {
+        case .now:
+            if monitor.attentionCount > 0 {
+                Text("\(monitor.attentionCount)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(monitor.attentionItems.contains(where: \.hasFailed) ? .red : .orange)
+            }
+        case .queue:
+            if !monitor.items.isEmpty {
+                Text("\(monitor.items.count)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
 }

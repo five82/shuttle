@@ -19,7 +19,8 @@ Important paths:
 - `shuttle/Models/` — value types decoded from the Spindle API and app settings
 - `shuttle/Services/` — Spindle API client, polling, connection state
 - `shuttle/Views/` — SwiftUI subviews
-- `shuttleTests/` — unit tests
+- `shuttle/Info.plist` — merged into the generated Info.plist; holds the ATS exception and local-network usage string
+- `shuttleTests/` — unit tests; `shuttleTests/Fixtures/*.json` are real responses captured from a live daemon
 - `scripts/build` — debug build
 - `scripts/test` — debug test run
 - `scripts/run` — debug build and launch
@@ -50,6 +51,10 @@ shuttle assumes:
 
 Do not silently change these defaults without updating README/help text and migration behavior.
 
+Spindle's API is plain HTTP on a LAN, so `Info.plist` sets `NSAllowsArbitraryLoads` and `NSLocalNetworkUsageDescription`. Without them URLSession fails with "App Transport Security" / "Internet connection appears to be offline" errors.
+
+Never put a real daemon hostname or token in source, fixtures, tests, or docs. The repo is public. Use the defaults (`127.0.0.1:7487`, empty token) in code and pass real values through Settings or `defaults write local.shuttle.app spindleBaseURL ...` for local testing.
+
 ## Important behavior
 
 shuttle is read-only. It observes Spindle; it never controls it.
@@ -58,6 +63,17 @@ shuttle is read-only. It observes Spindle; it never controls it.
 - Never call mutating endpoints (`POST /api/queue/*`, `DELETE /api/queue/*`, `POST /api/daemon/*`, `POST /api/disc/*`). Do not add UI for retrying, removing, clearing, stopping, pausing, or enqueuing.
 - Never read or write Spindle's queue database, staging directory, or library directly. The HTTP API is the only integration point.
 - Treat the daemon as possibly unreachable at any time. Show a clear disconnected state and keep polling; never block the UI on a request.
+
+## Fixtures
+
+`shuttleTests/Fixtures/{status,queue,item,logs}.json` are captured from a live daemon. Re-capture when Spindle's `internal/httpapi/response.go` changes, then check `grep -il "token\|internal" shuttleTests/Fixtures/*.json` comes back empty before committing:
+
+```sh
+curl -H "Authorization: Bearer $TOKEN" $SPINDLE/api/status | python3 -m json.tool > shuttleTests/Fixtures/status.json
+curl -H "Authorization: Bearer $TOKEN" $SPINDLE/api/queue  | python3 -m json.tool > shuttleTests/Fixtures/queue.json
+```
+
+Decoding tests assert specific values from those captures (item IDs, counts); update the assertions alongside the fixtures.
 
 ## Performance / UI rules
 

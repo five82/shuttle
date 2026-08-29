@@ -1,0 +1,4840 @@
+{
+    "items": [
+        {
+            "id": 1,
+            "discTitle": "Rush (2013)",
+            "displayTitle": "Rush (2013)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-23T23:42:59Z",
+            "updatedAt": "2026-08-24T03:04:02Z",
+            "discFingerprint": "de000456162b14396dc8287be0996ddca791fa8b4cc6327c42b1c3352cbb7701",
+            "needsReview": false,
+            "metadata": {
+                "id": 96721,
+                "title": "Rush",
+                "media_type": "movie",
+                "year": "2013",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-23T23:43:00Z",
+                    "finishedAt": "2026-08-23T23:43:44Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-23T23:43:44Z",
+                    "finishedAt": "2026-08-24T01:07:08Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 86633428696,
+                        "totalBytes": 86633428696
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-24T01:07:08Z",
+                    "finishedAt": "2026-08-24T01:07:08Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-23T23:43:44Z",
+                    "finishedAt": "2026-08-24T03:03:14Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Rush (2013)_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-24T01:07:08Z",
+                    "finishedAt": "2026-08-24T01:31:34Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-24T01:31:34Z",
+                    "finishedAt": "2026-08-24T01:31:41Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-24T03:03:14Z",
+                    "finishedAt": "2026-08-24T03:03:25Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 3/3 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-24T03:03:25Z",
+                    "finishedAt": "2026-08-24T03:04:02Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 3626452224,
+                        "totalBytes": 3626452224
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 176840,
+                "total_frames": 176840,
+                "substage": "complete",
+                "input_file": "Rush (2013)_t00.mkv",
+                "resolution": "3840x1598",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1598:0:280",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 86633428696,
+                "encoded_size": 4528608284,
+                "size_reduction_percent": 94.77267799258983,
+                "average_speed": 1.0660544633865356,
+                "encode_duration_seconds": 6918.690920709,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1598"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (7375.7s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "6 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "source": {
+                "titleId": 0,
+                "name": "Rush (2013)",
+                "durationSeconds": 7375
+            }
+        },
+        {
+            "id": 2,
+            "discTitle": "The Bourne Identity (2002)",
+            "displayTitle": "The Bourne Identity (2002)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-24T01:21:15Z",
+            "updatedAt": "2026-08-24T04:54:50Z",
+            "discFingerprint": "f6aaa954274e5f0795cb5a77cc00d65e828b7c69b5d51e6023b6a2332d2f1905",
+            "needsReview": false,
+            "metadata": {
+                "id": 2501,
+                "title": "The Bourne Identity",
+                "media_type": "movie",
+                "year": "2002",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-24T01:21:18Z",
+                    "finishedAt": "2026-08-24T01:22:01Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-24T01:22:01Z",
+                    "finishedAt": "2026-08-24T02:15:46Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 54518238265,
+                        "totalBytes": 54518238265
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-24T02:15:46Z",
+                    "finishedAt": "2026-08-24T02:15:46Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-24T03:03:14Z",
+                    "finishedAt": "2026-08-24T04:54:11Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding The Bourne Identity_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-24T02:15:46Z",
+                    "finishedAt": "2026-08-24T02:27:14Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-24T02:27:14Z",
+                    "finishedAt": "2026-08-24T02:27:24Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-24T04:54:11Z",
+                    "finishedAt": "2026-08-24T04:54:26Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 3/3 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-24T04:54:26Z",
+                    "finishedAt": "2026-08-24T04:54:50Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 2204458324,
+                        "totalBytes": 2204458324
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 169968,
+                "total_frames": 169968,
+                "substage": "complete",
+                "input_file": "The Bourne Identity_t00.mkv",
+                "resolution": "3840x1632",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1632:0:264",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 54518238265,
+                "encoded_size": 2514352426,
+                "size_reduction_percent": 95.38805268472113,
+                "average_speed": 1.0687767267227173,
+                "encode_duration_seconds": 6632.893052596,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1632"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (7089.1s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "4 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "commentaryCount": 1,
+            "source": {
+                "titleId": 0,
+                "name": "The Bourne Identity",
+                "durationSeconds": 7089
+            }
+        },
+        {
+            "id": 3,
+            "discTitle": "Once Upon a Time... in Hollywood (2019)",
+            "displayTitle": "Once Upon a Time... in Hollywood (2019)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-24T02:35:51Z",
+            "updatedAt": "2026-08-24T07:30:02Z",
+            "discFingerprint": "6b433387c54e6b441ba602709260e4f5ee64edce4edcfe30883d70f7bdc39bf5",
+            "needsReview": false,
+            "metadata": {
+                "id": 466272,
+                "title": "Once Upon a Time... in Hollywood",
+                "media_type": "movie",
+                "year": "2019",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-24T02:35:54Z",
+                    "finishedAt": "2026-08-24T02:36:45Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-24T02:36:45Z",
+                    "finishedAt": "2026-08-24T03:56:59Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 74448710061,
+                        "totalBytes": 74448710061
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-24T03:56:59Z",
+                    "finishedAt": "2026-08-24T03:56:59Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-24T04:54:11Z",
+                    "finishedAt": "2026-08-24T07:29:34Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Once Upon a Time... in Hollywood_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-24T03:56:59Z",
+                    "finishedAt": "2026-08-24T04:15:09Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-24T04:15:09Z",
+                    "finishedAt": "2026-08-24T04:15:17Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-24T07:29:34Z",
+                    "finishedAt": "2026-08-24T07:29:40Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 3/3 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-24T07:29:40Z",
+                    "finishedAt": "2026-08-24T07:30:02Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 2230497832,
+                        "totalBytes": 2230497832
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 232320,
+                "total_frames": 232320,
+                "substage": "complete",
+                "input_file": "Once Upon a Time... in Hollywood_t00.mkv",
+                "resolution": "3840x1600",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1600:0:280",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 74448710061,
+                "encoded_size": 2984048201,
+                "size_reduction_percent": 95.9918067102103,
+                "average_speed": 1.0432757139205933,
+                "encode_duration_seconds": 9287.74596873,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1600"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (9689.7s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "4 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "source": {
+                "titleId": 0,
+                "name": "Once Upon a Time... in Hollywood",
+                "durationSeconds": 9689
+            }
+        },
+        {
+            "id": 4,
+            "discTitle": "Jason Bourne (2016)",
+            "displayTitle": "Jason Bourne (2016)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-24T15:14:03Z",
+            "updatedAt": "2026-08-24T18:12:38Z",
+            "discFingerprint": "ebec6766d100e19b8e5abbceac528e7b69a83498210b269d22fbb81a1a9f5bdc",
+            "needsReview": false,
+            "metadata": {
+                "id": 324668,
+                "title": "Jason Bourne",
+                "media_type": "movie",
+                "year": "2016",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-24T15:14:07Z",
+                    "finishedAt": "2026-08-24T15:14:55Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-24T15:14:55Z",
+                    "finishedAt": "2026-08-24T16:16:04Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 60835217266,
+                        "totalBytes": 60835217266
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-24T16:16:04Z",
+                    "finishedAt": "2026-08-24T16:16:04Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-24T15:14:55Z",
+                    "finishedAt": "2026-08-24T18:11:54Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Jason Bourne-FPL_MainFeature_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-24T16:16:04Z",
+                    "finishedAt": "2026-08-24T16:23:50Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-24T16:23:50Z",
+                    "finishedAt": "2026-08-24T16:23:59Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-24T18:11:54Z",
+                    "finishedAt": "2026-08-24T18:12:03Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 3/3 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-24T18:12:03Z",
+                    "finishedAt": "2026-08-24T18:12:38Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 3701409403,
+                        "totalBytes": 3701409403
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 10,
+                "current_frame": 176891,
+                "total_frames": 177175,
+                "substage": "complete",
+                "input_file": "Jason Bourne-FPL_MainFeature_t00.mkv",
+                "resolution": "3840x1600",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1600:0:280",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 60835217266,
+                "encoded_size": 4055484900,
+                "size_reduction_percent": 93.33365592783613,
+                "average_speed": 1.0671789646148682,
+                "encode_duration_seconds": 6924.532555375,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1600"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (7389.7s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "3 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "source": {
+                "titleId": 0,
+                "name": "Jason Bourne",
+                "durationSeconds": 7389
+            }
+        },
+        {
+            "id": 5,
+            "discTitle": "The Bourne Supremacy (2004)",
+            "displayTitle": "The Bourne Supremacy (2004)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-25T00:14:32Z",
+            "updatedAt": "2026-08-25T03:06:03Z",
+            "discFingerprint": "2e23802fd5141c27370e706af2332f9237b0f6f25685185aebcbafd5f0e5f53e",
+            "needsReview": false,
+            "metadata": {
+                "id": 2502,
+                "title": "The Bourne Supremacy",
+                "media_type": "movie",
+                "year": "2004",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-25T00:14:32Z",
+                    "finishedAt": "2026-08-25T00:15:39Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-25T00:15:39Z",
+                    "finishedAt": "2026-08-25T01:15:07Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 58917326397,
+                        "totalBytes": 58917326397
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-25T01:15:07Z",
+                    "finishedAt": "2026-08-25T01:15:07Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-25T00:15:39Z",
+                    "finishedAt": "2026-08-25T03:04:14Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding The Bourne Supremacy_t03.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-25T01:15:07Z",
+                    "finishedAt": "2026-08-25T01:25:21Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-25T01:25:21Z",
+                    "finishedAt": "2026-08-25T01:25:30Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-25T03:04:14Z",
+                    "finishedAt": "2026-08-25T03:05:03Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-25T03:05:03Z",
+                    "finishedAt": "2026-08-25T03:06:03Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 6622526641,
+                        "totalBytes": 6622526641
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 11,
+                "current_frame": 155707,
+                "total_frames": 155992,
+                "substage": "complete",
+                "input_file": "The Bourne Supremacy_t03.mkv",
+                "resolution": "3840x1632",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1632:0:264",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 58917326397,
+                "encoded_size": 6925739076,
+                "size_reduction_percent": 88.2449875112584,
+                "average_speed": 1.0004398822784424,
+                "encode_duration_seconds": 6503.306083126,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1632"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (6506.2s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "4 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "commentaryCount": 1,
+            "source": {
+                "titleId": 0,
+                "name": "The Bourne Supremacy",
+                "durationSeconds": 325
+            }
+        },
+        {
+            "id": 6,
+            "discTitle": "The Bourne Ultimatum (2007)",
+            "displayTitle": "The Bourne Ultimatum (2007)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-25T01:38:28Z",
+            "updatedAt": "2026-08-25T04:52:04Z",
+            "discFingerprint": "00e222e5a2543d8db2764b738489ceb49fb790ae505c33506ac82187ccf4cd59",
+            "needsReview": false,
+            "metadata": {
+                "id": 2503,
+                "title": "The Bourne Ultimatum",
+                "media_type": "movie",
+                "year": "2007",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-25T01:38:30Z",
+                    "finishedAt": "2026-08-25T01:39:12Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-25T01:39:13Z",
+                    "finishedAt": "2026-08-25T02:38:51Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 60711360360,
+                        "totalBytes": 60711360360
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-25T02:38:51Z",
+                    "finishedAt": "2026-08-25T02:38:51Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-25T03:04:14Z",
+                    "finishedAt": "2026-08-25T04:50:57Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding The Bourne Ultimatum_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-25T02:38:51Z",
+                    "finishedAt": "2026-08-25T02:50:36Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-25T02:50:36Z",
+                    "finishedAt": "2026-08-25T02:50:43Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-25T04:50:57Z",
+                    "finishedAt": "2026-08-25T04:51:19Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-25T04:51:19Z",
+                    "finishedAt": "2026-08-25T04:52:04Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 4932664514,
+                        "totalBytes": 4932664514
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 165794,
+                "total_frames": 165794,
+                "substage": "complete",
+                "input_file": "The Bourne Ultimatum_t00.mkv",
+                "resolution": "3840x1600",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1600:0:280",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 60711360360,
+                "encoded_size": 5255398505,
+                "size_reduction_percent": 91.34363243742673,
+                "average_speed": 1.0851994752883911,
+                "encode_duration_seconds": 6372.130974063,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1600"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (6915.0s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "4 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "commentaryCount": 1,
+            "source": {
+                "titleId": 0,
+                "name": "The Bourne Ultimatum",
+                "durationSeconds": 6915
+            }
+        },
+        {
+            "id": 7,
+            "discTitle": "The Bourne Supremacy (2004)",
+            "displayTitle": "The Bourne Supremacy (2004)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-26T00:59:23Z",
+            "updatedAt": "2026-08-26T02:47:04Z",
+            "discFingerprint": "2e23802fd5141c27370e706af2332f9237b0f6f25685185aebcbafd5f0e5f53e",
+            "needsReview": false,
+            "metadata": {
+                "id": 2502,
+                "title": "The Bourne Supremacy",
+                "media_type": "movie",
+                "year": "2004",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-26T00:59:26Z",
+                    "finishedAt": "2026-08-26T00:59:26Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Restoring from cache...",
+                        "bytesCopied": 58917326397,
+                        "totalBytes": 58917326397
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-26T00:59:26Z",
+                    "finishedAt": "2026-08-26T00:59:26Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-26T00:59:26Z",
+                    "finishedAt": "2026-08-26T02:45:43Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding The Bourne Supremacy_t03.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-26T00:59:26Z",
+                    "finishedAt": "2026-08-26T01:10:38Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-26T01:10:38Z",
+                    "finishedAt": "2026-08-26T01:10:43Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-26T02:45:43Z",
+                    "finishedAt": "2026-08-26T02:46:06Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-26T02:46:06Z",
+                    "finishedAt": "2026-08-26T02:47:04Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 6614218845,
+                        "totalBytes": 6614218845
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 155992,
+                "total_frames": 155992,
+                "substage": "complete",
+                "input_file": "The Bourne Supremacy_t03.mkv",
+                "resolution": "3840x1632",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1632:0:264",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 58917326397,
+                "encoded_size": 6915821874,
+                "size_reduction_percent": 88.26181991457076,
+                "average_speed": 1.027012825012207,
+                "encode_duration_seconds": 6335.039016497,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1632"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (6506.2s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "4 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        },
+                        {
+                            "name": "Source timeline normalization",
+                            "passed": true,
+                            "details": "4 source audio track(s) ended up to 35.572s past video; output bounded to the video endpoint"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "commentaryCount": 1,
+            "source": {
+                "titleId": 0,
+                "name": "The Bourne Supremacy",
+                "durationSeconds": 325
+            }
+        },
+        {
+            "id": 8,
+            "discTitle": "The Sound of Music (1965)",
+            "displayTitle": "The Sound of Music (1965)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-26T03:56:16Z",
+            "updatedAt": "2026-08-26T09:27:57Z",
+            "discFingerprint": "9b011fc999565f489bddd53a49d1da72af683e8235948630df600a2e58dd8c18",
+            "needsReview": false,
+            "metadata": {
+                "id": 15121,
+                "title": "The Sound of Music",
+                "media_type": "movie",
+                "year": "1965",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-26T03:56:18Z",
+                    "finishedAt": "2026-08-26T03:57:07Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-26T03:57:07Z",
+                    "finishedAt": "2026-08-26T05:24:17Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 78425642884,
+                        "totalBytes": 78425642884
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-26T05:24:17Z",
+                    "finishedAt": "2026-08-26T05:24:17Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-26T03:57:07Z",
+                    "finishedAt": "2026-08-26T09:24:27Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding The Sound of Music_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-26T05:24:17Z",
+                    "finishedAt": "2026-08-26T05:52:15Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-26T05:52:15Z",
+                    "finishedAt": "2026-08-26T05:52:30Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-26T09:24:27Z",
+                    "finishedAt": "2026-08-26T09:25:00Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-26T09:25:00Z",
+                    "finishedAt": "2026-08-26T09:27:57Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 20107972750,
+                        "totalBytes": 20107972750
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 15,
+                "current_frame": 250986,
+                "total_frames": 251269,
+                "substage": "complete",
+                "input_file": "The Sound of Music_t00.mkv",
+                "resolution": "3840x1748",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1748:0:206",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 78425642884,
+                "encoded_size": 20578797565,
+                "size_reduction_percent": 73.76011619638456,
+                "average_speed": 0.7296929359436035,
+                "encode_duration_seconds": 14362.220590034,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1748"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (10480.0s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "5 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 0,
+                "skipped": 1
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "commentaryCount": 2,
+            "source": {
+                "titleId": 0,
+                "name": "The Sound of Music",
+                "durationSeconds": 10480
+            }
+        },
+        {
+            "id": 9,
+            "discTitle": "Inside Out (2015)",
+            "displayTitle": "Inside Out (2015)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-27T02:28:40Z",
+            "updatedAt": "2026-08-27T04:43:52Z",
+            "discFingerprint": "a47a003fede6d642ffd684bef44c28be0055b96c19b7cda5b32759e2a5368f8b",
+            "needsReview": false,
+            "metadata": {
+                "id": 150540,
+                "title": "Inside Out",
+                "media_type": "movie",
+                "year": "2015",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-27T02:28:40Z",
+                    "finishedAt": "2026-08-27T02:29:25Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T02:29:25Z",
+                    "finishedAt": "2026-08-27T03:08:31Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 37430226338,
+                        "totalBytes": 37430226338
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-27T03:08:31Z",
+                    "finishedAt": "2026-08-27T03:08:31Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T02:29:25Z",
+                    "finishedAt": "2026-08-27T04:43:25Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Inside Out_t02.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-27T03:08:31Z",
+                    "finishedAt": "2026-08-27T03:24:20Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-27T03:24:20Z",
+                    "finishedAt": "2026-08-27T03:24:32Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-27T04:43:25Z",
+                    "finishedAt": "2026-08-27T04:43:30Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-27T04:43:30Z",
+                    "finishedAt": "2026-08-27T04:43:52Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 2227893916,
+                        "totalBytes": 2227893916
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 136176,
+                "total_frames": 136176,
+                "substage": "complete",
+                "input_file": "Inside Out_t02.mkv",
+                "resolution": "3840x2160",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_message": "Multiple aspect ratios detected",
+                "original_size": 37430226338,
+                "encoded_size": 3127524877,
+                "size_reduction_percent": 91.64438694877764,
+                "average_speed": 1.0007236003875732,
+                "encode_duration_seconds": 5675.567100994,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x2160"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (5679.7s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "7 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "source": {
+                "titleId": 0,
+                "name": "Inside Out",
+                "durationSeconds": 5691
+            }
+        },
+        {
+            "id": 10,
+            "discTitle": "South Park: Bigger, Longer & Uncut (1999)",
+            "displayTitle": "South Park: Bigger, Longer & Uncut (1999)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-27T11:02:57Z",
+            "updatedAt": "2026-08-27T13:28:04Z",
+            "discFingerprint": "a0dd2729f4fe2e692d8ab054fb362e151b23b13b145128a23ed97f3a5f1c0f9c",
+            "needsReview": false,
+            "metadata": {
+                "id": 9473,
+                "title": "South Park: Bigger, Longer & Uncut",
+                "media_type": "movie",
+                "year": "1999",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-27T11:03:00Z",
+                    "finishedAt": "2026-08-27T11:03:42Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T11:03:42Z",
+                    "finishedAt": "2026-08-27T12:00:40Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 56842880463,
+                        "totalBytes": 56842880463
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-27T12:00:40Z",
+                    "finishedAt": "2026-08-27T12:00:40Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T11:03:42Z",
+                    "finishedAt": "2026-08-27T13:27:48Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding South Park- Bigger, Longer & Uncut_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-27T12:00:40Z",
+                    "finishedAt": "2026-08-27T12:09:03Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-27T12:09:03Z",
+                    "finishedAt": "2026-08-27T12:09:05Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-27T13:27:48Z",
+                    "finishedAt": "2026-08-27T13:27:51Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-27T13:27:51Z",
+                    "finishedAt": "2026-08-27T13:28:04Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 1264132831,
+                        "totalBytes": 1264132831
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 11,
+                "current_frame": 116560,
+                "total_frames": 116841,
+                "substage": "complete",
+                "input_file": "South Park- Bigger, Longer & Uncut_t00.mkv",
+                "resolution": "3840x2076",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:2076:0:42",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 56842880463,
+                "encoded_size": 1396470623,
+                "size_reduction_percent": 97.54327963040335,
+                "average_speed": 0.937157392501831,
+                "encode_duration_seconds": 5200.026437188,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x2076"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (4873.2s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "2 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 6ch | Surround 5.1",
+            "source": {
+                "titleId": 0,
+                "name": "South Park: Bigger, Longer & Uncut",
+                "durationSeconds": 4873
+            }
+        },
+        {
+            "id": 11,
+            "discTitle": "Team America: World Police (2004)",
+            "displayTitle": "Team America: World Police (2004)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-27T15:33:42Z",
+            "updatedAt": "2026-08-27T18:23:29Z",
+            "discFingerprint": "d74fae1342369dc7435c5453245c1ac296b5110a5c1b94b4d7bb20dfcfe3f638",
+            "needsReview": false,
+            "metadata": {
+                "id": 3989,
+                "title": "Team America: World Police",
+                "media_type": "movie",
+                "year": "2004",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-27T15:33:45Z",
+                    "finishedAt": "2026-08-27T15:34:25Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T15:34:25Z",
+                    "finishedAt": "2026-08-27T16:35:40Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 61828775194,
+                        "totalBytes": 61828775194
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-27T16:35:40Z",
+                    "finishedAt": "2026-08-27T16:35:40Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T15:34:25Z",
+                    "finishedAt": "2026-08-27T18:22:39Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Team America- World Police_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-27T16:35:40Z",
+                    "finishedAt": "2026-08-27T16:45:11Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-27T16:45:11Z",
+                    "finishedAt": "2026-08-27T16:45:14Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-27T18:22:39Z",
+                    "finishedAt": "2026-08-27T18:22:47Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-27T18:22:47Z",
+                    "finishedAt": "2026-08-27T18:23:29Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 4568530976,
+                        "totalBytes": 4568530976
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 140527,
+                "total_frames": 140527,
+                "substage": "complete",
+                "input_file": "Team America- World Police_t00.mkv",
+                "resolution": "3840x1600",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1600:0:280",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 61828775194,
+                "encoded_size": 4920157191,
+                "size_reduction_percent": 92.04228585223946,
+                "average_speed": 0.9196211099624634,
+                "encode_duration_seconds": 6373.481759646,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1600"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (5861.1s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "3 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 6ch | Surround 5.1",
+            "source": {
+                "titleId": 0,
+                "name": "Team America: World Police",
+                "durationSeconds": 5861
+            }
+        },
+        {
+            "id": 12,
+            "discTitle": "GoodFellas (1990)",
+            "displayTitle": "GoodFellas (1990)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-27T17:29:25Z",
+            "updatedAt": "2026-08-27T22:40:36Z",
+            "discFingerprint": "c0be7c089c32ec08d301f9e150eb99ec8040b511b1ac0887f52114196d1c8c5d",
+            "needsReview": false,
+            "metadata": {
+                "id": 769,
+                "title": "GoodFellas",
+                "media_type": "movie",
+                "year": "1990",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-27T17:29:30Z",
+                    "finishedAt": "2026-08-27T17:30:16Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T17:30:16Z",
+                    "finishedAt": "2026-08-27T18:59:42Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 88003030783,
+                        "totalBytes": 88003030783
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-27T18:59:42Z",
+                    "finishedAt": "2026-08-27T18:59:42Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T18:22:39Z",
+                    "finishedAt": "2026-08-27T22:37:13Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Goodfellas (1990)_t01.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-27T18:59:42Z",
+                    "finishedAt": "2026-08-27T19:20:32Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-27T19:20:32Z",
+                    "finishedAt": "2026-08-27T19:20:44Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-27T22:37:13Z",
+                    "finishedAt": "2026-08-27T22:38:38Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-27T22:38:38Z",
+                    "finishedAt": "2026-08-27T22:40:36Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 13340059924,
+                        "totalBytes": 13340059924
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 16,
+                "current_frame": 208833,
+                "total_frames": 209112,
+                "substage": "complete",
+                "input_file": "Goodfellas (1990)_t01.mkv",
+                "resolution": "3840x2160",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_message": "Multiple aspect ratios detected",
+                "original_size": 88003030783,
+                "encoded_size": 13571395679,
+                "size_reduction_percent": 84.57849058350652,
+                "average_speed": 0.6707502603530884,
+                "encode_duration_seconds": 13002.983914641,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x2160"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (8721.7s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "4 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 6ch | Surround 5.1",
+            "commentaryCount": 2,
+            "source": {
+                "titleId": 0,
+                "name": "Goodfellas (1990)",
+                "durationSeconds": 341
+            }
+        },
+        {
+            "id": 13,
+            "discTitle": "Knives Out (2019)",
+            "displayTitle": "Knives Out (2019)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-27T19:14:42Z",
+            "updatedAt": "2026-08-28T01:16:45Z",
+            "discFingerprint": "70ef9ae4a16a349f5a0d73519c55c42595a35c28383b612b58b0fb064a4b0eb3",
+            "needsReview": false,
+            "metadata": {
+                "id": 546554,
+                "title": "Knives Out",
+                "media_type": "movie",
+                "year": "2019",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-27T19:14:42Z",
+                    "finishedAt": "2026-08-27T19:16:54Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T19:16:54Z",
+                    "finishedAt": "2026-08-27T20:23:04Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 63313902062,
+                        "totalBytes": 63313902062
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-27T20:23:04Z",
+                    "finishedAt": "2026-08-27T20:23:04Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T22:37:13Z",
+                    "finishedAt": "2026-08-28T01:15:01Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Knives Out-FPL_MainFeature_t17.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-27T20:23:04Z",
+                    "finishedAt": "2026-08-27T20:46:41Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-27T20:46:41Z",
+                    "finishedAt": "2026-08-27T20:46:48Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-28T01:15:01Z",
+                    "finishedAt": "2026-08-28T01:15:48Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-28T01:15:48Z",
+                    "finishedAt": "2026-08-28T01:16:45Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 6207942211,
+                        "totalBytes": 6207942211
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 11,
+                "current_frame": 187086,
+                "total_frames": 187323,
+                "substage": "complete",
+                "input_file": "Knives Out-FPL_MainFeature_t17.mkv",
+                "resolution": "3840x2080",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:2080:0:40",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 63313902062,
+                "encoded_size": 6548742243,
+                "size_reduction_percent": 89.65670724797981,
+                "average_speed": 0.8277868628501892,
+                "encode_duration_seconds": 9438.386060101,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x2080"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (7812.9s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "5 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "commentaryCount": 2,
+            "source": {
+                "titleId": 0,
+                "name": "Knives Out",
+                "durationSeconds": 297
+            }
+        },
+        {
+            "id": 14,
+            "discTitle": "Toy Story 3 (2010)",
+            "displayTitle": "Toy Story 3 (2010)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-27T20:53:41Z",
+            "updatedAt": "2026-08-28T03:05:28Z",
+            "discFingerprint": "a30699b972e3e0133c5da8415c6b54f86514129704649f5005b70c5ba29f702d",
+            "needsReview": false,
+            "metadata": {
+                "id": 10193,
+                "title": "Toy Story 3",
+                "media_type": "movie",
+                "year": "2010",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-27T20:53:43Z",
+                    "finishedAt": "2026-08-27T20:54:36Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-27T20:54:36Z",
+                    "finishedAt": "2026-08-27T21:35:55Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 39904723539,
+                        "totalBytes": 39904723539
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-27T21:35:56Z",
+                    "finishedAt": "2026-08-27T21:35:56Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T01:15:01Z",
+                    "finishedAt": "2026-08-28T03:05:01Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Toy Story 3_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-27T21:35:56Z",
+                    "finishedAt": "2026-08-27T21:56:35Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-27T21:56:35Z",
+                    "finishedAt": "2026-08-27T21:56:42Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-28T03:05:01Z",
+                    "finishedAt": "2026-08-28T03:05:06Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-28T03:05:06Z",
+                    "finishedAt": "2026-08-28T03:05:28Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 2164933212,
+                        "totalBytes": 2164933212
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 147482,
+                "total_frames": 147482,
+                "substage": "complete",
+                "input_file": "Toy Story 3_t00.mkv",
+                "resolution": "3840x2160",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_message": "Analyzed 141 samples",
+                "original_size": 39904723539,
+                "encoded_size": 3147891707,
+                "size_reduction_percent": 92.11148097812661,
+                "average_speed": 0.933998167514801,
+                "encode_duration_seconds": 6585.95519121,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x2160"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (6151.2s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "7 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "source": {
+                "titleId": 0,
+                "name": "Toy Story 3",
+                "durationSeconds": 6151
+            }
+        },
+        {
+            "id": 15,
+            "discTitle": "Groundhog Day (1993)",
+            "displayTitle": "Groundhog Day (1993)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-28T04:06:17Z",
+            "updatedAt": "2026-08-28T08:23:27Z",
+            "discFingerprint": "7aaf2cf37a7bef5ee39d7aa290dd6ecf87af6e428798192c2f0e90b68fe0ebe2",
+            "needsReview": false,
+            "metadata": {
+                "id": 137,
+                "title": "Groundhog Day",
+                "media_type": "movie",
+                "year": "1993",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-28T04:06:21Z",
+                    "finishedAt": "2026-08-28T04:07:03Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T04:07:03Z",
+                    "finishedAt": "2026-08-28T05:01:43Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 49766818162,
+                        "totalBytes": 49766818162
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T05:01:43Z",
+                    "finishedAt": "2026-08-28T05:01:43Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T04:07:03Z",
+                    "finishedAt": "2026-08-28T08:20:37Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Groundhog Day_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T05:01:43Z",
+                    "finishedAt": "2026-08-28T05:09:41Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-28T05:09:41Z",
+                    "finishedAt": "2026-08-28T05:09:48Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-28T08:20:37Z",
+                    "finishedAt": "2026-08-28T08:21:02Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-28T08:21:02Z",
+                    "finishedAt": "2026-08-28T08:23:27Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 16760678046,
+                        "totalBytes": 16760678046
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 145392,
+                "total_frames": 145392,
+                "substage": "complete",
+                "input_file": "Groundhog Day_t00.mkv",
+                "resolution": "3840x2080",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:2080:0:40",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 49766818162,
+                "encoded_size": 16925830379,
+                "size_reduction_percent": 65.98972768581797,
+                "average_speed": 0.5098915100097656,
+                "encode_duration_seconds": 11892.839836837,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x2080"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (6064.1s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "2 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "source": {
+                "titleId": 0,
+                "name": "Groundhog Day",
+                "durationSeconds": 6064
+            }
+        },
+        {
+            "id": 16,
+            "discTitle": "Meet the Parents (2000)",
+            "displayTitle": "Meet the Parents (2000)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-28T14:34:21Z",
+            "updatedAt": "2026-08-28T16:46:44Z",
+            "discFingerprint": "c1813c1561b368c09c3ff96f3f04e1ce33d436a7f20e8e737eb9b911f45cd3ca",
+            "needsReview": false,
+            "metadata": {
+                "id": 1597,
+                "title": "Meet the Parents",
+                "media_type": "movie",
+                "year": "2000",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-28T14:34:25Z",
+                    "finishedAt": "2026-08-28T14:35:16Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T14:35:16Z",
+                    "finishedAt": "2026-08-28T14:35:16Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Restoring from cache...",
+                        "bytesCopied": 51004549053,
+                        "totalBytes": 51004549053
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T14:35:16Z",
+                    "finishedAt": "2026-08-28T14:35:16Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T14:35:16Z",
+                    "finishedAt": "2026-08-28T16:44:43Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Meet the Parents_t01.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T14:35:16Z",
+                    "finishedAt": "2026-08-28T14:50:08Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-28T14:50:08Z",
+                    "finishedAt": "2026-08-28T14:50:16Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-28T16:44:43Z",
+                    "finishedAt": "2026-08-28T16:45:34Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-28T16:45:34Z",
+                    "finishedAt": "2026-08-28T16:46:44Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 7806298483,
+                        "totalBytes": 7806298483
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 12,
+                "current_frame": 154558,
+                "total_frames": 154829,
+                "substage": "complete",
+                "input_file": "Meet the Parents_t01.mkv",
+                "resolution": "3840x2076",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:2076:0:42",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 51004549053,
+                "encoded_size": 7961425074,
+                "size_reduction_percent": 84.39075489967159,
+                "average_speed": 0.8350910544395447,
+                "encode_duration_seconds": 7732.93042553,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x2076"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (6457.7s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "4 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "commentaryCount": 2,
+            "source": {
+                "titleId": 0,
+                "name": "Meet the Parents",
+                "durationSeconds": 325
+            }
+        },
+        {
+            "id": 17,
+            "discTitle": "Forrest Gump (1994)",
+            "displayTitle": "Forrest Gump (1994)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-28T14:45:14Z",
+            "updatedAt": "2026-08-28T18:52:01Z",
+            "discFingerprint": "d4c0e6680ce03fdb9c0a5f5b4cda1de914c9a9476fbecca0cb2a174f3c6245b8",
+            "needsReview": false,
+            "metadata": {
+                "id": 13,
+                "title": "Forrest Gump",
+                "media_type": "movie",
+                "year": "1994",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T14:45:16Z",
+                    "finishedAt": "2026-08-28T14:45:16Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Restoring from cache...",
+                        "bytesCopied": 85906433185,
+                        "totalBytes": 85906433185
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T14:45:16Z",
+                    "finishedAt": "2026-08-28T14:45:16Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T16:44:43Z",
+                    "finishedAt": "2026-08-28T18:49:55Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Forrest Gump_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T14:50:16Z",
+                    "finishedAt": "2026-08-28T15:19:18Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-28T15:19:18Z",
+                    "finishedAt": "2026-08-28T15:19:26Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-28T18:49:55Z",
+                    "finishedAt": "2026-08-28T18:51:00Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-28T18:51:00Z",
+                    "finishedAt": "2026-08-28T18:52:01Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 6625868713,
+                        "totalBytes": 6625868713
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 9,
+                "current_frame": 204198,
+                "total_frames": 204478,
+                "substage": "complete",
+                "input_file": "Forrest Gump_t00.mkv",
+                "resolution": "3840x1608",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1608:0:276",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 85906433185,
+                "encoded_size": 7270928048,
+                "size_reduction_percent": 91.53622403069393,
+                "average_speed": 1.141273856163025,
+                "encode_duration_seconds": 7472.73465442,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1608"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (8528.4s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "6 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 1.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "commentaryCount": 2,
+            "source": {
+                "titleId": 0,
+                "name": "Forrest Gump",
+                "durationSeconds": 8528
+            }
+        },
+        {
+            "id": 18,
+            "discTitle": "Mad Max: Fury Road (2015)",
+            "displayTitle": "Mad Max: Fury Road (2015)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-28T14:45:28Z",
+            "updatedAt": "2026-08-28T20:59:09Z",
+            "discFingerprint": "e1c697c33682b6625555bbb0e63bd2d40be16146289d4cbc2572ee24e4012290",
+            "needsReview": false,
+            "metadata": {
+                "id": 76341,
+                "title": "Mad Max: Fury Road",
+                "media_type": "movie",
+                "year": "2015",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T14:45:31Z",
+                    "finishedAt": "2026-08-28T14:45:31Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Restoring from cache...",
+                        "bytesCopied": 45758411512,
+                        "totalBytes": 45758411512
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T14:45:31Z",
+                    "finishedAt": "2026-08-28T14:45:31Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T18:49:55Z",
+                    "finishedAt": "2026-08-28T20:57:23Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Mad Max- Fury Road_t02.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T15:19:26Z",
+                    "finishedAt": "2026-08-28T15:30:38Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-28T15:30:38Z",
+                    "finishedAt": "2026-08-28T15:30:45Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-28T20:57:23Z",
+                    "finishedAt": "2026-08-28T20:57:52Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-28T20:57:52Z",
+                    "finishedAt": "2026-08-28T20:59:08Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 8439708933,
+                        "totalBytes": 8439708933
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 35,
+                "current_frame": 172281,
+                "total_frames": 173133,
+                "substage": "complete",
+                "input_file": "Mad Max- Fury Road_t02.mkv",
+                "resolution": "3840x1602",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1602:0:280",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 45758411512,
+                "encoded_size": 8862766572,
+                "size_reduction_percent": 80.63139370632267,
+                "average_speed": 0.9470062851905823,
+                "encode_duration_seconds": 7625.175122741,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x1602"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (7221.1s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "3 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "source": {
+                "titleId": 0,
+                "name": "Mad Max: Fury Road",
+                "durationSeconds": 132
+            }
+        },
+        {
+            "id": 19,
+            "discTitle": "Life of Pi (2012)",
+            "displayTitle": "Life of Pi (2012)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-28T14:45:58Z",
+            "updatedAt": "2026-08-28T23:23:00Z",
+            "discFingerprint": "2d33549513b0461ae83d03f23b42877386caf6dceac7e4575cfe018dc3f43c66",
+            "needsReview": true,
+            "reviewReasons": [
+                "final_validation: main: audio stream 0 duration 7628.648s differs from video 8073.232s by 444.584s"
+            ],
+            "metadata": {
+                "id": 87827,
+                "title": "Life of Pi",
+                "media_type": "movie",
+                "year": "2012",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T14:46:02Z",
+                    "finishedAt": "2026-08-28T14:46:02Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Restoring from cache...",
+                        "bytesCopied": 51781682866,
+                        "totalBytes": 51781682866
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T14:46:02Z",
+                    "finishedAt": "2026-08-28T14:46:02Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 2,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T21:09:53Z",
+                    "finishedAt": "2026-08-28T23:22:46Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding Life of Pi_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T15:30:45Z",
+                    "finishedAt": "2026-08-28T15:41:08Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-28T15:41:08Z",
+                    "finishedAt": "2026-08-28T15:41:15Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-28T23:22:46Z",
+                    "finishedAt": "2026-08-28T23:23:00Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-28T23:23:00Z",
+                    "finishedAt": "2026-08-28T23:23:00Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": "Phase 1/1 - Copying to review (main)",
+                        "totalBytes": 4611291216
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "current_frame": 193564,
+                "total_frames": 193564,
+                "substage": "complete",
+                "input_file": "Life of Pi_t00.mkv",
+                "resolution": "3840x2076",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:2076:0:42",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 51781682866,
+                "encoded_size": 5047015939,
+                "size_reduction_percent": 90.25327942303342,
+                "average_speed": 1.015494704246521,
+                "encode_duration_seconds": 7950.088861749,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x2076"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (8073.2s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "3 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 8ch | Surround 7.1",
+            "source": {
+                "titleId": 0,
+                "name": "Life of Pi",
+                "durationSeconds": 8073
+            }
+        },
+        {
+            "id": 20,
+            "discTitle": "Planes, Trains and Automobiles (1987)",
+            "displayTitle": "Planes, Trains and Automobiles (1987)",
+            "stage": "completed",
+            "inProgress": false,
+            "createdAt": "2026-08-28T14:51:04Z",
+            "updatedAt": "2026-08-29T01:21:20Z",
+            "discFingerprint": "eef340225f5d96d0182fa3a62a3038fb2f29986b6af45aa4af385682bf4b38e2",
+            "needsReview": false,
+            "metadata": {
+                "id": 2609,
+                "title": "Planes, Trains and Automobiles",
+                "media_type": "movie",
+                "year": "1987",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-28T14:51:06Z",
+                    "finishedAt": "2026-08-28T14:51:54Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T14:51:54Z",
+                    "finishedAt": "2026-08-28T15:44:29Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 53214745279,
+                        "totalBytes": 53214745279
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T15:44:29Z",
+                    "finishedAt": "2026-08-28T15:44:29Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "done",
+                    "attempts": 2,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-29T01:15:33Z",
+                    "finishedAt": "2026-08-29T01:20:53Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Encoding PLANES, TRAINS AND AUTOMOBILES-FPL_MainFeature_t06.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T15:44:29Z",
+                    "finishedAt": "2026-08-28T15:53:12Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-28T15:53:12Z",
+                    "finishedAt": "2026-08-28T15:53:19Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "startedAt": "2026-08-29T01:20:53Z",
+                    "finishedAt": "2026-08-29T01:21:00Z",
+                    "progress": {
+                        "percent": 95,
+                        "message": "Phase 4/4 - Persisting results"
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "startedAt": "2026-08-29T01:21:00Z",
+                    "finishedAt": "2026-08-29T01:21:20Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Phase 1/1 - Copying to library (main)",
+                        "bytesCopied": 1966538885,
+                        "totalBytes": 1966538885
+                    }
+                }
+            ],
+            "encoding": {
+                "percent": 100,
+                "eta_seconds": 18,
+                "current_frame": 132762,
+                "total_frames": 133041,
+                "substage": "complete",
+                "input_file": "PLANES, TRAINS AND AUTOMOBILES-FPL_MainFeature_t06.mkv",
+                "resolution": "3840x2076",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:2076:0:42",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 53214745279,
+                "encoded_size": 2246270441,
+                "size_reduction_percent": 95.77885710206257,
+                "average_speed": 18.532363891601562,
+                "encode_duration_seconds": 299.417721779,
+                "validation": {
+                    "passed": true,
+                    "steps": [
+                        {
+                            "name": "Video codec",
+                            "passed": true,
+                            "details": "AV1 (av1)"
+                        },
+                        {
+                            "name": "Bit depth",
+                            "passed": true,
+                            "details": "10-bit"
+                        },
+                        {
+                            "name": "Crop detection",
+                            "passed": true,
+                            "details": "Dimensions match: 3840x2076"
+                        },
+                        {
+                            "name": "Video duration",
+                            "passed": true,
+                            "details": "Duration matches input (5548.9s)"
+                        },
+                        {
+                            "name": "HDR/SDR status",
+                            "passed": true,
+                            "details": "HDR preserved"
+                        },
+                        {
+                            "name": "Audio tracks",
+                            "passed": true,
+                            "details": "3 audio tracks, all Opus"
+                        },
+                        {
+                            "name": "Audio/video sync",
+                            "passed": true,
+                            "details": "Audio/video sync preserved (maximum drift: 0.0ms)"
+                        }
+                    ]
+                }
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 1,
+                "final": 1
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "primaryAudioDescription": "English | opus | 6ch | Surround 5.1",
+            "source": {
+                "titleId": 0,
+                "name": "PLANES, TRAINS AND AUTOMOBILES",
+                "durationSeconds": 998
+            }
+        },
+        {
+            "id": 21,
+            "discTitle": "The Wolf of Wall Street (2013)",
+            "displayTitle": "The Wolf of Wall Street (2013)",
+            "stage": "encoding",
+            "inProgress": true,
+            "createdAt": "2026-08-28T14:52:12Z",
+            "updatedAt": "2026-08-29T01:21:07Z",
+            "discFingerprint": "e775cd48c71ecb452e7bf919e78ef5c693872c58e1a3e993f06feea0435698f7",
+            "needsReview": false,
+            "metadata": {
+                "id": 106646,
+                "title": "The Wolf of Wall Street",
+                "media_type": "movie",
+                "year": "2013",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T15:44:29Z",
+                    "finishedAt": "2026-08-28T15:44:30Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Restoring from cache...",
+                        "bytesCopied": 85082276600,
+                        "totalBytes": 85082276600
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T15:44:30Z",
+                    "finishedAt": "2026-08-28T15:44:30Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "running",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-29T01:20:53Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": "Phase 1/1 - Encoding The Wolf of Wall Street_t00.mkv"
+                    },
+                    "activeAssetKey": "main"
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T15:53:19Z",
+                    "finishedAt": "2026-08-28T16:11:50Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-28T16:11:50Z",
+                    "finishedAt": "2026-08-28T16:11:59Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "pending",
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "pending",
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                }
+            ],
+            "encoding": {
+                "substage": "chunking",
+                "input_file": "The Wolf of Wall Street_t00.mkv",
+                "resolution": "3840x1600",
+                "dynamic_range": "HDR",
+                "encoder": "SVT-AV1",
+                "preset": "6",
+                "quality": "CVVDP target 9.35-9.75 JOD (initial CRF 26 with adaptive priors, whole-chunk probes, CRF search 4.25-63.75, metric workers 4)",
+                "tune": "0",
+                "audio_codec": "Opus",
+                "crop_filter": "crop=3840:1600:0:280",
+                "crop_required": true,
+                "crop_message": "Black bars detected",
+                "original_size": 85082276600
+            },
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 0,
+                "final": 0
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "source": {
+                "titleId": 0,
+                "name": "The Wolf of Wall Street",
+                "durationSeconds": 10793
+            }
+        },
+        {
+            "id": 22,
+            "discTitle": "American Hustle (2013)",
+            "displayTitle": "American Hustle (2013)",
+            "stage": "encoding",
+            "inProgress": false,
+            "createdAt": "2026-08-28T15:57:09Z",
+            "updatedAt": "2026-08-28T21:09:53Z",
+            "discFingerprint": "04a408322a4987c7153c3abf4e5bd98e5bbd2b7d2079d4b002f27551649aefe4",
+            "needsReview": false,
+            "metadata": {
+                "id": 168672,
+                "title": "American Hustle",
+                "media_type": "movie",
+                "year": "2013",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-28T15:57:10Z",
+                    "finishedAt": "2026-08-28T15:58:06Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T15:58:06Z",
+                    "finishedAt": "2026-08-28T17:17:40Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 79253592029,
+                        "totalBytes": 79253592029
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T17:17:40Z",
+                    "finishedAt": "2026-08-28T17:17:40Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "pending",
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T17:17:40Z",
+                    "finishedAt": "2026-08-28T17:37:17Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-28T17:37:17Z",
+                    "finishedAt": "2026-08-28T17:37:24Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "pending",
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "pending",
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                }
+            ],
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 0,
+                "final": 0
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "source": {
+                "titleId": 0,
+                "name": "American Hustle",
+                "durationSeconds": 8283
+            }
+        },
+        {
+            "id": 23,
+            "discTitle": "Alien (1979)",
+            "displayTitle": "Alien (1979)",
+            "stage": "encoding",
+            "inProgress": false,
+            "createdAt": "2026-08-28T18:50:17Z",
+            "updatedAt": "2026-08-28T21:09:53Z",
+            "discFingerprint": "cf48995b7db78039492010ba52ae427b29fc3561d6d5bfade3d765bb52850e17",
+            "needsReview": false,
+            "metadata": {
+                "id": 348,
+                "title": "Alien",
+                "media_type": "movie",
+                "year": "1979",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-28T18:50:20Z",
+                    "finishedAt": "2026-08-28T18:52:36Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T18:52:36Z",
+                    "finishedAt": "2026-08-28T19:51:38Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 55865898340,
+                        "totalBytes": 55865898340
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T19:51:38Z",
+                    "finishedAt": "2026-08-28T19:51:38Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "pending",
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T19:51:38Z",
+                    "finishedAt": "2026-08-28T20:17:48Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-28T20:17:48Z",
+                    "finishedAt": "2026-08-28T20:18:00Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "pending",
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "pending",
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                }
+            ],
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 0,
+                "final": 0
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "commentaryCount": 2,
+            "source": {
+                "titleId": 0,
+                "name": "ALIEN",
+                "durationSeconds": 234
+            }
+        },
+        {
+            "id": 24,
+            "discTitle": "Catch Me If You Can (2002)",
+            "displayTitle": "Catch Me If You Can (2002)",
+            "stage": "encoding",
+            "inProgress": false,
+            "createdAt": "2026-08-28T22:26:01Z",
+            "updatedAt": "2026-08-29T01:06:38Z",
+            "discFingerprint": "6d1d1f741c86d470fdd412d2b4499af0dfd906fa6ec05b324922db187ff520d0",
+            "needsReview": false,
+            "metadata": {
+                "id": 640,
+                "title": "Catch Me If You Can",
+                "media_type": "movie",
+                "year": "2002",
+                "movie": true
+            },
+            "tasks": [
+                {
+                    "type": "identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "startedAt": "2026-08-28T22:26:06Z",
+                    "finishedAt": "2026-08-28T22:26:56Z",
+                    "progress": {
+                        "percent": 85,
+                        "message": "Phase 3/3 - Finalizing identification"
+                    }
+                },
+                {
+                    "type": "ripping",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "startedAt": "2026-08-28T22:26:56Z",
+                    "finishedAt": "2026-08-28T23:57:39Z",
+                    "progress": {
+                        "percent": 100,
+                        "message": "Caching rip...",
+                        "bytesCopied": 87290674044,
+                        "totalBytes": 87290674044
+                    }
+                },
+                {
+                    "type": "episode_identification",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "ripping"
+                    ],
+                    "startedAt": "2026-08-28T23:57:39Z",
+                    "finishedAt": "2026-08-28T23:57:39Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "encoding",
+                    "state": "pending",
+                    "dependsOn": [
+                        "identification"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "analysis",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "episode_identification"
+                    ],
+                    "startedAt": "2026-08-28T23:57:39Z",
+                    "finishedAt": "2026-08-29T00:11:25Z",
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "subtitling",
+                    "state": "done",
+                    "attempts": 1,
+                    "dependsOn": [
+                        "analysis"
+                    ],
+                    "startedAt": "2026-08-29T00:11:25Z",
+                    "finishedAt": "2026-08-29T00:11:32Z",
+                    "progress": {
+                        "percent": 92,
+                        "message": "Phase 1/1 - Syncing subtitles (main)"
+                    }
+                },
+                {
+                    "type": "apply",
+                    "state": "pending",
+                    "dependsOn": [
+                        "subtitling",
+                        "encoding"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                },
+                {
+                    "type": "organizing",
+                    "state": "pending",
+                    "dependsOn": [
+                        "apply"
+                    ],
+                    "progress": {
+                        "percent": 0,
+                        "message": ""
+                    }
+                }
+            ],
+            "episodeTotals": {
+                "planned": 1,
+                "ripped": 1,
+                "encoded": 0,
+                "final": 0
+            },
+            "subtitleGeneration": {
+                "opensubtitles": 1,
+                "skipped": 0
+            },
+            "source": {
+                "titleId": 0,
+                "name": "CATCH ME IF YOU CAN",
+                "durationSeconds": 8443
+            }
+        }
+    ]
+}

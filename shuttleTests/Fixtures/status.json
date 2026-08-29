@@ -1,0 +1,213 @@
+{
+    "running": true,
+    "pid": 2528524,
+    "queueDbPath": "/home/ken/.local/state/spindle/queue.db",
+    "lockFilePath": "/run/user/1000/spindle.lock",
+    "workflow": {
+        "running": true,
+        "queueStats": {
+            "completed": 20,
+            "encoding": 4
+        },
+        "lastError": ""
+    },
+    "dependencies": [
+        {
+            "name": "makemkvcon",
+            "command": "makemkvcon",
+            "description": "MakeMKV CLI",
+            "optional": false,
+            "available": true,
+            "detail": "/usr/bin/makemkvcon"
+        },
+        {
+            "name": "ffmpeg",
+            "command": "ffmpeg",
+            "description": "FFmpeg media processor",
+            "optional": false,
+            "available": true,
+            "detail": "/home/ken/.local/bin/ffmpeg"
+        },
+        {
+            "name": "ffprobe",
+            "command": "ffprobe",
+            "description": "FFprobe media analyzer",
+            "optional": false,
+            "available": true,
+            "detail": "/home/ken/.local/bin/ffprobe"
+        },
+        {
+            "name": "mkvmerge",
+            "command": "mkvmerge",
+            "description": "MKVToolNix merge tool",
+            "optional": false,
+            "available": true,
+            "detail": "/usr/bin/mkvmerge"
+        },
+        {
+            "name": "uvx",
+            "command": "uvx",
+            "description": "uv tool runner (WhisperX, ffsubsync)",
+            "optional": false,
+            "available": true,
+            "detail": "/home/ken/.local/bin/uvx"
+        },
+        {
+            "name": "libSvtAv1Enc",
+            "command": "libSvtAv1Enc.so",
+            "description": "Reel SVT-AV1 encoder library",
+            "optional": false,
+            "available": true,
+            "detail": "/usr/local/lib/libSvtAv1Enc.so.4"
+        },
+        {
+            "name": "libavformat",
+            "command": "libavformat.so",
+            "description": "Reel FFmpeg format library",
+            "optional": false,
+            "available": true,
+            "detail": "/usr/local/lib/libavformat.so.63"
+        },
+        {
+            "name": "libavcodec",
+            "command": "libavcodec.so",
+            "description": "Reel FFmpeg codec library",
+            "optional": false,
+            "available": true,
+            "detail": "/usr/local/lib/libavcodec.so.63"
+        },
+        {
+            "name": "libavutil",
+            "command": "libavutil.so",
+            "description": "Reel FFmpeg utility library",
+            "optional": false,
+            "available": true,
+            "detail": "/usr/local/lib/libavutil.so.61"
+        },
+        {
+            "name": "libswscale",
+            "command": "libswscale.so",
+            "description": "Reel FFmpeg scaling library",
+            "optional": false,
+            "available": true,
+            "detail": "/usr/local/lib/libswscale.so.10"
+        },
+        {
+            "name": "libswresample",
+            "command": "libswresample.so",
+            "description": "Reel FFmpeg resampling library",
+            "optional": false,
+            "available": true,
+            "detail": "/usr/local/lib/libswresample.so.7"
+        },
+        {
+            "name": "libopusenc",
+            "command": "libopusenc.so",
+            "description": "Reel Opus encoder library",
+            "optional": false,
+            "available": true,
+            "detail": "/lib/x86_64-linux-gnu/libopusenc.so.0"
+        },
+        {
+            "name": "libvship",
+            "command": "libvship.so",
+            "description": "Reel target-quality VSHIP/CVVDP library",
+            "optional": false,
+            "available": true,
+            "detail": "/usr/local/lib/libvship.so"
+        }
+    ],
+    "pipeline": [
+        {
+            "stage": "identification",
+            "claims": [
+                "drive"
+            ]
+        },
+        {
+            "stage": "ripping",
+            "dependsOn": [
+                "identification"
+            ],
+            "claims": [
+                "drive"
+            ]
+        },
+        {
+            "stage": "episode_identification",
+            "dependsOn": [
+                "ripping"
+            ],
+            "claims": [
+                "gpu"
+            ]
+        },
+        {
+            "stage": "encoding",
+            "dependsOn": [
+                "identification"
+            ],
+            "claims": [
+                "encode"
+            ]
+        },
+        {
+            "stage": "analysis",
+            "dependsOn": [
+                "episode_identification"
+            ],
+            "claims": [
+                "gpu"
+            ]
+        },
+        {
+            "stage": "subtitling",
+            "dependsOn": [
+                "analysis"
+            ],
+            "claims": [
+                "gpu"
+            ]
+        },
+        {
+            "stage": "apply",
+            "dependsOn": [
+                "subtitling",
+                "encoding"
+            ]
+        },
+        {
+            "stage": "organizing",
+            "dependsOn": [
+                "apply"
+            ]
+        }
+    ],
+    "scheduler": {
+        "resources": {
+            "drive": {
+                "capacity": 1,
+                "used": 0,
+                "holders": []
+            },
+            "encode": {
+                "capacity": 1,
+                "used": 1,
+                "holders": [
+                    {
+                        "itemId": 21,
+                        "task": "encoding"
+                    }
+                ]
+            },
+            "gpu": {
+                "capacity": 1,
+                "used": 0,
+                "holders": []
+            }
+        }
+    },
+    "disc": {
+        "paused": false
+    }
+}

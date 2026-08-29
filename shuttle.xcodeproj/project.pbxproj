@@ -10,7 +10,23 @@
 		B00000000000000000000011 /* shuttleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* shuttleApp.swift */; };
 		B00000000000000000000012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* ContentView.swift */; };
 		B00000000000000000000013 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* Assets.xcassets */; };
-		B00000000000000000000111 /* ShuttleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000101 /* ShuttleTests.swift */; };
+		B00000000000000000000301 /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000201 /* JSONValue.swift */; };
+		B00000000000000000000302 /* Stage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000202 /* Stage.swift */; };
+		B00000000000000000000303 /* SpindleDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000203 /* SpindleDate.swift */; };
+		B00000000000000000000304 /* StatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000204 /* StatusResponse.swift */; };
+		B00000000000000000000305 /* QueueItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000205 /* QueueItem.swift */; };
+		B00000000000000000000306 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000206 /* LogEntry.swift */; };
+		B00000000000000000000311 /* SpindleClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000211 /* SpindleClient.swift */; };
+		B00000000000000000000312 /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000212 /* AppSettingsStore.swift */; };
+		B00000000000000000000313 /* SpindleMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000213 /* SpindleMonitor.swift */; };
+		B00000000000000000000321 /* StatusChips.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000221 /* StatusChips.swift */; };
+		B00000000000000000000322 /* NowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000222 /* NowView.swift */; };
+		B00000000000000000000323 /* QueueTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000223 /* QueueTableView.swift */; };
+		B00000000000000000000324 /* ConnectionStatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000224 /* ConnectionStatusBar.swift */; };
+		B00000000000000000000331 /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000231 /* Fixtures.swift */; };
+		B00000000000000000000332 /* DecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000232 /* DecodingTests.swift */; };
+		B00000000000000000000333 /* SpindleMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000233 /* SpindleMonitorTests.swift */; };
+		B00000000000000000000340 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000240 /* Fixtures */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,10 +42,27 @@
 /* Begin PBXFileReference section */
 		B00000000000000000000001 /* shuttleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = shuttleApp.swift; sourceTree = "<group>"; };
 		B00000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B00000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B00000000000000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B00000000000000000000020 /* shuttle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = shuttle.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		B00000000000000000000101 /* ShuttleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShuttleTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000104 /* shuttleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = shuttleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B00000000000000000000201 /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
+		B00000000000000000000202 /* Stage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stage.swift; sourceTree = "<group>"; };
+		B00000000000000000000203 /* SpindleDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpindleDate.swift; sourceTree = "<group>"; };
+		B00000000000000000000204 /* StatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusResponse.swift; sourceTree = "<group>"; };
+		B00000000000000000000205 /* QueueItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueItem.swift; sourceTree = "<group>"; };
+		B00000000000000000000206 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
+		B00000000000000000000211 /* SpindleClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpindleClient.swift; sourceTree = "<group>"; };
+		B00000000000000000000212 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
+		B00000000000000000000213 /* SpindleMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpindleMonitor.swift; sourceTree = "<group>"; };
+		B00000000000000000000221 /* StatusChips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusChips.swift; sourceTree = "<group>"; };
+		B00000000000000000000222 /* NowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowView.swift; sourceTree = "<group>"; };
+		B00000000000000000000223 /* QueueTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueTableView.swift; sourceTree = "<group>"; };
+		B00000000000000000000224 /* ConnectionStatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionStatusBar.swift; sourceTree = "<group>"; };
+		B00000000000000000000231 /* Fixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fixtures.swift; sourceTree = "<group>"; };
+		B00000000000000000000232 /* DecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000233 /* SpindleMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpindleMonitorTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000240 /* Fixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fixtures; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +110,7 @@
 				B00000000000000000000052 /* Services */,
 				B00000000000000000000053 /* Views */,
 				B00000000000000000000003 /* Assets.xcassets */,
+				B00000000000000000000004 /* Info.plist */,
 			);
 			path = shuttle;
 			sourceTree = "<group>";
@@ -84,6 +118,12 @@
 		B00000000000000000000051 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000201 /* JSONValue.swift */,
+				B00000000000000000000202 /* Stage.swift */,
+				B00000000000000000000203 /* SpindleDate.swift */,
+				B00000000000000000000204 /* StatusResponse.swift */,
+				B00000000000000000000205 /* QueueItem.swift */,
+				B00000000000000000000206 /* LogEntry.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -91,6 +131,9 @@
 		B00000000000000000000052 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000211 /* SpindleClient.swift */,
+				B00000000000000000000212 /* AppSettingsStore.swift */,
+				B00000000000000000000213 /* SpindleMonitor.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -98,6 +141,10 @@
 		B00000000000000000000053 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000221 /* StatusChips.swift */,
+				B00000000000000000000222 /* NowView.swift */,
+				B00000000000000000000223 /* QueueTableView.swift */,
+				B00000000000000000000224 /* ConnectionStatusBar.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -105,7 +152,10 @@
 		B0000000000000000000010D /* shuttleTests */ = {
 			isa = PBXGroup;
 			children = (
-				B00000000000000000000101 /* ShuttleTests.swift */,
+				B00000000000000000000231 /* Fixtures.swift */,
+				B00000000000000000000232 /* DecodingTests.swift */,
+				B00000000000000000000233 /* SpindleMonitorTests.swift */,
+				B00000000000000000000240 /* Fixtures */,
 			);
 			path = shuttleTests;
 			sourceTree = "<group>";
@@ -136,6 +186,7 @@
 			buildPhases = (
 				B00000000000000000000105 /* Sources */,
 				B00000000000000000000106 /* Frameworks */,
+				B00000000000000000000107 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -194,6 +245,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B00000000000000000000107 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00000000000000000000340 /* Fixtures in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -201,6 +260,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000301 /* JSONValue.swift in Sources */,
+				B00000000000000000000302 /* Stage.swift in Sources */,
+				B00000000000000000000303 /* SpindleDate.swift in Sources */,
+				B00000000000000000000304 /* StatusResponse.swift in Sources */,
+				B00000000000000000000305 /* QueueItem.swift in Sources */,
+				B00000000000000000000306 /* LogEntry.swift in Sources */,
+				B00000000000000000000311 /* SpindleClient.swift in Sources */,
+				B00000000000000000000312 /* AppSettingsStore.swift in Sources */,
+				B00000000000000000000313 /* SpindleMonitor.swift in Sources */,
+				B00000000000000000000321 /* StatusChips.swift in Sources */,
+				B00000000000000000000322 /* NowView.swift in Sources */,
+				B00000000000000000000323 /* QueueTableView.swift in Sources */,
+				B00000000000000000000324 /* ConnectionStatusBar.swift in Sources */,
 				B00000000000000000000011 /* shuttleApp.swift in Sources */,
 				B00000000000000000000012 /* ContentView.swift in Sources */,
 			);
@@ -210,7 +282,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B00000000000000000000111 /* ShuttleTests.swift in Sources */,
+				B00000000000000000000331 /* Fixtures.swift in Sources */,
+				B00000000000000000000332 /* DecodingTests.swift in Sources */,
+				B00000000000000000000333 /* SpindleMonitorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,6 +427,7 @@
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = shuttle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = shuttle;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -383,6 +458,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = shuttle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = shuttle;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";

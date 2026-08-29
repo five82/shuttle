@@ -1,0 +1,266 @@
+{
+    "events": [
+        {
+            "seq": 235,
+            "ts": "2026-08-28T11:29:09.642764699-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ final chunk=0218 crf=24.25 score=9.5415 size=5656388 probes=1 stop=converged"
+            }
+        },
+        {
+            "seq": 236,
+            "ts": "2026-08-28T11:29:14.30317899-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ probe chunk=0213 round=1 crf=25.25 initial_source=neighbor score=9.4385 delta=-0.1115 size=3938878 peak_mbps=6.3 frames=222 encode=37.4s metric=43.1s metric_fps=5.2"
+            }
+        },
+        {
+            "seq": 237,
+            "ts": "2026-08-28T11:29:14.303291604-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ final chunk=0213 crf=25.25 score=9.4385 size=3938878 probes=1 stop=converged"
+            }
+        },
+        {
+            "seq": 238,
+            "ts": "2026-08-28T11:29:25.1053661-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ probe chunk=0198 round=1 crf=26.25 initial_source=neighbor score=9.3524 delta=-0.1976 size=2191382 peak_mbps=6.4 frames=83 encode=15.8s metric=15.3s metric_fps=5.4"
+            }
+        },
+        {
+            "seq": 239,
+            "ts": "2026-08-28T11:29:25.108879055-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ final chunk=0198 crf=26.25 score=9.3524 size=2191382 probes=1 stop=converged"
+            }
+        },
+        {
+            "seq": 240,
+            "ts": "2026-08-28T11:29:45.772725665-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ probe chunk=0221 round=1 crf=24 initial_source=neighbor score=9.4771 delta=-0.0729 size=1434624 peak_mbps=3.2 frames=132 encode=18.5s metric=19.2s metric_fps=6.9"
+            }
+        },
+        {
+            "seq": 241,
+            "ts": "2026-08-28T11:29:45.772906357-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ final chunk=0221 crf=24 score=9.4771 size=1434624 probes=1 stop=converged"
+            }
+        },
+        {
+            "seq": 242,
+            "ts": "2026-08-28T11:29:45.793107474-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ probe chunk=0214 round=1 crf=25 initial_source=neighbor score=9.4658 delta=-0.0842 size=3806605 peak_mbps=5.3 frames=222 encode=38.7s metric=30.9s metric_fps=7.2"
+            }
+        },
+        {
+            "seq": 243,
+            "ts": "2026-08-28T11:29:45.793202473-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ final chunk=0214 crf=25 score=9.4658 size=3806605 probes=1 stop=converged"
+            }
+        },
+        {
+            "seq": 244,
+            "ts": "2026-08-28T11:29:45.793233522-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ probe chunk=0215 round=1 crf=23.25 initial_source=neighbor score=9.5077 delta=-0.0423 size=7013896 peak_mbps=10.1 frames=222 encode=36.1s metric=31.0s metric_fps=7.2"
+            }
+        },
+        {
+            "seq": 245,
+            "ts": "2026-08-28T11:29:45.793239464-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ final chunk=0215 crf=23.25 score=9.5077 size=7013896 probes=1 stop=converged"
+            }
+        },
+        {
+            "seq": 246,
+            "ts": "2026-08-28T11:30:03.724227626-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ probe chunk=0227 round=1 crf=27 initial_source=neighbor score=9.5323 delta=-0.0177 size=5633706 peak_mbps=5.9 frames=273 encode=31.3s metric=31.7s metric_fps=8.6"
+            }
+        },
+        {
+            "seq": 247,
+            "ts": "2026-08-28T11:30:03.724344717-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ final chunk=0227 crf=27 score=9.5323 size=5633706 probes=1 stop=converged"
+            }
+        },
+        {
+            "seq": 248,
+            "ts": "2026-08-28T11:30:13.540890868-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ probe chunk=0228 round=1 crf=27 initial_source=neighbor score=9.6030 delta=+0.0530 size=4239255 peak_mbps=5.0 frames=273 encode=30.3s metric=34.6s metric_fps=7.9"
+            }
+        },
+        {
+            "seq": 249,
+            "ts": "2026-08-28T11:30:13.540972372-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ final chunk=0228 crf=27 score=9.6030 size=4239255 probes=1 stop=converged"
+            }
+        },
+        {
+            "seq": 250,
+            "ts": "2026-08-28T11:30:17.884179557-04:00",
+            "level": "INFO",
+            "msg": "encoding progress",
+            "item_id": 16,
+            "fields": {
+                "bitrate": "",
+                "chunks_complete": "226",
+                "chunks_total": "666",
+                "current_frame": "52344",
+                "episode_key": "main",
+                "eta_seconds": "5337",
+                "event_type": "encoding_progress",
+                "percent": "33.8",
+                "speed": "0.8",
+                "total_frames": "154829",
+                "workers_active": "5",
+                "workers_target": "5"
+            }
+        },
+        {
+            "seq": 251,
+            "ts": "2026-08-28T11:30:32.888895151-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ probe chunk=0229 round=1 crf=27 initial_source=neighbor score=9.5337 delta=-0.0163 size=6514418 peak_mbps=6.4 frames=273 encode=40.1s metric=36.8s metric_fps=7.4"
+            }
+        },
+        {
+            "seq": 252,
+            "ts": "2026-08-28T11:30:32.889082295-04:00",
+            "level": "DEBUG",
+            "msg": "reel verbose",
+            "item_id": 16,
+            "fields": {
+                "episode_key": "main",
+                "event_type": "reel_verbose",
+                "message": "TQ final chunk=0229 crf=27 score=9.5337 size=6514418 probes=1 stop=converged"
+            }
+        },
+        {
+            "seq": 253,
+            "ts": "2026-08-28T11:30:35.782568738-04:00",
+            "level": "INFO",
+            "msg": "WhisperX transcription completed",
+            "item_id": 18,
+            "fields": {
+                "audio_index": "1",
+                "content_duration_s": "7122.978",
+                "duration_ms": "252649",
+                "episode_key": "main",
+                "event_type": "transcription_whisperx_complete",
+                "json_path": "/tmp/spindle-commentary-e1c697c33682b6625555bbb0e63bd2d40be16146289d4cbc2572ee24e4012290-main-1/audio.json",
+                "purpose": "commentary_candidate",
+                "segments": "775",
+                "srt_path": "/tmp/spindle-commentary-e1c697c33682b6625555bbb0e63bd2d40be16146289d4cbc2572ee24e4012290-main-1/audio.srt"
+            }
+        },
+        {
+            "seq": 254,
+            "ts": "2026-08-28T11:30:35.783459796-04:00",
+            "level": "INFO",
+            "msg": "WhisperX transcription completed",
+            "item_id": 18,
+            "fields": {
+                "audio_index": "2",
+                "content_duration_s": "7212.7",
+                "duration_ms": "252649",
+                "episode_key": "main",
+                "event_type": "transcription_whisperx_complete",
+                "json_path": "/tmp/spindle-commentary-e1c697c33682b6625555bbb0e63bd2d40be16146289d4cbc2572ee24e4012290-main-2/audio.json",
+                "purpose": "commentary_candidate",
+                "segments": "1890",
+                "srt_path": "/tmp/spindle-commentary-e1c697c33682b6625555bbb0e63bd2d40be16146289d4cbc2572ee24e4012290-main-2/audio.srt"
+            }
+        }
+    ],
+    "next": 255
+}
