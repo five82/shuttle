@@ -14,11 +14,16 @@ shuttle is a native macOS SwiftUI app: a read-only monitor for a running [Spindl
 Important paths:
 
 - `shuttle.xcodeproj/` — Xcode project
-- `shuttle/ContentView.swift` — main app layout and coordination
-- `shuttle/shuttleApp.swift` — app entry point, commands, help window, settings
-- `shuttle/Models/` — value types decoded from the Spindle API and app settings
-- `shuttle/Services/` — Spindle API client, polling, connection state
-- `shuttle/Views/` — SwiftUI subviews
+- `shuttle/ContentView.swift` — main window layout (sidebar + Now / Queue)
+- `shuttle/shuttleApp.swift` — scenes (main window, menu bar extra, settings, help), app delegate
+- `shuttle/Models/` — value types decoded from the Spindle API
+- `shuttle/Services/AppModel.swift` — process-wide owner of settings, monitor, notifications; started from the app delegate so polling runs with no window open
+- `shuttle/Services/SpindleClient.swift` — URLSession client, GET endpoints only
+- `shuttle/Services/SpindleMonitor.swift` — poll loop, atomic snapshot, backoff, derived state, event emission
+- `shuttle/Services/EventDetector.swift` — pure snapshot diff → `MonitorEvent`s
+- `shuttle/Services/NotificationService.swift` — user notifications, Dock badge, `shuttle://` deep links
+- `shuttle/Services/AppSettingsStore.swift` — UserDefaults-backed settings
+- `shuttle/Views/` — SwiftUI subviews, including `MenuBarView` for the menu bar popover
 - `shuttle/Info.plist` — merged into the generated Info.plist; holds the ATS exception and local-network usage string
 - `shuttleTests/` — unit tests; `shuttleTests/Fixtures/*.json` are real responses captured from a live daemon
 - `scripts/build` — debug build
@@ -74,6 +79,13 @@ curl -H "Authorization: Bearer $TOKEN" $SPINDLE/api/queue  | python3 -m json.too
 ```
 
 Decoding tests assert specific values from those captures (item IDs, counts); update the assertions alongside the fixtures.
+
+## Surfaces and navigation
+
+- The menu bar extra and notifications are primary; the main window is secondary. Anything that changes what a poll means (new derived state, new event) must show up in all three.
+- Events come only from `EventDetector`, which diffs consecutive snapshots and ignores items it has not seen before, so a daemon restart or `spindle queue clear` never replays notifications. Keep it pure and keep its tests exhaustive.
+- Opening the main window from outside a view (notification tap, menu bar row, Dock reopen) goes through the `shuttle://main` / `shuttle://item/<id>` URL scheme, because `openWindow` only exists inside views. `ContentView.onOpenURL` routes to `AppModel.handle`.
+- "Show in menu bar only" switches the activation policy to `.accessory`; the app keeps polling either way.
 
 ## Performance / UI rules
 

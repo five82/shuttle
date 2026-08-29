@@ -187,6 +187,37 @@ final class SpindleMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.attentionItems.map(\.id), [99, 19])
     }
 
+    func testEventsFireOnlyAfterFirstSnapshot() async throws {
+        var items = try Fixtures.queue()
+        let api = MockSpindleAPI(status: try Fixtures.status(), queue: items)
+        let monitor = makeMonitor(api)
+        var received: [[MonitorEvent]] = []
+        monitor.onEvents = { received.append($0) }
+        var snapshots = 0
+        monitor.onSnapshot = { snapshots += 1 }
+
+        await monitor.refresh()
+        XCTAssertEqual(received, [], "first poll seeds, never notifies")
+        XCTAssertEqual(snapshots, 1)
+
+        let index = try XCTUnwrap(items.firstIndex { $0.id == 21 })
+        items[index].stage = .completed
+        items[index].inProgress = false
+        items[index].tasks = nil
+        api.queueResult = .success(items)
+        await monitor.refresh()
+
+        XCTAssertEqual(received.count, 1)
+        XCTAssertEqual(received.first?.map(\.kind), [.completed])
+        XCTAssertEqual(received.first?.first?.item?.id, 21)
+        XCTAssertEqual(monitor.lastEvents.count, 1)
+        XCTAssertEqual(snapshots, 2)
+
+        api.queueResult = .failure(SpindleClientError.unreachable("down"))
+        await monitor.refresh()
+        XCTAssertEqual(snapshots, 2, "failed polls don't report snapshots")
+    }
+
     func testStartPollsAndStopCancels() async throws {
         let api = MockSpindleAPI(status: try Fixtures.status(), queue: try Fixtures.queue())
         let monitor = makeMonitor(api)

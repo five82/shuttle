@@ -2,21 +2,20 @@ import SwiftUI
 
 @main
 struct shuttleApp: App {
-    @State private var settingsStore: AppSettingsStore
-    @State private var monitor: SpindleMonitor
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
-    init() {
-        let store = AppSettingsStore()
-        _settingsStore = State(initialValue: store)
-        _monitor = State(initialValue: SpindleMonitor(clientProvider: { store.makeClient() }))
-    }
+    private var model: AppModel { AppModel.shared }
+    private var settingsStore: AppSettingsStore { model.settings }
+    private var monitor: SpindleMonitor { model.monitor }
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: MainWindow.id) {
             ContentView()
+                .environment(model)
                 .environment(settingsStore)
                 .environment(monitor)
         }
+        .handlesExternalEvents(matching: [DeepLink.scheme])
         .windowResizability(.contentSize)
         .commands {
             CommandGroup(after: .toolbar) {
@@ -34,10 +33,56 @@ struct shuttleApp: App {
         .defaultSize(width: 620, height: 640)
         .windowResizability(.contentSize)
 
+        MenuBarExtra {
+            MenuBarView()
+                .environment(monitor)
+        } label: {
+            MenuBarLabel()
+                .environment(monitor)
+        }
+        .menuBarExtraStyle(.window)
+
         Settings {
             ShuttleSettingsView()
+                .environment(model)
                 .environment(settingsStore)
                 .environment(monitor)
+        }
+    }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        AppModel.shared.start()
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            NSWorkspace.shared.open(DeepLink.main.url)
+        }
+        return true
+    }
+}
+
+private struct MenuBarLabel: View {
+    @Environment(SpindleMonitor.self) private var monitor
+
+    var body: some View {
+        let count = monitor.attentionCount
+        Label {
+            Text(count > 0 ? "\(count)" : "")
+        } icon: {
+            Image(systemName: symbol)
+        }
+        .labelStyle(.titleAndIcon)
+    }
+
+    private var symbol: String {
+        guard monitor.connection.isConnected else { return "opticaldisc" }
+        switch monitor.driveState {
+        case .busy: return "opticaldisc.fill"
+        case .paused: return "pause.circle"
+        case .available, .unknown: return "opticaldisc"
         }
     }
 }
@@ -60,6 +105,7 @@ private struct ShuttleHelpCommands: Commands {
 }
 
 private struct ShuttleSettingsView: View {
+    @Environment(AppModel.self) private var model
     @Environment(AppSettingsStore.self) private var settingsStore
     @Environment(SpindleMonitor.self) private var monitor
 
@@ -90,6 +136,26 @@ private struct ShuttleSettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("Notifications") {
+                ForEach(NotificationKind.allCases) { kind in
+                    Toggle(isOn: notificationBinding(kind)) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(kind.title)
+                            Text(kind.detail)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+
+            Section("Menu Bar") {
+                Toggle("Show in menu bar only", isOn: menuBarOnlyBinding)
+                Text("Hides the Dock icon. shuttle keeps polling and notifying; open the window from the menu bar.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section {
                 HStack {
                     Button("Test Connection", action: testConnection)
@@ -116,6 +182,23 @@ private struct ShuttleSettingsView: View {
         .frame(width: 560)
         .onAppear(perform: load)
         .onDisappear(perform: commit)
+    }
+
+    private func notificationBinding(_ kind: NotificationKind) -> Binding<Bool> {
+        Binding(
+            get: { settingsStore.settings.notifies(kind) },
+            set: { settingsStore.setNotification(kind, enabled: $0) }
+        )
+    }
+
+    private var menuBarOnlyBinding: Binding<Bool> {
+        Binding(
+            get: { settingsStore.settings.menuBarOnly },
+            set: {
+                settingsStore.setMenuBarOnly($0)
+                model.applyActivationPolicy()
+            }
+        )
     }
 
     private func load() {
@@ -175,6 +258,13 @@ private struct ShuttleHelpView: View {
                     HelpBullet("Enable Spindle's HTTP API with [api] bind and token in its config, then enter the same address and token in shuttle > Settings.")
                     HelpBullet("Now shows what needs attention, what is running, and what the daemon is holding. Queue lists every item; click a column header to sort.")
                     HelpBullet("shuttle never changes anything. Use the spindle CLI to retry, remove, or stop items.")
+                }
+
+                HelpCard(title: "Menu Bar and Notifications", systemImage: "bell") {
+                    HelpBullet("The menu bar icon shows the drive: outlined when available, filled when busy, paused, or plain when disconnected. A number beside it is how many items need attention.")
+                    HelpBullet("Click it for what is running and what needs you. Click a row to open that item.")
+                    HelpBullet("shuttle notifies when the drive becomes available, an item needs review, fails, or completes. Each can be turned off in Settings.")
+                    HelpBullet("Turn on “Show in menu bar only” to hide the Dock icon; shuttle keeps polling in the background.")
                 }
 
                 HelpCard(title: "Shortcuts", systemImage: "keyboard") {

@@ -22,15 +22,20 @@ enum SidebarSection: String, CaseIterable, Identifiable {
 }
 
 struct ContentView: View {
+    @Environment(AppModel.self) private var model
     @Environment(SpindleMonitor.self) private var monitor
     @Environment(AppSettingsStore.self) private var settingsStore
 
-    @State private var section: SidebarSection? = .now
     @State private var searchText = ""
 
     var body: some View {
+        @Bindable var model = model
+        let section = Binding<SidebarSection?>(
+            get: { model.section },
+            set: { model.section = $0 ?? .now }
+        )
         NavigationSplitView {
-            List(SidebarSection.allCases, selection: $section) { section in
+            List(SidebarSection.allCases, selection: section) { section in
                 Label {
                     HStack {
                         Text(section.title)
@@ -46,7 +51,7 @@ struct ContentView: View {
         } detail: {
             VStack(spacing: 0) {
                 Group {
-                    switch section ?? .now {
+                    switch model.section {
                     case .now:
                         NowView()
                     case .queue:
@@ -58,7 +63,7 @@ struct ContentView: View {
                 Divider()
                 ConnectionStatusBar(endpoint: settingsStore.settings.baseURLString)
             }
-            .navigationTitle(section?.title ?? "shuttle")
+            .navigationTitle(model.section.title)
         }
         .toolbar {
             ToolbarItemGroup(placement: .principal) {
@@ -67,8 +72,10 @@ struct ContentView: View {
         }
         .searchable(text: $searchText, placement: .toolbar, prompt: "Filter queue")
         .frame(minWidth: 900, minHeight: 600)
-        .task {
-            monitor.start()
+        .onOpenURL { url in
+            if let link = DeepLink(url: url) {
+                model.handle(link)
+            }
         }
     }
 

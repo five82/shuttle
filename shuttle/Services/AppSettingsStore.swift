@@ -7,6 +7,12 @@ struct AppSettings: Equatable, Sendable {
 
     var baseURLString: String
     var token: String
+    var notifications: Set<NotificationKind> = Set(NotificationKind.allCases)
+    var menuBarOnly = false
+
+    func notifies(_ kind: NotificationKind) -> Bool {
+        notifications.contains(kind)
+    }
 
     /// The daemon URL, or nil when the string is not an http(s) URL with a host.
     var baseURL: URL? {
@@ -25,6 +31,8 @@ final class AppSettingsStore {
     private enum Key {
         static let baseURL = "spindleBaseURL"
         static let token = "spindleAPIToken"
+        static let menuBarOnly = "menuBarOnly"
+        static func notify(_ kind: NotificationKind) -> String { "notify.\(kind.rawValue)" }
     }
 
     private(set) var settings: AppSettings
@@ -32,10 +40,17 @@ final class AppSettingsStore {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        settings = AppSettings(
+        var loaded = AppSettings(
             baseURLString: defaults.string(forKey: Key.baseURL) ?? AppSettings.defaultBaseURLString,
             token: defaults.string(forKey: Key.token) ?? ""
         )
+        loaded.menuBarOnly = defaults.bool(forKey: Key.menuBarOnly)
+        for kind in NotificationKind.allCases {
+            if let enabled = defaults.object(forKey: Key.notify(kind)) as? Bool, !enabled {
+                loaded.notifications.remove(kind)
+            }
+        }
+        settings = loaded
     }
 
     var baseURLIsValid: Bool { settings.baseURL != nil }
@@ -50,10 +65,28 @@ final class AppSettingsStore {
         defaults.set(token, forKey: Key.token)
     }
 
+    func setNotification(_ kind: NotificationKind, enabled: Bool) {
+        if enabled {
+            settings.notifications.insert(kind)
+        } else {
+            settings.notifications.remove(kind)
+        }
+        defaults.set(enabled, forKey: Key.notify(kind))
+    }
+
+    func setMenuBarOnly(_ enabled: Bool) {
+        settings.menuBarOnly = enabled
+        defaults.set(enabled, forKey: Key.menuBarOnly)
+    }
+
     func resetToDefaults() {
         settings = .defaults
         defaults.removeObject(forKey: Key.baseURL)
         defaults.removeObject(forKey: Key.token)
+        defaults.removeObject(forKey: Key.menuBarOnly)
+        for kind in NotificationKind.allCases {
+            defaults.removeObject(forKey: Key.notify(kind))
+        }
     }
 
     /// A client for the current settings, or nil when the address is invalid.

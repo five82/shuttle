@@ -27,6 +27,11 @@
 		B00000000000000000000332 /* DecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000232 /* DecodingTests.swift */; };
 		B00000000000000000000333 /* SpindleMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000233 /* SpindleMonitorTests.swift */; };
 		B00000000000000000000340 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000240 /* Fixtures */; };
+		B00000000000000000000314 /* EventDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000214 /* EventDetector.swift */; };
+		B00000000000000000000315 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000215 /* NotificationService.swift */; };
+		B00000000000000000000316 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000216 /* AppModel.swift */; };
+		B00000000000000000000325 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000225 /* MenuBarView.swift */; };
+		B00000000000000000000334 /* EventDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000234 /* EventDetectorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +68,11 @@
 		B00000000000000000000232 /* DecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000233 /* SpindleMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpindleMonitorTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000240 /* Fixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fixtures; sourceTree = "<group>"; };
+		B00000000000000000000214 /* EventDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetector.swift; sourceTree = "<group>"; };
+		B00000000000000000000215 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		B00000000000000000000216 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		B00000000000000000000225 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		B00000000000000000000234 /* EventDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetectorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +141,9 @@
 		B00000000000000000000052 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000216 /* AppModel.swift */,
+				B00000000000000000000215 /* NotificationService.swift */,
+				B00000000000000000000214 /* EventDetector.swift */,
 				B00000000000000000000211 /* SpindleClient.swift */,
 				B00000000000000000000212 /* AppSettingsStore.swift */,
 				B00000000000000000000213 /* SpindleMonitor.swift */,
@@ -141,6 +154,7 @@
 		B00000000000000000000053 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000225 /* MenuBarView.swift */,
 				B00000000000000000000221 /* StatusChips.swift */,
 				B00000000000000000000222 /* NowView.swift */,
 				B00000000000000000000223 /* QueueTableView.swift */,
@@ -152,6 +166,7 @@
 		B0000000000000000000010D /* shuttleTests */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000234 /* EventDetectorTests.swift */,
 				B00000000000000000000231 /* Fixtures.swift */,
 				B00000000000000000000232 /* DecodingTests.swift */,
 				B00000000000000000000233 /* SpindleMonitorTests.swift */,
@@ -260,6 +275,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000314 /* EventDetector.swift in Sources */,
+				B00000000000000000000315 /* NotificationService.swift in Sources */,
+				B00000000000000000000316 /* AppModel.swift in Sources */,
+				B00000000000000000000325 /* MenuBarView.swift in Sources */,
 				B00000000000000000000301 /* JSONValue.swift in Sources */,
 				B00000000000000000000302 /* Stage.swift in Sources */,
 				B00000000000000000000303 /* SpindleDate.swift in Sources */,
@@ -282,6 +301,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000334 /* EventDetectorTests.swift in Sources */,
 				B00000000000000000000331 /* Fixtures.swift in Sources */,
 				B00000000000000000000332 /* DecodingTests.swift in Sources */,
 				B00000000000000000000333 /* SpindleMonitorTests.swift in Sources */,

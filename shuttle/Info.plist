@@ -10,5 +10,16 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>shuttle reads status from a Spindle daemon on your local network.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>local.shuttle.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>shuttle</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

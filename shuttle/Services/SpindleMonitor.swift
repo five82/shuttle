@@ -60,6 +60,13 @@ final class SpindleMonitor {
     /// Selection is item-ID-sticky across polls; cleared if the item disappears.
     var selectedItemID: Int64?
 
+    /// Transitions detected by the most recent successful poll.
+    private(set) var lastEvents: [MonitorEvent] = []
+    /// Called after a successful poll that produced events. Never on the first poll.
+    var onEvents: (([MonitorEvent]) -> Void)?
+    /// Called after every successful poll.
+    var onSnapshot: (() -> Void)?
+
     // Derived once per snapshot, never in view bodies.
     private(set) var activeItems: [QueueItem] = []
     private(set) var attentionItems: [QueueItem] = []
@@ -177,6 +184,10 @@ final class SpindleMonitor {
     }
 
     private func apply(status newStatus: StatusResponse, items newItems: [QueueItem]) {
+        let hadSnapshot = status != nil
+        let previousItems = items
+        let previousDrive = driveState
+
         consecutiveFailures = 0
         let current = now()
         status = newStatus
@@ -204,6 +215,20 @@ final class SpindleMonitor {
             .map { NamedResource(name: $0.key, status: $0.value) }
             .sorted { $0.name < $1.name }
         driveState = Self.driveState(from: newStatus)
+
+        if hadSnapshot {
+            let events = EventDetector.events(
+                previousDrive: previousDrive,
+                previousItems: previousItems,
+                drive: driveState,
+                items: newItems
+            )
+            lastEvents = events
+            if !events.isEmpty {
+                onEvents?(events)
+            }
+        }
+        onSnapshot?()
     }
 
     static func driveState(from status: StatusResponse) -> DriveState {
