@@ -405,7 +405,8 @@ struct ReasonRow: View {
         let (prefix, message) = Self.split(reason)
         var body = Text(message).foregroundStyle(tint ?? .primary)
         if let prefix {
-            body = Text(prefix).font(.system(.caption, design: .monospaced).weight(.semibold)).foregroundStyle(.secondary) + Text("\n") + body
+            let heading = Text(prefix).font(.system(.caption, design: .monospaced).weight(.semibold)).foregroundStyle(.secondary)
+            body = Text("\(heading)\n\(body)")
         }
         return body
     }

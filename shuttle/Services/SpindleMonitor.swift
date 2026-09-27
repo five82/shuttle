@@ -48,8 +48,8 @@ final class SpindleMonitor {
     typealias ClientProvider = @MainActor () -> SpindleAPI?
     typealias Sleeper = @Sendable (TimeInterval) async throws -> Void
 
-    static let defaultPollInterval: TimeInterval = 2
-    static let defaultMaxBackoff: TimeInterval = 30
+    nonisolated static let defaultPollInterval: TimeInterval = 2
+    nonisolated static let defaultMaxBackoff: TimeInterval = 30
 
     private(set) var connection: ConnectionState = .connecting
     private(set) var status: StatusResponse?

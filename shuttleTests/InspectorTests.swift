@@ -1,6 +1,7 @@
 import XCTest
 @testable import shuttle
 
+@MainActor
 final class InspectorTests: XCTestCase {
     func testDependenciesSearchAndOrderBySeverity() {
         let available = DependencyStatus(name: "Encoder", command: "reel", description: "Video", optional: false, available: true, detail: nil)

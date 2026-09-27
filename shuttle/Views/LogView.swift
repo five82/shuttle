@@ -395,19 +395,13 @@ private struct ItemLink: View {
 
 private extension View {
     /// Scrolling away from the bottom turns follow off; scrolling back to
-    /// the bottom turns it on again. Needs the scroll geometry API, so on
-    /// macOS 14 the Follow button and the "N new" pill remain the controls.
-    @ViewBuilder
+    /// the bottom turns it on again.
     func autoPauseFollow(_ follow: Binding<Bool>) -> some View {
-        if #available(macOS 15, *) {
-            onScrollGeometryChange(for: Bool.self) { geometry in
-                let bottom = geometry.contentOffset.y + geometry.containerSize.height
-                return bottom >= geometry.contentSize.height - 24
-            } action: { _, atBottom in
-                if follow.wrappedValue != atBottom { follow.wrappedValue = atBottom }
-            }
-        } else {
-            self
+        onScrollGeometryChange(for: Bool.self) { geometry in
+            let bottom = geometry.contentOffset.y + geometry.containerSize.height
+            return bottom >= geometry.contentSize.height - 24
+        } action: { _, atBottom in
+            if follow.wrappedValue != atBottom { follow.wrappedValue = atBottom }
         }
     }
 }

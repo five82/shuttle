@@ -110,8 +110,9 @@ final class SpindleClientTests: XCTestCase {
 /// response and request log without sharing state with any live connection.
 private final class StubURLProtocol: URLProtocol {
     private static let lock = NSLock()
-    private static var response: (URLRequest) throws -> (Int, Data) = { _ in throw URLError(.badServerResponse) }
-    private static var recorded: [URLRequest] = []
+    // Both properties are only accessed while holding lock (including URLSession's callback thread).
+    nonisolated(unsafe) private static var response: (URLRequest) throws -> (Int, Data) = { _ in throw URLError(.badServerResponse) }
+    nonisolated(unsafe) private static var recorded: [URLRequest] = []
 
     static var requests: [URLRequest] {
         lock.lock()

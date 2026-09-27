@@ -21,7 +21,7 @@ This repository is shared as is. shuttle is a personal tool. I've open sourced i
 
 ## User requirements
 
-- Apple Silicon Mac running macOS 14 or newer
+- Apple Silicon Mac running macOS 27 or newer
 - A Spindle daemon on a Linux host on your LAN, with its HTTP API bound to a reachable interface (Spindle does not run on macOS)
 - The daemon's API bearer token, if one is configured
 
@@ -63,7 +63,7 @@ Adjust the path if you installed shuttle somewhere else, for example `~/Applicat
 ## Developer requirements
 
 - Apple Silicon Mac
-- Xcode at `/Applications/Xcode.app`
+- Xcode 27 or newer (Swift 6) at `/Applications/Xcode.app`
 - An Apple Development signing certificate for the team pinned in the project (`DEVELOPMENT_TEAM`); to build under your own team, change it in Xcode under Signing & Capabilities. Do not leave it empty — an ad-hoc signed app loses its Local Network permission every time it is rebuilt.
 - A running Spindle daemon if you want to run shuttle against real data
 
@@ -86,7 +86,7 @@ open shuttle.xcodeproj
 ## Getting started
 
 1. Start Spindle with its HTTP API enabled.
-2. Launch shuttle and point it at the daemon in **shuttle > Settings** if it is not on the default address.
+2. Launch shuttle and set the daemon address in **shuttle > Settings** (the built-in loopback address is only a placeholder).
 3. Allow notifications when macOS asks, if you want to be told when the drive is free.
 4. Optional: turn on **Show in menu bar only** and **Launch at login** in Settings. In menu-bar-only mode the popover's ⋯ menu has Settings and Quit.
 5. Open **Help > shuttle Help** (`⌘?`) for the current usage notes and troubleshooting.
