@@ -50,8 +50,8 @@ final class MockSpindleAPI: SpindleAPI, @unchecked Sendable {
 final class SpindleMonitorTests: XCTestCase {
     private var clock = Date(timeIntervalSince1970: 1_800_000_000)
 
-    private func makeMonitor(_ api: MockSpindleAPI?) -> SpindleMonitor {
-        let clockBox = ClockBox(date: clock)
+    private func makeMonitor(_ api: MockSpindleAPI?, clockBox: ClockBox? = nil) -> SpindleMonitor {
+        let clockBox = clockBox ?? ClockBox(date: clock)
         return SpindleMonitor(
             clientProvider: { api },
             pollInterval: 2,
@@ -109,23 +109,47 @@ final class SpindleMonitorTests: XCTestCase {
         XCTAssertEqual(nextRetry.timeIntervalSince(clock), 4, accuracy: 0.001)
     }
 
-    func testRepeatedFailuresBackOffAndKeepOutageStart() async throws {
-        let api = MockSpindleAPI(status: try Fixtures.status(), queue: try Fixtures.queue())
-        api.statusResult = .failure(SpindleClientError.unreachable("refused"))
-        let monitor = makeMonitor(api)
+    func testStartupNetworkFailureStaysConnectingThenRecovers() async throws {
+        let api = MockSpindleAPI(status: try Fixtures.status(), queue: [])
+        api.statusResult = .failure(SpindleClientError.unreachable("offline"))
+        let clockBox = ClockBox(date: clock)
+        let monitor = makeMonitor(api, clockBox: clockBox)
 
+        for second in 0..<5 {
+            clockBox.date = clock.addingTimeInterval(Double(second))
+            let succeeded = await monitor.refresh()
+            XCTAssertFalse(succeeded)
+            XCTAssertEqual(monitor.connection, .connecting)
+            XCTAssertEqual(monitor.consecutiveFailures, 0, "startup retries must not consume the backoff")
+        }
+
+        api.statusResult = .success(try Fixtures.status())
+        let recovered = await monitor.refresh()
+        XCTAssertTrue(recovered)
+        XCTAssertTrue(monitor.connection.isConnected)
+        XCTAssertEqual(monitor.consecutiveFailures, 0)
+    }
+
+    func testPersistentStartupFailureShowsErrorAndBacksOff() async throws {
+        let api = MockSpindleAPI(status: try Fixtures.status(), queue: [])
+        api.statusResult = .failure(SpindleClientError.unreachable("refused"))
+        let clockBox = ClockBox(date: clock)
+        let monitor = makeMonitor(api, clockBox: clockBox)
+
+        await monitor.refresh()
+        clockBox.date = clock.addingTimeInterval(SpindleMonitor.startupGracePeriod)
         for _ in 0..<5 { await monitor.refresh() }
 
         XCTAssertEqual(monitor.consecutiveFailures, 5)
         guard case .disconnected(_, let since, let nextRetry) = monitor.connection else {
             return XCTFail("expected disconnected")
         }
-        XCTAssertEqual(since, clock)
-        XCTAssertEqual(nextRetry.timeIntervalSince(clock), 30, accuracy: 0.001, "capped at maxBackoff")
+        XCTAssertEqual(since, clockBox.date)
+        XCTAssertEqual(nextRetry.timeIntervalSince(clockBox.date), 30, accuracy: 0.001, "capped at maxBackoff")
 
         api.statusResult = .success(try Fixtures.status())
-        let ok = await monitor.refresh()
-        XCTAssertTrue(ok)
+        let recovered = await monitor.refresh()
+        XCTAssertTrue(recovered)
         XCTAssertEqual(monitor.consecutiveFailures, 0)
         XCTAssertTrue(monitor.connection.isConnected)
     }
@@ -160,6 +184,7 @@ final class SpindleMonitorTests: XCTestCase {
         await monitor.refresh()
 
         XCTAssertEqual(monitor.connection.errorMessage, "Spindle rejected the API token.")
+        XCTAssertEqual(monitor.consecutiveFailures, 1, "authentication errors should not get a startup grace period")
     }
 
     func testInvalidSettingsFailWithoutAClient() async {
@@ -202,6 +227,7 @@ final class SpindleMonitorTests: XCTestCase {
 
         api.statusResult = .failure(SpindleClientError.unreachable("refused"))
         await monitor.refresh()
+        XCTAssertEqual(monitor.connection, .connecting)
         XCTAssertEqual(received, [], "never connected, so nothing was lost")
 
         api.statusResult = .success(try Fixtures.status())
@@ -285,6 +311,7 @@ final class SpindleMonitorTests: XCTestCase {
         api.queueResult = .failure(SpindleClientError.unreachable("down"))
         await monitor.refresh()
         XCTAssertEqual(snapshots, 2, "failed polls don't report snapshots")
+        XCTAssertNotNil(monitor.connection.errorMessage, "an outage after a snapshot is reported immediately")
     }
 
     func testSelectionFetchesDetailAndRefreshesIt() async throws {

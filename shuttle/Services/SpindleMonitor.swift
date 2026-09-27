@@ -50,6 +50,9 @@ final class SpindleMonitor {
 
     nonisolated static let defaultPollInterval: TimeInterval = 2
     nonisolated static let defaultMaxBackoff: TimeInterval = 30
+    /// Give the network a moment to become available at launch before reporting an outage.
+    nonisolated static let startupGracePeriod: TimeInterval = 5
+    nonisolated static let startupRetryInterval: TimeInterval = 1
 
     private(set) var connection: ConnectionState = .connecting
     private(set) var status: StatusResponse?
@@ -109,6 +112,7 @@ final class SpindleMonitor {
     private let now: @Sendable () -> Date
     private var pollTask: Task<Void, Never>?
     private var sleepTask: Task<Void, Never>?
+    private var startupFailureSince: Date?
 
     init(
         clientProvider: @escaping ClientProvider,
@@ -135,7 +139,9 @@ final class SpindleMonitor {
                 let succeeded = await self.refresh()
                 let delay = succeeded
                     ? self.pollInterval
-                    : Self.backoff(failures: self.consecutiveFailures, base: self.pollInterval, max: self.maxBackoff)
+                    : (self.startupFailureSince != nil && self.connection == .connecting
+                        ? Self.startupRetryInterval
+                        : Self.backoff(failures: self.consecutiveFailures, base: self.pollInterval, max: self.maxBackoff))
                 await self.pause(delay)
             }
         }
@@ -179,7 +185,7 @@ final class SpindleMonitor {
             await fetchSelectedItemDetail(using: client)
             return true
         } catch {
-            recordFailure(Self.describe(error))
+            recordFailure(Self.describe(error), transient: Self.isNetworkFailure(error))
             return false
         }
     }
@@ -211,9 +217,20 @@ final class SpindleMonitor {
         return error.localizedDescription
     }
 
-    private func recordFailure(_ message: String) {
-        consecutiveFailures += 1
+    private static func isNetworkFailure(_ error: Error) -> Bool {
+        if case .unreachable = error as? SpindleClientError { return true }
+        return false
+    }
+
+    private func recordFailure(_ message: String, transient: Bool = false) {
         let current = now()
+        if status == nil, connection == .connecting, transient {
+            let since = startupFailureSince ?? current
+            startupFailureSince = since
+            if current.timeIntervalSince(since) < Self.startupGracePeriod { return }
+        }
+        startupFailureSince = nil
+        consecutiveFailures += 1
         let since: Date
         let wasConnected = connection.isConnected
         if case .disconnected(_, let previous, _) = connection {
@@ -235,6 +252,7 @@ final class SpindleMonitor {
         let previousDrive = driveState
 
         consecutiveFailures = 0
+        startupFailureSince = nil
         let current = now()
         status = newStatus
         items = newItems
