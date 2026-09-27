@@ -94,7 +94,7 @@ final class SpindleMonitor {
     private(set) var resources: [NamedResource] = []
     /// Live progress of the furthest-along task for every active item, keyed by ID.
     private(set) var progress: [Int64: ItemProgress] = [:]
-    /// Progress for every running task of every active item, in pipeline
+    /// Progress for every working task of every active item, in pipeline
     /// order; more than one entry when encoding runs beside the GPU branch.
     private(set) var taskProgress: [Int64: [ItemProgress]] = [:]
     /// Why each waiting item is not running, keyed by ID.

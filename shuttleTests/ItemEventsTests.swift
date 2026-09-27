@@ -18,6 +18,13 @@ final class ItemEventsTests: XCTestCase {
         XCTAssertEqual(ItemEventsView.detail(page.events[1]), "e01 · segment done · 25.5% · 1m")
     }
 
+    func testIdleEncodingStartHiddenButSubstagesAndOutcomesRemain() throws {
+        let page = try batch(#"{"events":[{"id":1,"itemId":21,"time":"2026-09-27T18:00:00Z","type":"stage_start","stage":"encoding"},{"id":2,"itemId":21,"time":"2026-09-27T18:00:01Z","type":"stage_start","stage":"ripping"},{"id":3,"itemId":21,"time":"2026-09-27T18:00:02Z","type":"encoding_substage","stage":"encoding","substage":"chunking"},{"id":4,"itemId":21,"time":"2026-09-27T18:00:03Z","type":"stage_complete","stage":"encoding"}],"next":4}"#)
+        XCTAssertEqual(ItemEventsView.visibleEvents(Array(page.events.prefix(1))).count, 0)
+        XCTAssertEqual(ItemEventsView.visibleEvents(page.events).map(\.id), [2, 3, 4])
+        XCTAssertEqual(page.events.count, 4, "filtering must not change journal data or cursor")
+    }
+
     func testExclusiveCursorCatchesUpAcrossPagesAndRetainsRowsOnError() async throws {
         let api = MockSpindleAPI(status: try Fixtures.status(), queue: [])
         let first = try batch(#"{"events":[{"id":1,"itemId":21,"time":"2026-09-27T18:00:00Z","type":"stage_start","stage":"encoding"}],"next":1}"#)

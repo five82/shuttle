@@ -3,7 +3,7 @@ import Foundation
 /// One queue item as returned by `GET /api/queue` and `GET /api/queue/{id}`.
 /// `ripSpec` is present only on single-item GETs. `stage` is the scheduler's
 /// coarse position and lags during overlap windows; `tasks` carry the live
-/// truth, so running vs waiting is derived from task state alone.
+/// truth. A scheduled encoding worker is idle until it has an active asset.
 struct QueueItem: Codable, Identifiable, Hashable, Sendable {
     var id: Int64
     var discTitle: String
@@ -44,6 +44,12 @@ struct PipelineTask: Codable, Hashable, Sendable, Identifiable {
     var activeAssetKey: String?
 
     var id: String { type.rawValue }
+
+    /// Encoding reserves a worker before a ripped asset is available and
+    /// between episodes. Other running tasks begin work immediately.
+    var isWorking: Bool {
+        state == .running && (type != .encoding || !(activeAssetKey ?? "").isEmpty)
+    }
 }
 
 struct TaskProgress: Codable, Hashable, Sendable {
@@ -127,11 +133,11 @@ extension QueueItem {
     var updatedDate: Date { SpindleDate.parse(updatedAt) ?? .distantPast }
 
     var taskList: [PipelineTask] { tasks ?? [] }
-    var runningTasks: [PipelineTask] { taskList.filter { $0.state == .running } }
+    var workingTasks: [PipelineTask] { taskList.filter(\.isWorking) }
 
     var hasFailed: Bool { stage == .failed }
     var isCompleted: Bool { stage == .completed }
-    var isActive: Bool { !runningTasks.isEmpty }
+    var isActive: Bool { !workingTasks.isEmpty }
     var isWaiting: Bool { !isActive && !stage.isTerminal }
     var needsAttention: Bool { needsReview || hasFailed }
 
@@ -154,15 +160,15 @@ extension QueueItem {
         return nil
     }
 
-    /// Progress of the furthest-along running task, 0...1.
+    /// Progress of the furthest-along working task, 0...1.
     var progressFraction: Double {
-        let percent = runningTasks.map(\.progress.percent).max() ?? 0
+        let percent = workingTasks.map(\.progress.percent).max() ?? 0
         return min(max(percent / 100, 0), 1)
     }
 
     /// "Encoding · Phase 1/1 - Encoding foo.mkv", or the stage name when idle.
     var activityDescription: String {
-        let running = runningTasks
+        let running = workingTasks
         guard !running.isEmpty else { return stage.displayName }
         return running.map { task in
             let message = task.progress.message.trimmingCharacters(in: .whitespaces)

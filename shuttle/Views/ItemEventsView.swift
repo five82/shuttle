@@ -139,20 +139,27 @@ struct ItemEventsView: View {
         }
     }
 
+    /// Scheduling the encoder is not evidence of encode work. Keep the raw
+    /// journal/cursor intact; hide only that start row in the presentation.
+    static func visibleEvents(_ events: [ItemEvent]) -> [ItemEvent] {
+        events.filter { !($0.type == "stage_start" && $0.stage == .encoding) }
+    }
+
     @ViewBuilder
     private func content(_ tailer: ItemEventTailer) -> some View {
-        if let error = tailer.lastError, tailer.events.isEmpty {
+        let visible = Self.visibleEvents(tailer.events)
+        if let error = tailer.lastError, visible.isEmpty {
             ContentUnavailableView("Events Unavailable", systemImage: "clock.arrow.circlepath",
                                    description: Text(error))
         } else if tailer.isLoading {
             ProgressView("Loading events…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if tailer.events.isEmpty {
+        } else if visible.isEmpty {
             ContentUnavailableView("No Stage Events", systemImage: "clock.arrow.circlepath",
                                    description: Text("No transitions have been recorded for this item yet."))
         } else {
             VStack(spacing: 0) {
-                List(tailer.events) { event in
+                List(visible) { event in
                     VStack(alignment: .leading, spacing: 3) {
                         HStack {
                             Text(event.stage.displayName).fontWeight(.medium)

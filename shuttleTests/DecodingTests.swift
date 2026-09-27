@@ -29,7 +29,7 @@ final class DecodingTests: XCTestCase {
         let active = try XCTUnwrap(items.first { $0.id == 21 })
         XCTAssertEqual(active.stage, .encoding)
         XCTAssertTrue(active.isActive)
-        XCTAssertEqual(active.runningTasks.map(\.type), [.encoding])
+        XCTAssertEqual(active.workingTasks.map(\.type), [.encoding])
         XCTAssertEqual(active.taskList.count, 8)
         XCTAssertEqual(active.activityDescription, "Encoding · Phase 1/1 - Encoding The Wolf of Wall Street_t00.mkv")
         XCTAssertEqual(active.priorityRank, 2)

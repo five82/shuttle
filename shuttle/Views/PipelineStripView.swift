@@ -62,16 +62,17 @@ struct PipelineCell: Identifiable, Equatable {
         let depths = branchDepths(pipeline: pipeline)
         var cells = order.map { stage in
             let task = tasks[stage]
-            var state = task?.state
+            let idleEncoder = task?.state == .running && task?.type == .encoding && task?.isWorking == false
+            var state = idleEncoder ? TaskState.pending : task?.state
             if state == nil, item.isCompleted { state = .done }
             return PipelineCell(
                 stage: stage,
                 state: state,
-                percent: task?.progress.percent ?? 0,
-                message: task?.progress.message ?? "",
+                percent: idleEncoder ? 0 : task?.progress.percent ?? 0,
+                message: idleEncoder ? "" : task?.progress.message ?? "",
                 error: task?.error,
                 attempts: task?.attempts ?? 0,
-                startedAt: task?.startedDate,
+                startedAt: idleEncoder ? nil : task?.startedDate,
                 finishedAt: task?.finishedDate,
                 depth: depths[stage] ?? 0,
                 claims: template[stage]?.claims ?? []

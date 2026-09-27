@@ -47,7 +47,7 @@ struct DependenciesView: View {
                     if !monitor.resources.isEmpty {
                         InspectorSection("Scheduler") {
                             ForEach(monitor.resources) { resource in
-                                ResourceRow(resource: resource) { model.focus(itemID: $0) }
+                                ResourceRow(resource: resource, items: monitor.items) { model.focus(itemID: $0) }
                             }
                         }
                     }
@@ -92,9 +92,19 @@ private extension DependencyStatus {
     }
 }
 
-/// "encode · 1 of 1 in use · #21 encoding", holder IDs clickable.
+/// Scheduler reservations are not necessarily work (encoding may wait for a rip).
+struct ResourceHolderText {
+    static func label(_ holder: ResourceHolder, resource: String, items: [QueueItem]) -> String {
+        let reserved = resource == "encode" && holder.task == .encoding &&
+            items.first(where: { $0.id == holder.itemId })?.taskList.first(where: { $0.type == .encoding })?.isWorking == false
+        return "#\(holder.itemId) \(reserved ? "reserved" : holder.task.displayName.lowercased())"
+    }
+}
+
+/// "encode · 1 of 1 in use · #21 reserved", holder IDs clickable.
 private struct ResourceRow: View {
     let resource: NamedResource
+    let items: [QueueItem]
     let focus: (Int64) -> Void
 
     var body: some View {
@@ -111,7 +121,7 @@ private struct ResourceRow: View {
                     .font(.callout)
                     .foregroundStyle(busy ? Color.accentColor : .primary)
                 ForEach(status.holders, id: \.itemId) { holder in
-                    Button("#\(holder.itemId) \(holder.task.displayName.lowercased())") { focus(holder.itemId) }
+                    Button(ResourceHolderText.label(holder, resource: resource.name, items: items)) { focus(holder.itemId) }
                         .buttonStyle(.plain)
                         .font(.system(.caption, design: .monospaced))
                         .foregroundStyle(Color.accentColor)

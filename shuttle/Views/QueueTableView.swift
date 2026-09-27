@@ -204,7 +204,7 @@ struct QueueStagePresentation {
         if item.hasFailed { return "Failed" }
         if item.needsReview { return "Review" }
         if item.isActive {
-            let running = item.runningTasks.map(\.type.displayName)
+            let running = item.workingTasks.map(\.type.displayName)
             return running.isEmpty ? item.stage.displayName : running.joined(separator: " + ")
         }
         if item.isWaiting {

@@ -142,10 +142,49 @@ final class InspectorTests: XCTestCase {
         XCTAssertEqual(activeLabel.text, "Encoding")
         XCTAssertEqual(activeLabel.help, overlapping.activityDescription)
         overlapping.tasks = [
-            PipelineTask(type: .encoding, state: .running, progress: TaskProgress(percent: 25, message: "")),
+            PipelineTask(type: .encoding, state: .running, progress: TaskProgress(percent: 25, message: ""), activeAssetKey: "main"),
             PipelineTask(type: .subtitling, state: .running, progress: TaskProgress(percent: 10, message: "")),
         ]
         XCTAssertEqual(QueueStagePresentation(item: overlapping, reason: nil).text, "Encoding + Subtitling")
+    }
+
+    func testIdleEncoderIsReservedNotWorkingEvenWithStaleProgress() throws {
+        var item = try XCTUnwrap(try Fixtures.queue().first { $0.id == 21 })
+        var encoding = try XCTUnwrap(item.tasks?.first { $0.type == .encoding })
+        encoding.activeAssetKey = ""
+        encoding.progress = TaskProgress(percent: 100, message: "previous episode")
+        item.tasks = [encoding]
+        XCTAssertFalse(encoding.isWorking)
+        XCTAssertTrue(item.workingTasks.isEmpty)
+        XCTAssertTrue(item.isWaiting)
+        XCTAssertEqual(item.priorityRank, 3)
+        XCTAssertNil(item.progress)
+        XCTAssertTrue(item.progressList.isEmpty)
+        XCTAssertEqual(item.progressFraction, 0)
+        XCTAssertEqual(QueueStagePresentation(item: item, reason: nil).text, "Queued · Encoding")
+        let status = try Fixtures.status()
+        let cell = try XCTUnwrap(PipelineCell.cells(for: item, pipeline: status.pipelineStages).first { $0.stage == .encoding })
+        XCTAssertEqual(cell.state, .pending)
+        XCTAssertEqual(cell.trailing(progress: nil, at: Date()), "")
+        XCTAssertNil(cell.note)
+        XCTAssertEqual(ResourceHolderText.label(ResourceHolder(itemId: item.id, task: .encoding), resource: "encode", items: [item]), "#21 reserved")
+
+        encoding.activeAssetKey = "main"
+        item.tasks = [encoding]
+        XCTAssertTrue(item.isActive)
+        XCTAssertEqual(item.workingTasks.map(\.type), [.encoding])
+        XCTAssertEqual(item.progressFraction, 1)
+        XCTAssertEqual(QueueStagePresentation(item: item, reason: nil).text, "Encoding")
+        XCTAssertEqual(PipelineCell.cells(for: item, pipeline: status.pipelineStages).first { $0.stage == .encoding }?.state, .running)
+        XCTAssertEqual(ResourceHolderText.label(ResourceHolder(itemId: item.id, task: .encoding), resource: "encode", items: [item]), "#21 encoding")
+
+        encoding.activeAssetKey = nil
+        item.tasks = [encoding, PipelineTask(type: .ripping, state: .running, progress: TaskProgress(percent: 14, message: "ripping"))]
+        XCTAssertEqual(item.workingTasks.map(\.type), [.ripping], "an idle encoder must not hide a working rip")
+        XCTAssertEqual(item.activityDescription, "Ripping · ripping")
+        XCTAssertEqual(item.progressList.map(\.stage), [.ripping])
+        XCTAssertEqual(QueueStagePresentation(item: item, reason: nil).text, "Ripping")
+        XCTAssertEqual(ResourceHolderText.label(ResourceHolder(itemId: item.id, task: .ripping), resource: "drive", items: [item]), "#21 ripping")
     }
 
     func testInspectorReasonPrefixSplit() {

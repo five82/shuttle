@@ -97,6 +97,37 @@ final class SpindleMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.resources.first { $0.name == "encode" }?.status.used, 1)
     }
 
+    func testReservedEncoderMovesBetweenWaitingAndWorkingAcrossPolls() async throws {
+        var item = try XCTUnwrap(try Fixtures.queue().first { $0.id == 21 })
+        var task = try XCTUnwrap(item.tasks?.first { $0.type == .encoding })
+        task.activeAssetKey = ""
+        item.tasks = [task]
+        let api = MockSpindleAPI(status: try Fixtures.status(), queue: [item])
+        let monitor = makeMonitor(api)
+
+        await monitor.refresh()
+        XCTAssertTrue(monitor.activeItems.isEmpty)
+        XCTAssertEqual(monitor.waitingItems.map(\.id), [21])
+        XCTAssertNil(monitor.progress[21])
+        XCTAssertNil(monitor.taskProgress[21])
+
+        task.activeAssetKey = "main"
+        item.tasks = [task]
+        api.queueResult = .success([item])
+        await monitor.refresh()
+        XCTAssertEqual(monitor.activeItems.map(\.id), [21])
+        XCTAssertTrue(monitor.waitingItems.isEmpty)
+        XCTAssertEqual(monitor.progress[21]?.stage, .encoding)
+
+        task.activeAssetKey = nil // between episodes, the worker remains scheduled
+        item.tasks = [task]
+        api.queueResult = .success([item])
+        await monitor.refresh()
+        XCTAssertTrue(monitor.activeItems.isEmpty)
+        XCTAssertEqual(monitor.waitingItems.map(\.id), [21])
+        XCTAssertNil(monitor.progress[21])
+    }
+
     func testPartialFailureLeavesSnapshotUntouched() async throws {
         let api = MockSpindleAPI(status: try Fixtures.status(), queue: try Fixtures.queue())
         let monitor = makeMonitor(api)

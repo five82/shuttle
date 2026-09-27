@@ -79,18 +79,18 @@ struct ItemProgress: Equatable, Sendable {
 }
 
 extension QueueItem {
-    /// nil unless a task is running: the furthest-along running task, which
+    /// nil unless a task is working: the furthest-along working task, which
     /// is what a single bar shows. Decodes the encoding blob, so call it from
     /// the monitor, not from a view body.
     var progress: ItemProgress? {
         progressList.max { $0.fraction < $1.fraction }
     }
 
-    /// One progress per running task in pipeline order. Encoding runs beside
+    /// One progress per working task in pipeline order. Encoding runs beside
     /// the GPU branch, so an item can have two; rows stack a bar per task.
     var progressList: [ItemProgress] {
-        let encoding = runningTasks.contains { $0.type == .encoding } ? encodingDetails : nil
-        return runningTasks
+        let encoding = workingTasks.contains { $0.type == .encoding } ? encodingDetails : nil
+        return workingTasks
             .sorted { $0.type.rank < $1.type.rank }
             .map { task in
                 var progress = ItemProgress(
