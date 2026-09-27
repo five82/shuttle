@@ -125,15 +125,20 @@ extension PipelineCell {
 /// one line per stage, so the DAG reads top to bottom instead of wrapping.
 struct PipelineListView: View {
     let cells: [PipelineCell]
-    var progress: ItemProgress?
+    var progress: [ItemProgress]
 
     var body: some View {
         let now = Date()
         VStack(alignment: .leading, spacing: 3) {
             ForEach(cells) { cell in
-                PipelineRow(cell: cell, progress: cell.state == .running ? progress : nil, now: now)
+                PipelineRow(cell: cell, progress: Self.progress(for: cell, from: progress), now: now)
             }
         }
+    }
+
+    static func progress(for cell: PipelineCell, from tasks: [ItemProgress]) -> ItemProgress? {
+        guard cell.state == .running else { return nil }
+        return tasks.first { $0.stage == cell.stage }
     }
 }
 

@@ -39,7 +39,7 @@ struct ItemInspectorView: View {
                 .padding(10)
                 switch tab {
                 case .overview:
-                    OverviewView(item: item, pipeline: monitor.status?.pipelineStages ?? [], progress: monitor.progress[item.id])
+                    OverviewView(item: item, pipeline: monitor.status?.pipelineStages ?? [], progress: monitor.taskProgress[item.id] ?? [])
                 case .episodes:
                     EpisodesView(item: item)
                 case .log:
@@ -127,7 +127,7 @@ struct ItemInspectorView: View {
 private struct OverviewView: View {
     let item: QueueItem
     let pipeline: [PipelineStageInfo]
-    let progress: ItemProgress?
+    let progress: [ItemProgress]
 
     var body: some View {
         let encoding = item.encodingDetails
@@ -234,7 +234,7 @@ private struct OverviewView: View {
         }()
         let subs = item.inspectorSubtitleSummary
         let rows: [(String, String, Color?)] = [
-            ("Progress", progress?.detailText ?? "", Color.accentColor),
+            ("Progress", progress.max { $0.fraction < $1.fraction }?.detailText ?? "", Color.accentColor),
             ("Estimate", encoding?.sizeEstimate ?? "", Color.accentColor),
             ("Size", encoding?.sizeResult ?? "", nil),
             ("Encode", encoding?.encodeStats ?? "", nil),

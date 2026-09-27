@@ -19,7 +19,7 @@ struct ItemProgress: Equatable, Sendable {
 
     var percentText: String { Format.percent(fraction) }
 
-    /// "43 min left" from the encoder's estimate.
+    /// "43m left" from the encoder or a running rip's elapsed progress.
     var etaText: String? {
         guard let etaSeconds, etaSeconds > 0 else { return nil }
         return "\(EncodingDetails.duration(etaSeconds)) left"
@@ -39,10 +39,11 @@ struct ItemProgress: Equatable, Sendable {
         return EncodingDetails.duration(seconds)
     }
 
-    /// One short line for rows: "66% · 43 min left", "12.3 GB / 40 GB",
-    /// or "Starting…" before the task reports anything.
+    /// One short line for rows: "66% · 43m left", "12.3 GB / 40 GB",
+    /// or "Starting…" before the task reports anything. Prefer the ETA to
+    /// byte counts when both exist so the text fits narrow progress columns.
     var shortText: String {
-        if let totalBytes, totalBytes > 0 {
+        if let totalBytes, totalBytes > 0, etaText == nil {
             let copied = ByteCountFormatter.string(fromByteCount: bytesCopied ?? 0, countStyle: .file)
             let all = ByteCountFormatter.string(fromByteCount: totalBytes, countStyle: .file)
             return "\(copied) / \(all)"
@@ -88,7 +89,10 @@ extension QueueItem {
 
     /// One progress per working task in pipeline order. Encoding runs beside
     /// the GPU branch, so an item can have two; rows stack a bar per task.
-    var progressList: [ItemProgress] {
+    var progressList: [ItemProgress] { progressList(at: Date()) }
+
+    /// Derive time-based rip estimates once per poll, using the poll's clock.
+    func progressList(at now: Date) -> [ItemProgress] {
         let encoding = workingTasks.contains { $0.type == .encoding } ? encodingDetails : nil
         return workingTasks
             .sorted { $0.type.rank < $1.type.rank }
@@ -101,6 +105,14 @@ extension QueueItem {
                     bytesCopied: task.progress.bytesCopied,
                     totalBytes: task.progress.totalBytes
                 )
+                if task.type == .ripping, let started = task.startedDate {
+                    let percent = min(max(task.progress.percent, 0), 100)
+                    let elapsed = now.timeIntervalSince(started)
+                    if percent >= 5, percent < 100, elapsed > 0 {
+                        let remaining = elapsed * (100 - percent) / percent
+                        if remaining.isFinite, remaining > 0 { progress.etaSeconds = remaining }
+                    }
+                }
                 if task.type == .encoding, let encoding {
                     if let percent = encoding.percent, percent > 0, progress.fraction == 0 {
                         progress.fraction = min(max(percent / 100, 0), 1)

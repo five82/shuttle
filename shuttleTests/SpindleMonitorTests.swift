@@ -128,6 +128,27 @@ final class SpindleMonitorTests: XCTestCase {
         XCTAssertNil(monitor.progress[21])
     }
 
+    func testRipETAUsesSnapshotClockAndRefreshesOnPoll() async throws {
+        var item = try Fixtures.failedItem()
+        item.tasks = [PipelineTask(
+            type: .ripping, state: .running, startedAt: "2027-01-15T08:00:00Z",
+            progress: TaskProgress(percent: 25, message: "Copying", bytesCopied: 10_000_000_000, totalBytes: 40_000_000_000)
+        )]
+        let api = MockSpindleAPI(status: try Fixtures.status(), queue: [item])
+        let started = try XCTUnwrap(item.tasks?.first?.startedDate)
+        let clockBox = ClockBox(date: started.addingTimeInterval(1_000))
+        let monitor = makeMonitor(api, clockBox: clockBox)
+
+        await monitor.refresh()
+        XCTAssertEqual(monitor.taskProgress[item.id]?.first?.etaSeconds, 3_000)
+        XCTAssertEqual(monitor.progress[item.id]?.shortText, "25% · 50m left")
+
+        clockBox.date = started.addingTimeInterval(1_200)
+        await monitor.refresh()
+        XCTAssertEqual(monitor.progress[item.id]?.etaSeconds, 3_600)
+        XCTAssertEqual(monitor.progress[item.id]?.shortText, "25% · 1h 0m left")
+    }
+
     func testPartialFailureLeavesSnapshotUntouched() async throws {
         let api = MockSpindleAPI(status: try Fixtures.status(), queue: try Fixtures.queue())
         let monitor = makeMonitor(api)

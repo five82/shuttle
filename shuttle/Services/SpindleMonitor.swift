@@ -279,7 +279,7 @@ final class SpindleMonitor {
         )
         Stage.pipelineOrder = newStatus.pipelineStages.map(\.stage)
         taskProgress = Dictionary(uniqueKeysWithValues: activeItems.compactMap { item in
-            let list = item.progressList
+            let list = item.progressList(at: current)
             return list.isEmpty ? nil : (item.id, list)
         })
         progress = taskProgress.compactMapValues { $0.max { $0.fraction < $1.fraction } }
