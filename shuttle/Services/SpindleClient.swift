@@ -7,6 +7,7 @@ protocol SpindleAPI: Sendable {
     func status() async throws -> StatusResponse
     func queue() async throws -> [QueueItem]
     func item(id: Int64) async throws -> QueueItem
+    func itemEvents(id: Int64, since: Int64) async throws -> ItemEventBatch
     func logs(_ query: LogQuery) async throws -> LogsResponse
 }
 
@@ -88,6 +89,10 @@ struct SpindleClient: SpindleAPI {
     func item(id: Int64) async throws -> QueueItem {
         let envelope: ItemEnvelope = try await get("/api/queue/\(id)")
         return envelope.item
+    }
+
+    func itemEvents(id: Int64, since: Int64) async throws -> ItemEventBatch {
+        try await get("/api/queue/\(id)/events", query: [URLQueryItem(name: "since", value: String(since))])
     }
 
     func logs(_ query: LogQuery) async throws -> LogsResponse {

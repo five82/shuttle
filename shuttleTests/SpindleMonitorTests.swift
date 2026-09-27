@@ -36,6 +36,16 @@ final class MockSpindleAPI: SpindleAPI, @unchecked Sendable {
         return item
     }
 
+    var eventScript: [Int64: ItemEventBatch] = [:]
+    var eventError: Error?
+    var eventRequests: [(Int64, Int64)] = []
+
+    func itemEvents(id: Int64, since: Int64) async throws -> ItemEventBatch {
+        eventRequests.append((id, since))
+        if let eventError { throw eventError }
+        return eventScript[since] ?? ItemEventBatch(events: [], next: since)
+    }
+
     /// Scripted by the query's `since`; unscripted queries return nothing.
     var logScript: [UInt64?: LogsResponse] = [:]
     var logQueries: [LogQuery] = []

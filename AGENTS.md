@@ -37,7 +37,7 @@ Never put a real daemon hostname or token in source, fixtures, tests, or docs. T
 
 shuttle is read-only. It observes Spindle; it never controls it.
 
-- Only call read-only Spindle endpoints: `GET /api/health`, `GET /api/status`, `GET /api/queue`, `GET /api/queue/{id}`, `GET /api/logs`.
+- Only call read-only Spindle endpoints: `GET /api/health`, `GET /api/status`, `GET /api/queue`, `GET /api/queue/{id}`, `GET /api/queue/{id}/events`, `GET /api/logs`.
 - Never call mutating endpoints (`POST /api/queue/*`, `DELETE /api/queue/*`, `POST /api/daemon/*`, `POST /api/disc/*`). Do not add UI for retrying, removing, clearing, stopping, pausing, or enqueuing.
 - Never read or write Spindle's queue database, staging directory, or library directly. The HTTP API is the only integration point.
 - Treat the daemon as possibly unreachable at any time. Show a clear disconnected state and keep polling; never block the main actor on a request. Polling, decoding, and log tailing are asynchronous, cancellable, and back off when the daemon is unreachable.

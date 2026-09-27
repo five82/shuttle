@@ -24,12 +24,14 @@ final class SpindleClientTests: XCTestCase {
         let queue = try Fixtures.data("queue")
         let item = try Fixtures.data("item")
         let logs = try Fixtures.data("logs")
+        let events = Data(#"{"events":[{"id":3,"itemId":21,"time":"2026-09-27T18:00:00Z","type":"stage_start","stage":"encoding"}],"next":3}"#.utf8)
         StubURLProtocol.configure { request in
             switch request.url?.path {
             case "/spindle/api/health": return (200, Data(#"{"status":"ok"}"#.utf8))
             case "/spindle/api/status": return (200, status)
             case "/spindle/api/queue": return (200, queue)
             case "/spindle/api/queue/21": return (200, item)
+            case "/spindle/api/queue/21/events": return (200, events)
             case "/spindle/api/logs": return (200, logs)
             default: throw URLError(.badURL)
             }
@@ -40,22 +42,26 @@ final class SpindleClientTests: XCTestCase {
         let receivedStatus = try await api.status()
         let receivedQueue = try await api.queue()
         let receivedItem = try await api.item(id: 21)
+        let receivedEvents = try await api.itemEvents(id: 21, since: 0)
         let query = LogQuery(since: 42, limit: 20, tail: true, itemID: 21, minimumLevel: .warn, component: "disc monitor", daemonOnly: true)
         let receivedLogs = try await api.logs(query)
         XCTAssertEqual(receivedStatus.pid, try Fixtures.status().pid)
         XCTAssertEqual(receivedQueue.count, 24)
         XCTAssertEqual(receivedItem.id, 21)
+        XCTAssertEqual(receivedEvents.events.first?.stage, .encoding)
+        XCTAssertEqual(receivedEvents.next, 3)
         XCTAssertEqual(receivedLogs.next, 255)
 
         let requests = StubURLProtocol.requests
         XCTAssertEqual(requests.compactMap { $0.url?.path }, [
-            "/spindle/api/health", "/spindle/api/status", "/spindle/api/queue", "/spindle/api/queue/21", "/spindle/api/logs",
+            "/spindle/api/health", "/spindle/api/status", "/spindle/api/queue", "/spindle/api/queue/21", "/spindle/api/queue/21/events", "/spindle/api/logs",
         ])
         for request in requests {
             XCTAssertEqual(request.httpMethod, "GET")
             XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/json")
             XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer unit-test-token")
         }
+        XCTAssertEqual(requests[4].url?.query, "since=0", "event cursor is exclusive and starts at zero")
         let url = try XCTUnwrap(requests.last?.url)
         let parameters = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems)
         XCTAssertEqual(Dictionary(uniqueKeysWithValues: parameters.map { ($0.name, $0.value ?? "") }), [

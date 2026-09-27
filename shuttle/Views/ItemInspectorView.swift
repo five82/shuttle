@@ -9,7 +9,7 @@ struct ItemInspectorView: View {
     @Environment(SpindleMonitor.self) private var monitor
 
     enum Tab: String, CaseIterable, Identifiable {
-        case overview, episodes, log
+        case overview, episodes, log, events
         var id: String { rawValue }
     }
 
@@ -32,6 +32,7 @@ struct ItemInspectorView: View {
                         Text("Episodes · \(item.episodeList.count)").tag(Tab.episodes)
                     }
                     Text("Log").tag(Tab.log)
+                    Text("Events").tag(Tab.events)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -43,6 +44,8 @@ struct ItemInspectorView: View {
                     EpisodesView(item: item)
                 case .log:
                     LogView(itemID: item.id, compact: true)
+                case .events:
+                    ItemEventsView(itemID: item.id)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
