@@ -8,8 +8,25 @@ struct NotConnectedView: View {
     @Environment(SpindleMonitor.self) private var monitor
     @Environment(AppSettingsStore.self) private var settingsStore
 
+    enum State: Equatable {
+        case setAddress
+        case connecting
+        case disconnected(error: String, hint: String?)
+    }
+
+    /// Before the first snapshot, the placeholder is an instruction rather
+    /// than a connection failure; a real address can show actionable errors.
+    static func state(placeholder: Bool, connection: ConnectionState) -> State {
+        if placeholder { return .setAddress }
+        if case .disconnected(let error, _, _) = connection {
+            return .disconnected(error: error, hint: SpindleMonitor.hint(for: error))
+        }
+        return .connecting
+    }
+
     var body: some View {
-        if settingsStore.settings.isPlaceholderAddress {
+        switch Self.state(placeholder: settingsStore.settings.isPlaceholderAddress, connection: monitor.connection) {
+        case .setAddress:
             ContentUnavailableView {
                 Label("Set the Daemon Address", systemImage: "network")
             } description: {
@@ -18,13 +35,13 @@ struct NotConnectedView: View {
                 SettingsLink { Text("Open Settings…") }
                     .buttonStyle(.borderedProminent)
             }
-        } else if case .disconnected(let error, _, _) = monitor.connection {
+        case .disconnected(let error, let hint):
             ContentUnavailableView {
                 Label("Not Connected", systemImage: "antenna.radiowaves.left.and.right.slash")
             } description: {
                 VStack(spacing: 6) {
                     Text(error)
-                    if let hint = SpindleMonitor.hint(for: error) {
+                    if let hint {
                         Text(hint)
                             .foregroundStyle(.secondary)
                     }
@@ -33,7 +50,7 @@ struct NotConnectedView: View {
                 Button("Retry Now") { monitor.refreshNow() }
                 SettingsLink { Text("Open Settings…") }
             }
-        } else {
+        case .connecting:
             ProgressView("Connecting…")
         }
     }

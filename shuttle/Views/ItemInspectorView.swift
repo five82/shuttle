@@ -71,8 +71,8 @@ struct ItemInspectorView: View {
                 .lineLimit(2)
                 .textSelection(.enabled)
             HStack(spacing: 6) {
-                StatusChip(label: stageLabel(item), systemImage: stageSymbol(item), tint: stageTint(item))
-                    .help(stageHelp(item))
+                StatusChip(label: Self.stageLabel(item, reason: monitor.waitReasons[item.id]), systemImage: stageSymbol(item), tint: stageTint(item))
+                    .help(Self.stageHelp(item, reason: monitor.waitReasons[item.id]))
                 if let type = item.mediaTypeLabel {
                     StatusChip(label: type, systemImage: item.mediaType == "tv" ? "tv" : "film", tint: .secondary)
                 }
@@ -85,19 +85,19 @@ struct ItemInspectorView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func stageLabel(_ item: QueueItem) -> String {
+    static func stageLabel(_ item: QueueItem, reason: WaitReason?) -> String {
         if item.hasFailed { return "Failed" }
         if item.needsReview { return "Review" }
         if item.isActive { return item.activityDescription.components(separatedBy: " · ").first ?? item.stage.displayName }
         if item.isWaiting {
-            if let reason = monitor.waitReasons[item.id] { return "Queued · \(reason.short)" }
+            if let reason { return "Queued · \(reason.short)" }
             return "Queued · \(item.stage.displayName)"
         }
         return item.stage.displayName
     }
 
-    private func stageHelp(_ item: QueueItem) -> String {
-        if item.isWaiting, let reason = monitor.waitReasons[item.id] { return reason.detail }
+    static func stageHelp(_ item: QueueItem, reason: WaitReason?) -> String {
+        if item.isWaiting, let reason { return reason.detail }
         if item.isActive { return item.activityDescription }
         return item.attentionReason ?? item.stage.displayName
     }
@@ -201,7 +201,7 @@ private struct OverviewView: View {
             ("Tracks", (item.commentaryCount ?? 0) > 0 ? "\(item.commentaryCount!) commentary track\(item.commentaryCount! == 1 ? "" : "s")" : "", nil),
             ("Config", encoding?.configSummary ?? "", nil),
             ("Quality", encoding?.qualitySummary ?? "", nil),
-            ("Identify", contentIDSummary, nil),
+            ("Identify", item.contentId?.inspectorSummary ?? "", nil),
             ("TMDB", item.tmdbID.map(String.init) ?? "", nil),
         ].filter { !$0.1.isEmpty }
         if !rows.isEmpty {
@@ -221,19 +221,6 @@ private struct OverviewView: View {
         }
     }
 
-    private var contentIDSummary: String {
-        guard let cid = item.contentId, let method = cid.method, !method.isEmpty else { return "" }
-        var value = method
-        if (cid.transcribedEpisodes ?? 0) > 0 || (cid.matchedEpisodes ?? 0) > 0 {
-            value += " · \(cid.matchedEpisodes ?? 0) matched · \(cid.unresolvedEpisodes ?? 0) unresolved · \(cid.lowConfidenceCount ?? 0) low confidence"
-        }
-        if let source = cid.referenceSource, !source.isEmpty {
-            value += " · ref \(source)"
-            if let count = cid.referenceEpisodes, count > 0 { value += " (\(count) episodes)" }
-        }
-        return value
-    }
-
     @ViewBuilder
     private func output(_ encoding: EncodingDetails?) -> some View {
         let validation = encoding?.validation
@@ -242,12 +229,7 @@ private struct OverviewView: View {
             let counts = "\(validation.passedCount)/\(validation.stepList.count)"
             return validation.passed == false ? "Failed · \(counts)" : "Passed · \(counts)"
         }()
-        let subs: String = {
-            let sources = item.episodeList.compactMap { $0.subtitleSource?.lowercased() }.filter { !$0.isEmpty }
-            guard !sources.isEmpty else { return "" }
-            let counts = Dictionary(grouping: sources, by: { $0 }).mapValues(\.count)
-            return counts.sorted { $0.key < $1.key }.map { item.episodeList.count == 1 ? $0.key : "\($0.value) \($0.key)" }.joined(separator: " · ")
-        }()
+        let subs = item.inspectorSubtitleSummary
         let rows: [(String, String, Color?)] = [
             ("Progress", progress?.detailText ?? "", Color.accentColor),
             ("Estimate", encoding?.sizeEstimate ?? "", Color.accentColor),
@@ -308,6 +290,34 @@ private struct OverviewView: View {
                 InspectorRow("Stopped", "by operator", tint: .orange)
             }
         }
+    }
+}
+
+// MARK: - Inspector summaries
+
+extension ContentIdentification {
+    /// Method, match counts, and reference provenance shown under Media.
+    var inspectorSummary: String {
+        guard let method, !method.isEmpty else { return "" }
+        var value = method
+        if (transcribedEpisodes ?? 0) > 0 || (matchedEpisodes ?? 0) > 0 {
+            value += " · \(matchedEpisodes ?? 0) matched · \(unresolvedEpisodes ?? 0) unresolved · \(lowConfidenceCount ?? 0) low confidence"
+        }
+        if let referenceSource, !referenceSource.isEmpty {
+            value += " · ref \(referenceSource)"
+            if let referenceEpisodes, referenceEpisodes > 0 { value += " (\(referenceEpisodes) episodes)" }
+        }
+        return value
+    }
+}
+
+extension QueueItem {
+    /// Stable, case-insensitive source counts for the Output section.
+    var inspectorSubtitleSummary: String {
+        let sources = episodeList.compactMap { $0.subtitleSource?.lowercased() }.filter { !$0.isEmpty }
+        guard !sources.isEmpty else { return "" }
+        let counts = Dictionary(grouping: sources, by: { $0 }).mapValues(\.count)
+        return counts.sorted { $0.key < $1.key }.map { episodeList.count == 1 ? $0.key : "\($0.value) \($0.key)" }.joined(separator: " · ")
     }
 }
 
@@ -372,7 +382,7 @@ struct InspectorRow: View {
 /// A daemon reason string such as "final_validation: main: audio stream 0
 /// duration …" with its machine-y prefix set off from the message, so the
 /// eye lands on the part that says what happened.
-private struct ReasonRow: View {
+struct ReasonRow: View {
     let label: String
     let reason: String
     let tint: Color?

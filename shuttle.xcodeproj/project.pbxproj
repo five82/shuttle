@@ -48,6 +48,7 @@
 		B0000000000000000000032A /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000022A /* LogView.swift */; };
 		B0000000000000000000032B /* DependenciesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000022B /* DependenciesView.swift */; };
 		B00000000000000000000336 /* LogTailerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000236 /* LogTailerTests.swift */; };
+		B00000000000000000000337 /* SpindleClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000237 /* SpindleClientTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -105,6 +106,7 @@
 		B0000000000000000000022A /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		B0000000000000000000022B /* DependenciesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependenciesView.swift; sourceTree = "<group>"; };
 		B00000000000000000000236 /* LogTailerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTailerTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000237 /* SpindleClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpindleClientTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -211,6 +213,7 @@
 		B0000000000000000000010D /* shuttleTests */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000237 /* SpindleClientTests.swift */,
 				B00000000000000000000236 /* LogTailerTests.swift */,
 				B00000000000000000000235 /* InspectorTests.swift */,
 				B0000000000000000000A005 /* WaitReasonTests.swift */,
@@ -362,6 +365,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000337 /* SpindleClientTests.swift in Sources */,
 				B00000000000000000000336 /* LogTailerTests.swift in Sources */,
 				B00000000000000000000335 /* InspectorTests.swift in Sources */,
 				B0000000000000000001A005 /* WaitReasonTests.swift in Sources */,

@@ -114,6 +114,42 @@ final class LogTailerTests: XCTestCase {
         XCTAssertTrue(LogQuery().queryItems.isEmpty)
     }
 
+    func testLogViewLocalSearchAndUnseenCount() {
+        var first = entry(10)
+        first.msg = "Encoder started"
+        var second = entry(11, level: "ERROR")
+        second.msg = "Failed"
+        second.fields = ["error": "Disk full"]
+        var third = entry(12)
+        third.msg = "Encoder finished"
+        let entries = [first, second, third]
+
+        XCTAssertEqual(LogView.visibleEntries(entries, filter: "  ").map(\.seq), [10, 11, 12])
+        XCTAssertEqual(LogView.visibleEntries(entries, filter: "  ENCODER ").map(\.seq), [10, 12])
+        XCTAssertEqual(LogView.visibleEntries(entries, filter: "disk full").map(\.seq), [11], "search includes fields")
+        XCTAssertTrue(LogView.visibleEntries(entries, filter: "INFO").isEmpty, "level is a server-side filter, not part of local search")
+        XCTAssertEqual(LogView.unseenCount(entries, seenSeq: 10, following: false), 2)
+        XCTAssertEqual(LogView.unseenCount(LogView.visibleEntries(entries, filter: "encoder"), seenSeq: 10, following: false), 1)
+        XCTAssertEqual(LogView.unseenCount(entries, seenSeq: 10, following: true), 0)
+        XCTAssertEqual(LogView.unseenCount(entries, seenSeq: 12, following: false), 0)
+    }
+
+    func testCopiedLogLineIncludesContextAndFoldedFields() {
+        var log = entry(7, level: "warning", item: 21)
+        log.ts = "2026-08-28T12:00:00Z"
+        log.stage = "encoding"
+        log.component = "reel"
+        log.msg = "frame failed"
+        log.fields = ["z": "last", "error": "disk full", "a": "first"]
+        XCTAssertEqual(log.copyLine, "2026-08-28T12:00:00Z WARN #21 encoding reel frame failed error=disk full a=first z=last")
+
+        log.itemID = 0
+        log.stage = ""
+        log.component = nil
+        log.fields = nil
+        XCTAssertEqual(log.copyLine, "2026-08-28T12:00:00Z WARN frame failed", "absent context does not add gaps")
+    }
+
     func testEntryFormatting() throws {
         let logs = try Fixtures.decode(LogsResponse.self, from: "logs")
         let first = try XCTUnwrap(logs.events.first)

@@ -2,6 +2,110 @@ import XCTest
 @testable import shuttle
 
 final class InspectorTests: XCTestCase {
+    func testDependenciesSearchAndOrderBySeverity() {
+        let available = DependencyStatus(name: "Encoder", command: "reel", description: "Video", optional: false, available: true, detail: nil)
+        let optional = DependencyStatus(name: "Subtitles", command: "sub", description: "Optional tool", optional: true, available: false, detail: "not installed")
+        let requiredA = DependencyStatus(name: "Disc", command: "discinfo", description: "Reads discs", optional: false, available: false, detail: "missing")
+        let requiredB = DependencyStatus(name: "Probe", command: "ffprobe", description: "Checks files", optional: false, available: false, detail: nil)
+        let dependencies = [available, optional, requiredA, requiredB]
+
+        XCTAssertEqual(DependenciesView.visibleDependencies(dependencies, filter: "").map(\.name), ["Disc", "Probe", "Subtitles", "Encoder"])
+        XCTAssertEqual(DependenciesView.visibleDependencies(dependencies, filter: "  MISSING  ").map(\.name), ["Disc"])
+        XCTAssertEqual(DependenciesView.visibleDependencies(dependencies, filter: "DISCINFO").map(\.name), ["Disc"])
+        XCTAssertEqual(DependenciesView.visibleDependencies(dependencies, filter: "video").map(\.name), ["Encoder"])
+        XCTAssertEqual(DependenciesView.visibleDependencies(dependencies, filter: "not installed").map(\.name), ["Subtitles"])
+        XCTAssertTrue(DependenciesView.visibleDependencies(dependencies, filter: "unrelated").isEmpty)
+    }
+
+    func testAttentionAndNowSearchVisibleItems() throws {
+        let items = try Fixtures.queue()
+        let review = try XCTUnwrap(items.first { $0.id == 19 })
+        let running = try XCTUnwrap(items.first { $0.id == 21 })
+        let selection = [review, running]
+
+        XCTAssertEqual(AttentionView.matchingItems(selection, filter: " ").map(\.id), [19, 21])
+        XCTAssertEqual(AttentionView.matchingItems(selection, filter: "  AUDIO STREAM ").map(\.id), [19])
+        XCTAssertEqual(NowView.matchingItems(selection, filter: " #21 ").map(\.id), [21])
+        XCTAssertTrue(NowView.matchingItems(selection, filter: "no matching title").isEmpty)
+    }
+
+    func testNowIdleExplanationUsesDriveAndDrainingState() {
+        XCTAssertEqual(NowView.idleMessage(drive: .available, draining: false).symbol, "opticaldisc")
+        XCTAssertTrue(NowView.idleMessage(drive: .available, draining: false).text.contains("insert a disc"))
+        XCTAssertTrue(NowView.idleMessage(drive: .paused, draining: false).text.contains("paused"))
+        XCTAssertEqual(NowView.idleMessage(drive: .busy([]), draining: false).text, "Nothing running.")
+        XCTAssertEqual(NowView.idleMessage(drive: .unknown, draining: false).text, "Nothing running.")
+        XCTAssertTrue(NowView.idleMessage(drive: .available, draining: true).text.contains("draining"), "draining outranks drive availability")
+    }
+
+    func testMenuBarHealthPriorityAndFirstLaunchState() throws {
+        let connected = ConnectionState.connected(since: .distantPast)
+        let disconnected = ConnectionState.disconnected(error: "offline", since: .distantPast, nextRetry: .distantFuture)
+        var status = try Fixtures.status()
+        XCTAssertEqual(MenuBarView.healthState(connection: connected, status: status, issue: nil, placeholder: false), .normal)
+        status.draining = true
+        XCTAssertEqual(MenuBarView.healthState(connection: connected, status: status, issue: nil, placeholder: false), .draining)
+        XCTAssertEqual(MenuBarView.healthState(connection: connected, status: status, issue: "error", placeholder: false), .error)
+        status.running = false
+        XCTAssertEqual(MenuBarView.healthState(connection: connected, status: status, issue: "error", placeholder: false), .stopped)
+        XCTAssertEqual(MenuBarView.healthState(connection: .connecting, status: status, issue: "error", placeholder: true), .connecting)
+        XCTAssertEqual(MenuBarView.healthState(connection: disconnected, status: status, issue: "error", placeholder: true), .setAddress)
+        XCTAssertEqual(MenuBarView.healthState(connection: disconnected, status: status, issue: "error", placeholder: false), .disconnected)
+    }
+
+    func testMenuBarIdleExplanation() {
+        XCTAssertEqual(MenuBarView.idleText(drive: .available, draining: false), "Nothing running.")
+        XCTAssertEqual(MenuBarView.idleText(drive: .busy([]), draining: false), "Nothing running.")
+        XCTAssertEqual(MenuBarView.idleText(drive: .paused, draining: false), "Nothing running — disc monitor paused.")
+        XCTAssertEqual(MenuBarView.idleText(drive: .paused, draining: true), "Nothing running — daemon draining.")
+    }
+
+    func testInspectorStatusWordingForEveryItemState() throws {
+        let items = try Fixtures.queue()
+        let failed = try Fixtures.failedItem()
+        let review = try XCTUnwrap(items.first { $0.id == 19 })
+        let active = try XCTUnwrap(items.first { $0.id == 21 })
+        let waiting = try XCTUnwrap(items.first { $0.id == 22 })
+        let completed = try XCTUnwrap(items.first { $0.id == 1 })
+        let blocked = WaitReason.resource(next: .encoding, name: "gpu", holders: [ResourceHolder(itemId: 21, task: .encoding)])
+
+        XCTAssertEqual(ItemInspectorView.stageLabel(failed, reason: blocked), "Failed")
+        XCTAssertEqual(ItemInspectorView.stageHelp(failed, reason: blocked), failed.attentionReason)
+        XCTAssertEqual(ItemInspectorView.stageLabel(review, reason: blocked), "Review")
+        XCTAssertEqual(ItemInspectorView.stageHelp(review, reason: blocked), review.attentionReason)
+        XCTAssertEqual(ItemInspectorView.stageLabel(active, reason: blocked), "Encoding", "running task wins over a stale wait reason")
+        XCTAssertEqual(ItemInspectorView.stageHelp(active, reason: blocked), active.activityDescription)
+        XCTAssertEqual(ItemInspectorView.stageLabel(waiting, reason: blocked), "Queued · GPU busy")
+        XCTAssertEqual(ItemInspectorView.stageHelp(waiting, reason: blocked), blocked.detail)
+        XCTAssertEqual(ItemInspectorView.stageLabel(waiting, reason: nil), "Queued · \(waiting.stage.displayName)")
+        XCTAssertEqual(ItemInspectorView.stageHelp(waiting, reason: nil), waiting.stage.displayName)
+        XCTAssertEqual(ItemInspectorView.stageLabel(completed, reason: nil), "Completed")
+        XCTAssertEqual(ItemInspectorView.stageHelp(completed, reason: nil), completed.stage.displayName)
+    }
+
+    func testInspectorReasonPrefixSplit() {
+        let split = ReasonRow.split("final_validation: main: audio stream 0 duration mismatch")
+        XCTAssertEqual(split.0, "final_validation · main")
+        XCTAssertEqual(split.1, "audio stream 0 duration mismatch")
+        for reason in ["Read failed: try again", "prefix: ", "plain text", "too_long_to_be_a_reason_prefix_token_here: explanation"] {
+            let value = ReasonRow.split(reason)
+            XCTAssertNil(value.0)
+            XCTAssertEqual(value.1, reason)
+        }
+    }
+
+    func testMenuBarIconReflectsConnectionAndDrive() {
+        let connected = ConnectionState.connected(since: .distantPast)
+        let disconnected = ConnectionState.disconnected(error: "offline", since: .distantPast, nextRetry: .distantFuture)
+        XCTAssertEqual(MenuBarLabel.symbol(connection: .connecting, hasSnapshot: false, drive: .available), "circle.dotted")
+        XCTAssertEqual(MenuBarLabel.symbol(connection: disconnected, hasSnapshot: false, drive: .available), "circle.dotted")
+        XCTAssertEqual(MenuBarLabel.symbol(connection: disconnected, hasSnapshot: true, drive: .busy([])), "antenna.radiowaves.left.and.right.slash")
+        XCTAssertEqual(MenuBarLabel.symbol(connection: connected, hasSnapshot: true, drive: .unknown), "circle.dotted")
+        XCTAssertEqual(MenuBarLabel.symbol(connection: connected, hasSnapshot: true, drive: .available), "opticaldisc")
+        XCTAssertEqual(MenuBarLabel.symbol(connection: connected, hasSnapshot: true, drive: .busy([])), "opticaldisc.fill")
+        XCTAssertEqual(MenuBarLabel.symbol(connection: connected, hasSnapshot: true, drive: .paused), "pause.circle")
+    }
+
     func testEncodingDetailsDecodeFromCapturedItem() throws {
         let item = try XCTUnwrap(try Fixtures.queue().first { $0.id == 21 })
         let encoding = try XCTUnwrap(item.encodingDetails)
@@ -67,6 +171,38 @@ final class InspectorTests: XCTestCase {
         XCTAssertEqual(progress.detailText, "25% · 10 GB / 40 GB")
     }
 
+    func testPipelineRowProgressDurationAndNotePriorities() throws {
+        let now = Date(timeIntervalSince1970: 1_000)
+        var cell = PipelineCell(stage: .encoding, state: .running, percent: 0, message: "", error: nil, attempts: 0, startedAt: nil, finishedAt: nil)
+        XCTAssertEqual(cell.trailing(progress: nil, at: now), "running")
+        cell.percent = 49.6
+        XCTAssertEqual(cell.trailing(progress: nil, at: now), "50%")
+        let active = try XCTUnwrap(try Fixtures.queue().first { $0.id == 21 })
+        let progress = try XCTUnwrap(active.progress)
+        XCTAssertEqual(cell.trailing(progress: progress, at: now), progress.shortText, "task progress takes precedence over raw percent")
+        cell.percent = 0
+        cell.startedAt = now.addingTimeInterval(-90)
+        XCTAssertEqual(cell.trailing(progress: nil, at: now), "1m")
+        cell.message = "Encoding frame 42"
+        cell.attempts = 3
+        XCTAssertEqual(cell.note, "Encoding frame 42")
+
+        cell.state = .failed
+        cell.error = "reel exited"
+        XCTAssertEqual(cell.note, "reel exited")
+        cell.state = .done
+        cell.finishedAt = now.addingTimeInterval(-30)
+        cell.flagged = true
+        XCTAssertEqual(cell.trailing(progress: nil, at: now), "1m")
+        XCTAssertEqual(cell.note, "Routed to review")
+        cell.flagged = false
+        XCTAssertEqual(cell.note, "3 attempts")
+        cell.attempts = 1
+        XCTAssertNil(cell.note)
+        cell.startedAt = nil
+        XCTAssertEqual(cell.trailing(progress: nil, at: now), "")
+    }
+
     func testPipelineCellsCarryTimingAndReviewFlag() throws {
         let status = try Fixtures.status()
         let review = try XCTUnwrap(try Fixtures.queue().first { $0.id == 19 })
@@ -88,6 +224,44 @@ final class InspectorTests: XCTestCase {
         XCTAssertTrue(review.searchableText.contains("audio stream"))
         XCTAssertTrue(review.searchableText.contains("#19"))
         XCTAssertEqual(review.mediaTypeLabel, "Movie")
+    }
+
+    func testInspectorContentIdentificationSummary() throws {
+        var content = try JSONDecoder().decode(ContentIdentification.self, from: Data("{}".utf8))
+        XCTAssertEqual(content.inspectorSummary, "")
+        content.method = "audio fingerprint"
+        XCTAssertEqual(content.inspectorSummary, "audio fingerprint")
+        content.transcribedEpisodes = 2
+        content.matchedEpisodes = 1
+        content.unresolvedEpisodes = 1
+        content.lowConfidenceCount = 1
+        content.referenceSource = "TMDB"
+        content.referenceEpisodes = 8
+        XCTAssertEqual(content.inspectorSummary, "audio fingerprint · 1 matched · 1 unresolved · 1 low confidence · ref TMDB (8 episodes)")
+        content.referenceEpisodes = 0
+        XCTAssertTrue(content.inspectorSummary.hasSuffix("· ref TMDB"))
+        content.method = ""
+        XCTAssertEqual(content.inspectorSummary, "", "a source alone is not an identification method")
+    }
+
+    func testInspectorSubtitleSummaryCountsSourcesInStableOrder() throws {
+        var item = try Fixtures.failedItem()
+        XCTAssertEqual(item.inspectorSubtitleSummary, "")
+        var first = try JSONDecoder().decode(Episode.self, from: Data(#"{"key":"a", "season":1, "episode":1, "stage":"pending"}"#.utf8))
+        first.subtitleSource = "OpenSubtitles"
+        item.episodes = [first]
+        XCTAssertEqual(item.inspectorSubtitleSummary, "opensubtitles")
+        var second = first
+        second.key = "b"
+        second.subtitleSource = "LOCAL"
+        var third = first
+        third.key = "c"
+        third.subtitleSource = "opensubtitles"
+        item.episodes = [first, second, third]
+        XCTAssertEqual(item.inspectorSubtitleSummary, "1 local · 2 opensubtitles")
+        third.subtitleSource = nil
+        item.episodes = [first, second, third]
+        XCTAssertEqual(item.inspectorSubtitleSummary, "1 local · 1 opensubtitles", "counts are per source, not total episode count")
     }
 
     func testEncodingSummaries() {
@@ -192,6 +366,31 @@ final class InspectorTests: XCTestCase {
 
         let unknown = try JSONDecoder().decode(Episode.self, from: Data(#"{"key": "x", "season": 0, "episode": 0, "stage": "pending"}"#.utf8))
         XCTAssertEqual(unknown.label, "S??E??")
+    }
+
+    func testEpisodeMappingRangesAndReviewThreshold() throws {
+        let json = #"{"key":"a", "season":2, "episode":4, "episodeEnd":5, "stage":"pending", "matchedEpisode":4, "matchedEpisodeEnd":5, "matchConfidence":0.8}"#
+        var episode = try JSONDecoder().decode(Episode.self, from: Data(json.utf8))
+        XCTAssertNil(episode.mappingDescription, "matching range at the default threshold is not noteworthy")
+        XCTAssertEqual(episode.mappingDescription(threshold: 0.81), "matched E04–05 · 80% confidence")
+        episode.matchedEpisodeEnd = 6
+        XCTAssertEqual(episode.mappingDescription, "matched E04–06 · 80% confidence")
+        episode.matchedEpisode = 0
+        XCTAssertNil(episode.mappingDescription, "unmatched episodes cannot show a mapping")
+    }
+
+    func testEpisodeSubtitleSummaryPrefersIssuesToSource() throws {
+        var episode = try JSONDecoder().decode(Episode.self, from: Data(#"{"key":"a", "season":1, "episode":1, "stage":"pending"}"#.utf8))
+        XCTAssertNil(episode.subtitleDescription)
+        episode.subtitleLanguage = "en"
+        episode.subtitleSource = "OpenSubtitles"
+        XCTAssertEqual(episode.subtitleDescription, "en · opensubtitles")
+        episode.subtitleReviewIssues = ["timing needs review"]
+        XCTAssertEqual(episode.subtitleDescription, "en · timing needs review")
+        episode.subtitleSevereIssues = ["missing cues"]
+        XCTAssertEqual(episode.subtitleDescription, "en · 2 subtitle issues")
+        episode.subtitleLanguage = nil
+        XCTAssertEqual(episode.subtitleDescription, "2 subtitle issues")
     }
 
     func testFinalPathCollapsesBatchesToDirectory() throws {

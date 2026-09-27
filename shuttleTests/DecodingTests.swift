@@ -65,6 +65,21 @@ final class DecodingTests: XCTestCase {
         XCTAssertNotEqual(completed.createdDate, .distantPast)
     }
 
+    func testQueueScopesIncludeTheRightItems() throws {
+        let items = try Fixtures.queue()
+        let failed = try Fixtures.failedItem()
+        let active = try XCTUnwrap(items.first { $0.id == 21 })
+        let waiting = try XCTUnwrap(items.first { $0.id == 22 })
+        let review = try XCTUnwrap(items.first { $0.id == 19 })
+        let completed = try XCTUnwrap(items.first { $0.id == 1 })
+        let sample = [failed, review, active, waiting, completed]
+
+        XCTAssertEqual(sample.filter(QueueScope.all.includes).map(\.id), [99, 19, 21, 22, 1])
+        XCTAssertEqual(sample.filter(QueueScope.active.includes).map(\.id), [21, 22])
+        XCTAssertEqual(sample.filter(QueueScope.attention.includes).map(\.id), [99, 19])
+        XCTAssertEqual(sample.filter(QueueScope.completed.includes).map(\.id), [1], "review is not counted as completed")
+    }
+
     func testItemDetailIncludesRipSpec() throws {
         struct Envelope: Decodable { var item: QueueItem }
         let item = try Fixtures.decode(Envelope.self, from: "item").item

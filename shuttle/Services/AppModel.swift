@@ -13,12 +13,13 @@ final class AppModel {
     let settings: AppSettingsStore
     let monitor: SpindleMonitor
     let notifications: NotificationService
+    private let defaults: UserDefaults
 
     private static let sectionKey = "sidebarSection"
 
     /// Restored across launches so the window reopens where it was.
     var section: SidebarSection {
-        didSet { UserDefaults.standard.set(section.rawValue, forKey: Self.sectionKey) }
+        didSet { defaults.set(section.rawValue, forKey: Self.sectionKey) }
     }
 
     /// Queue table order; lives here so a menu command can reset it.
@@ -29,18 +30,19 @@ final class AppModel {
         KeyPathComparator(\.id, order: .reverse),
     ]
 
-    init(settings: AppSettingsStore) {
+    init(settings: AppSettingsStore, monitor: SpindleMonitor? = nil, defaults: UserDefaults = .standard) {
         self.settings = settings
+        self.defaults = defaults
         self.notifications = NotificationService()
-        self.monitor = SpindleMonitor(clientProvider: { settings.makeClient() }, pollInterval: settings.settings.pollInterval)
-        self.section = UserDefaults.standard.string(forKey: Self.sectionKey).flatMap(SidebarSection.init(rawValue:)) ?? .now
+        self.monitor = monitor ?? SpindleMonitor(clientProvider: { settings.makeClient() }, pollInterval: settings.settings.pollInterval)
+        self.section = defaults.string(forKey: Self.sectionKey).flatMap(SidebarSection.init(rawValue:)) ?? .now
 
-        monitor.onEvents = { [weak self] events in
+        self.monitor.onEvents = { [weak self] events in
             self?.handle(events)
         }
-        monitor.onSnapshot = { [weak self] in
+        self.monitor.onSnapshot = { [weak self] in
             guard let self else { return }
-            notifications.updateBadge(attentionCount: monitor.attentionCount)
+            notifications.updateBadge(attentionCount: self.monitor.attentionCount)
         }
     }
 

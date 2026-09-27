@@ -30,6 +30,26 @@ struct PipelineCell: Identifiable, Equatable {
         return end.timeIntervalSince(startedAt)
     }
 
+    /// The trailing progress or duration shown for this task.
+    func trailing(progress: ItemProgress?, at now: Date) -> String {
+        if state == .running {
+            if let progress { return progress.shortText }
+            if percent > 0 { return "\(Int(percent.rounded()))%" }
+            return duration(at: now).map(EncodingDetails.duration) ?? "running"
+        }
+        if let duration = duration(at: now) { return EncodingDetails.duration(duration) }
+        return ""
+    }
+
+    /// Review and failure notes take precedence over retry counts.
+    var note: String? {
+        if state == .running, !message.isEmpty { return message }
+        if state == .failed, let error, !error.isEmpty { return error }
+        if flagged { return "Routed to review" }
+        if attempts > 1 { return "\(attempts) attempts" }
+        return nil
+    }
+
     /// Stages come from `status.pipeline` so a new Spindle stage renders
     /// without a shuttle release; the item's own task order is the fallback.
     static func cells(for item: QueueItem, pipeline: [PipelineStageInfo]) -> [PipelineCell] {
@@ -148,11 +168,11 @@ private struct PipelineRow: View {
                             .help("Claims the \(Format.resource(claim)) while it runs")
                     }
                     Spacer(minLength: 8)
-                    Text(trailing)
+                    Text(cell.trailing(progress: progress, at: now))
                         .font(.system(.caption, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
-                if let note {
+                if let note = cell.note {
                     Text(note)
                         .font(.caption)
                         .foregroundStyle(cell.state == .failed ? .red : .secondary)
@@ -161,25 +181,6 @@ private struct PipelineRow: View {
             }
         }
         .help(helpText)
-    }
-
-    /// "1h 12m", "66% · 43 min left", or "" for stages that never ran.
-    private var trailing: String {
-        if cell.state == .running {
-            if let progress { return progress.shortText }
-            if cell.percent > 0 { return "\(Int(cell.percent.rounded()))%" }
-            return cell.duration(at: now).map(EncodingDetails.duration) ?? "running"
-        }
-        if let duration = cell.duration(at: now) { return EncodingDetails.duration(duration) }
-        return ""
-    }
-
-    private var note: String? {
-        if cell.state == .running, !cell.message.isEmpty { return cell.message }
-        if cell.state == .failed, let error = cell.error, !error.isEmpty { return error }
-        if cell.flagged { return "Routed to review" }
-        if cell.attempts > 1 { return "\(cell.attempts) attempts" }
-        return nil
     }
 
     private var symbol: String {

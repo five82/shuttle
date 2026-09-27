@@ -9,18 +9,19 @@ struct DependenciesView: View {
     @Environment(SpindleMonitor.self) private var monitor
     var filter = ""
 
+    /// Preserve daemon order within each severity group after local search.
+    static func visibleDependencies(_ dependencies: [DependencyStatus], filter: String) -> [DependencyStatus] {
+        let needle = filter.trimmingCharacters(in: .whitespaces).lowercased()
+        return dependencies
+            .filter {
+                needle.isEmpty || "\($0.name) \($0.command) \($0.description) \($0.detail ?? "")".lowercased().contains(needle)
+            }
+            .sorted { $0.severity < $1.severity }
+    }
+
     var body: some View {
         if let status = monitor.status {
-            let needle = filter.trimmingCharacters(in: .whitespaces).lowercased()
-            let dependencies = status.dependencies
-                .filter {
-                    needle.isEmpty || "\($0.name) \($0.command) \($0.description) \($0.detail ?? "")".lowercased().contains(needle)
-                }
-                .sorted { a, b in
-                    // Missing required first, then missing optional, then the rest in daemon order.
-                    if a.severity != b.severity { return a.severity < b.severity }
-                    return false
-                }
+            let dependencies = Self.visibleDependencies(status.dependencies, filter: filter)
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     InspectorSection("Daemon", tint: monitor.daemonIssue == nil ? .secondary : .red) {

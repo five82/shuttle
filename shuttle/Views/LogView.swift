@@ -45,12 +45,22 @@ struct LogView: View {
 
     private var filterText: String { externalFilter ?? search }
 
+    /// Search is local; level and item filters belong to LogTailer's server query.
+    static func visibleEntries(_ entries: [LogEntry], filter: String) -> [LogEntry] {
+        let needle = filter.trimmingCharacters(in: .whitespaces).lowercased()
+        return needle.isEmpty ? entries : entries.filter { $0.summary.lowercased().contains(needle) }
+    }
+
+    static func unseenCount(_ entries: [LogEntry], seenSeq: UInt64, following: Bool) -> Int {
+        following ? 0 : entries.filter { $0.seq > seenSeq }.count
+    }
+
     @ViewBuilder
     private func content(_ tailer: LogTailer) -> some View {
         @Bindable var tailer = tailer
+        let rows = Self.visibleEntries(tailer.entries, filter: filterText)
+        let unseen = Self.unseenCount(rows, seenSeq: seenSeq, following: follow)
         let needle = filterText.trimmingCharacters(in: .whitespaces).lowercased()
-        let rows = needle.isEmpty ? tailer.entries : tailer.entries.filter { $0.summary.lowercased().contains(needle) }
-        let unseen = follow ? 0 : rows.filter { $0.seq > seenSeq }.count
 
         VStack(spacing: 0) {
             toolbar(tailer)
@@ -316,7 +326,7 @@ private struct LogRow: View {
         }
         .font(.system(compact ? .caption : .callout, design: .monospaced))
         .contextMenu {
-            Button("Copy Line") { copy(line) }
+            Button("Copy Line") { copy(entry.copyLine) }
             if !pairs.isEmpty {
                 Button("Copy Fields") { copy(pairs.map { "\($0.key)=\($0.value)" }.joined(separator: "\n")) }
             }
@@ -325,17 +335,6 @@ private struct LogRow: View {
                 Button("Show #\(id)") { focusItem(id) }
             }
         }
-    }
-
-    /// The row as shown: time, level, item, stage, component, message, fields.
-    private var line: String {
-        var parts = [entry.ts, entry.levelValue.rawValue]
-        if let id = entry.itemID, id > 0 { parts.append("#\(id)") }
-        if let stage = entry.stage, !stage.isEmpty { parts.append(stage) }
-        if let component = entry.component, !component.isEmpty { parts.append(component) }
-        parts.append(entry.msg)
-        parts += entry.fieldPairs.map { "\($0.key)=\($0.value)" }
-        return parts.joined(separator: " ")
     }
 
     private func copy(_ string: String) {
@@ -360,6 +359,19 @@ private struct LogRow: View {
         case .error: return .red
         case .unknown: return .secondary
         }
+    }
+}
+
+extension LogEntry {
+    /// The exact line copied from the log row, including its hidden fields.
+    var copyLine: String {
+        var parts = [ts, levelValue.rawValue]
+        if let itemID, itemID > 0 { parts.append("#\(itemID)") }
+        if let stage, !stage.isEmpty { parts.append(stage) }
+        if let component, !component.isEmpty { parts.append(component) }
+        parts.append(msg)
+        parts += fieldPairs.map { "\($0.key)=\($0.value)" }
+        return parts.joined(separator: " ")
     }
 }
 

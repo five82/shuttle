@@ -13,15 +13,28 @@ struct NowView: View {
 
     private var needle: String { filter.trimmingCharacters(in: .whitespaces).lowercased() }
 
-    private func matching(_ items: [QueueItem]) -> [QueueItem] {
-        needle.isEmpty ? items : items.filter { $0.searchableText.contains(needle) }
+    static func matchingItems(_ items: [QueueItem], filter: String) -> [QueueItem] {
+        let needle = filter.trimmingCharacters(in: .whitespaces).lowercased()
+        return needle.isEmpty ? items : items.filter { $0.searchableText.contains(needle) }
+    }
+
+    /// Explain an idle pipeline using the daemon's state, not an item's stage.
+    static func idleMessage(drive: DriveState, draining: Bool) -> (symbol: String, text: String) {
+        if draining {
+            return ("pause.circle", "Nothing running. Daemon is draining — nothing new will be dispatched.")
+        }
+        switch drive {
+        case .available: return ("opticaldisc", "Nothing running. Drive available — insert a disc.")
+        case .paused: return ("pause.circle", "Nothing running. Disc monitor paused — new discs are ignored.")
+        case .busy, .unknown: return ("moon.zzz", "Nothing running.")
+        }
     }
 
     var body: some View {
-        let attention = matching(monitor.attentionItems)
-        let active = matching(monitor.activeItems)
-        let waiting = matching(monitor.waitingItems)
-        let completed = matching(monitor.recentlyCompleted)
+        let attention = Self.matchingItems(monitor.attentionItems, filter: filter)
+        let active = Self.matchingItems(monitor.activeItems, filter: filter)
+        let waiting = Self.matchingItems(monitor.waitingItems, filter: filter)
+        let completed = Self.matchingItems(monitor.recentlyCompleted, filter: filter)
         let nothingMatches = !needle.isEmpty && attention.isEmpty && active.isEmpty && waiting.isEmpty && completed.isEmpty
 
         if nothingMatches {
@@ -92,16 +105,7 @@ struct NowView: View {
                 .foregroundStyle(.secondary)
                 .padding(.vertical, 6)
         } else {
-            let (symbol, text): (String, String) = {
-                if monitor.status?.isDraining == true {
-                    return ("pause.circle", "Nothing running. Daemon is draining — nothing new will be dispatched.")
-                }
-                switch monitor.driveState {
-                case .available: return ("opticaldisc", "Nothing running. Drive available — insert a disc.")
-                case .paused: return ("pause.circle", "Nothing running. Disc monitor paused — new discs are ignored.")
-                case .busy, .unknown: return ("moon.zzz", "Nothing running.")
-                }
-            }()
+            let (symbol, text) = Self.idleMessage(drive: monitor.driveState, draining: monitor.status?.isDraining == true)
             HStack(spacing: 10) {
                 Image(systemName: symbol)
                     .foregroundStyle(.secondary)

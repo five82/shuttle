@@ -6,11 +6,12 @@ struct AttentionView: View {
     @Environment(SpindleMonitor.self) private var monitor
     var filter = ""
 
-    private var rows: [QueueItem] {
+    static func matchingItems(_ items: [QueueItem], filter: String) -> [QueueItem] {
         let needle = filter.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !needle.isEmpty else { return monitor.attentionItems }
-        return monitor.attentionItems.filter { $0.searchableText.contains(needle) }
+        return needle.isEmpty ? items : items.filter { $0.searchableText.contains(needle) }
     }
+
+    private var rows: [QueueItem] { Self.matchingItems(monitor.attentionItems, filter: filter) }
 
     var body: some View {
         @Bindable var monitor = monitor

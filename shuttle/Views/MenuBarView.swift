@@ -18,6 +18,24 @@ struct MenuBarView: View {
     static let width: CGFloat = 340
     private static let maxBodyHeight: CGFloat = 420
 
+    enum HealthState: Equatable {
+        case normal, connecting, setAddress, disconnected, stopped, error, draining
+    }
+
+    /// One priority order for the header's daemon chip. A stopped daemon
+    /// outranks its last error, and a configured outage outranks stale status.
+    static func healthState(connection: ConnectionState, status: StatusResponse?, issue: String?, placeholder: Bool) -> HealthState {
+        switch connection {
+        case .connected:
+            if status?.running == false { return .stopped }
+            if issue != nil { return .error }
+            if status?.isDraining == true { return .draining }
+            return .normal
+        case .connecting: return .connecting
+        case .disconnected: return placeholder ? .setAddress : .disconnected
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
@@ -60,26 +78,18 @@ struct MenuBarView: View {
                     StatusChip(label: "\(monitor.attentionCount)", systemImage: "exclamationmark.triangle.fill", tint: monitor.attentionItems.contains(where: \.hasFailed) ? .red : .orange)
                 }
             }
-            switch monitor.connection {
-            case .connected:
-                if monitor.status?.running == false {
-                    healthChip("Daemon stopped", systemImage: "circle.fill", tint: .red)
-                } else if monitor.daemonIssue != nil {
-                    healthChip("Daemon error", systemImage: "exclamationmark.circle.fill", tint: .red)
-                } else if monitor.status?.isDraining == true {
-                    healthChip("Draining", systemImage: "circle.fill", tint: .orange)
+            switch Self.healthState(connection: monitor.connection, status: monitor.status, issue: monitor.daemonIssue, placeholder: settingsStore.settings.isPlaceholderAddress) {
+            case .normal: EmptyView()
+            case .stopped: healthChip("Daemon stopped", systemImage: "circle.fill", tint: .red)
+            case .error: healthChip("Daemon error", systemImage: "exclamationmark.circle.fill", tint: .red)
+            case .draining: healthChip("Draining", systemImage: "circle.fill", tint: .orange)
+            case .connecting: StatusChip(label: "Connecting", systemImage: "circle.dotted", tint: .secondary)
+            case .setAddress:
+                SettingsLink {
+                    StatusChip(label: "Set address in Settings", systemImage: "network", tint: .orange)
                 }
-            case .connecting:
-                StatusChip(label: "Connecting", systemImage: "circle.dotted", tint: .secondary)
-            case .disconnected:
-                if settingsStore.settings.isPlaceholderAddress {
-                    SettingsLink {
-                        StatusChip(label: "Set address in Settings", systemImage: "network", tint: .orange)
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    healthChip("Disconnected", systemImage: "circle.slash", tint: .red)
-                }
+                .buttonStyle(.plain)
+            case .disconnected: healthChip("Disconnected", systemImage: "circle.slash", tint: .red)
             }
             Spacer()
         }
@@ -180,10 +190,14 @@ struct MenuBarView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var idleText: String {
-        if monitor.status?.isDraining == true { return "Nothing running — daemon draining." }
-        if monitor.driveState == .paused { return "Nothing running — disc monitor paused." }
+    static func idleText(drive: DriveState, draining: Bool) -> String {
+        if draining { return "Nothing running — daemon draining." }
+        if drive == .paused { return "Nothing running — disc monitor paused." }
         return "Nothing running."
+    }
+
+    private var idleText: String {
+        Self.idleText(drive: monitor.driveState, draining: monitor.status?.isDraining == true)
     }
 
     @ViewBuilder

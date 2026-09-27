@@ -7,7 +7,13 @@ import UserNotifications
 @MainActor
 final class NotificationService: NSObject {
     private let center = UNUserNotificationCenter.current()
+    private let addRequest: (UNNotificationRequest) -> Void
     private var activated = false
+
+    init(addRequest: @escaping (UNNotificationRequest) -> Void = { UNUserNotificationCenter.current().add($0) }) {
+        self.addRequest = addRequest
+        super.init()
+    }
 
     func activate() {
         guard !activated else { return }
@@ -23,45 +29,51 @@ final class NotificationService: NSObject {
 
     func post(_ events: [MonitorEvent], settings: AppSettings) {
         for event in events where settings.notifies(event.kind) {
-            let content = UNMutableNotificationContent()
-            content.sound = .default
-            content.threadIdentifier = event.kind.rawValue
-            if let item = event.item {
-                content.subtitle = "#\(item.id)"
-            }
-
-            switch event {
-            case .driveAvailable:
-                content.title = "Drive available"
-                content.body = "Insert the next disc."
-            case .needsReview(let item):
-                content.title = "Needs review · \(item.displayTitle)"
-                content.body = item.attentionReason ?? "Routed to review."
-                content.userInfo = ["itemID": item.id]
-            case .failed(let item):
-                content.title = "Failed · \(item.displayTitle)"
-                content.body = item.attentionReason ?? "Stopped before completing."
-                content.userInfo = ["itemID": item.id]
-                content.interruptionLevel = .timeSensitive
-            case .completed(let item):
-                content.title = "Completed · \(item.displayTitle)"
-                content.body = "Ready in the library."
-                content.userInfo = ["itemID": item.id]
-                // A box set completes twenty times in a row; the banner is enough.
-                content.sound = nil
-            case .disconnected(let error):
-                content.title = "Lost connection to Spindle"
-                content.body = error
-                content.sound = nil
-            case .reconnected:
-                content.title = "Reconnected to Spindle"
-                content.body = "Polling resumed."
-                content.sound = nil
-            }
-
-            let identifier = "\(event.kind.rawValue)-\(event.item?.id ?? 0)-\(Date().timeIntervalSince1970)"
-            center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: nil))
+            let content = Self.content(for: event)
+            let identifier = "\(event.kind.rawValue)-\(event.item?.id ?? 0)-\(UUID().uuidString)"
+            addRequest(UNNotificationRequest(identifier: identifier, content: content, trigger: nil))
         }
+    }
+
+    /// Build the payload separately from delivery so every event's wording
+    /// and routing can be checked without requesting notification permission.
+    static func content(for event: MonitorEvent) -> UNNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.sound = .default
+        content.threadIdentifier = event.kind.rawValue
+        if let item = event.item {
+            content.subtitle = "#\(item.id)"
+        }
+
+        switch event {
+        case .driveAvailable:
+            content.title = "Drive available"
+            content.body = "Insert the next disc."
+        case .needsReview(let item):
+            content.title = "Needs review · \(item.displayTitle)"
+            content.body = item.attentionReason ?? "Routed to review."
+            content.userInfo = ["itemID": item.id]
+        case .failed(let item):
+            content.title = "Failed · \(item.displayTitle)"
+            content.body = item.attentionReason ?? "Stopped before completing."
+            content.userInfo = ["itemID": item.id]
+            content.interruptionLevel = .timeSensitive
+        case .completed(let item):
+            content.title = "Completed · \(item.displayTitle)"
+            content.body = "Ready in the library."
+            content.userInfo = ["itemID": item.id]
+            // A box set completes twenty times in a row; the banner is enough.
+            content.sound = nil
+        case .disconnected(let error):
+            content.title = "Lost connection to Spindle"
+            content.body = error
+            content.sound = nil
+        case .reconnected:
+            content.title = "Reconnected to Spindle"
+            content.body = "Polling resumed."
+            content.sound = nil
+        }
+        return content
     }
 
     func updateBadge(attentionCount: Int) {

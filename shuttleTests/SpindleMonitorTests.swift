@@ -138,6 +138,20 @@ final class SpindleMonitorTests: XCTestCase {
         XCTAssertEqual(SpindleMonitor.backoff(failures: 100, base: 2, max: 30), 30)
     }
 
+    func testFirstLaunchStateExplainsPlaceholderBeforeConnectionError() {
+        let outage = ConnectionState.disconnected(error: "Spindle rejected the API token.", since: clock, nextRetry: clock.addingTimeInterval(5))
+        XCTAssertEqual(NotConnectedView.state(placeholder: true, connection: .connecting), .setAddress)
+        XCTAssertEqual(NotConnectedView.state(placeholder: true, connection: outage), .setAddress, "placeholder is not a working daemon address")
+        XCTAssertEqual(NotConnectedView.state(placeholder: false, connection: .connecting), .connecting)
+        XCTAssertEqual(NotConnectedView.state(placeholder: false, connection: .connected(since: clock)), .connecting, "no snapshot yet")
+        XCTAssertEqual(
+            NotConnectedView.state(placeholder: false, connection: outage),
+            .disconnected(error: "Spindle rejected the API token.", hint: SpindleMonitor.hint(for: "Spindle rejected the API token."))
+        )
+        let unknown = ConnectionState.disconnected(error: "HTTP 500", since: clock, nextRetry: clock)
+        XCTAssertEqual(NotConnectedView.state(placeholder: false, connection: unknown), .disconnected(error: "HTTP 500", hint: nil))
+    }
+
     func testUnauthorizedIsReportedDistinctly() async throws {
         let api = MockSpindleAPI(status: try Fixtures.status(), queue: [])
         api.statusResult = .failure(SpindleClientError.unauthorized)
@@ -295,6 +309,57 @@ final class SpindleMonitorTests: XCTestCase {
         XCTAssertNil(monitor.selectedItemDetail)
         await monitor.refresh()
         XCTAssertEqual(api.itemCalls, 2, "no detail fetch without a selection")
+    }
+
+    func testAppModelRoutesFocusAndDeepLinksToVisibleSections() async throws {
+        let suite = "shuttle.tests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let settings = AppSettingsStore(defaults: defaults)
+        let api = MockSpindleAPI(status: try Fixtures.status(), queue: try Fixtures.queue())
+        let monitor = makeMonitor(api)
+        let model = AppModel(settings: settings, monitor: monitor, defaults: defaults)
+        XCTAssertEqual(model.section, .now)
+        let connected = await monitor.refresh()
+        XCTAssertTrue(connected)
+
+        model.focus(itemID: 21)
+        XCTAssertEqual(model.section, .now, "stay on Now when it already shows the item")
+        XCTAssertEqual(monitor.selectedItemID, 21)
+        model.section = .attention
+        model.focus(itemID: 19)
+        XCTAssertEqual(model.section, .attention, "stay on Attention for a review item")
+        model.section = .queue
+        model.focus(itemID: 19)
+        XCTAssertEqual(model.section, .attention, "prefer the short attention list")
+        model.focus(itemID: 20)
+        XCTAssertEqual(model.section, .now, "recently completed items are on Now")
+        model.focus(itemID: 1)
+        XCTAssertEqual(model.section, .queue, "older completed items live only in Queue")
+
+        model.handle(.main)
+        XCTAssertEqual(model.section, .queue)
+        model.handle(.section(.dependencies))
+        XCTAssertEqual(model.section, .dependencies)
+        model.handle(.item(21))
+        XCTAssertEqual(model.section, .now)
+        XCTAssertEqual(monitor.selectedItemID, 21)
+        XCTAssertEqual(defaults.string(forKey: "sidebarSection"), SidebarSection.now.rawValue)
+    }
+
+    func testAppModelRestoresSectionAndResetsQueueOrder() throws {
+        let suite = "shuttle.tests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(SidebarSection.log.rawValue, forKey: "sidebarSection")
+        let model = AppModel(settings: AppSettingsStore(defaults: defaults), defaults: defaults)
+        XCTAssertEqual(model.section, .log)
+        model.queueSortOrder = [KeyPathComparator(\.id)]
+        model.resetQueueSort()
+        let items = try Fixtures.queue() + [Fixtures.failedItem()]
+        XCTAssertEqual(items.sorted(using: model.queueSortOrder).first?.id, 99, "default sort puts failures first")
+        model.section = .attention
+        XCTAssertEqual(AppModel(settings: AppSettingsStore(defaults: defaults), defaults: defaults).section, .attention)
     }
 
     func testStartPollsAndStopCancels() async throws {

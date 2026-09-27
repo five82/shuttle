@@ -78,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-private struct MenuBarLabel: View {
+struct MenuBarLabel: View {
     @Environment(SpindleMonitor.self) private var monitor
 
     var body: some View {
@@ -95,13 +95,17 @@ private struct MenuBarLabel: View {
     /// while the disc monitor is paused, a dotted circle until the first
     /// snapshot, and a struck antenna when shuttle cannot reach the daemon.
     private var symbol: String {
-        switch monitor.connection {
+        Self.symbol(connection: monitor.connection, hasSnapshot: monitor.status != nil, drive: monitor.driveState)
+    }
+
+    static func symbol(connection: ConnectionState, hasSnapshot: Bool, drive: DriveState) -> String {
+        switch connection {
         case .disconnected:
-            return monitor.status == nil ? "circle.dotted" : "antenna.radiowaves.left.and.right.slash"
+            return hasSnapshot ? "antenna.radiowaves.left.and.right.slash" : "circle.dotted"
         case .connecting:
             return "circle.dotted"
         case .connected:
-            switch monitor.driveState {
+            switch drive {
             case .busy: return "opticaldisc.fill"
             case .paused: return "pause.circle"
             case .available: return "opticaldisc"
