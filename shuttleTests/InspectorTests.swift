@@ -30,6 +30,33 @@ final class InspectorTests: XCTestCase {
         XCTAssertTrue(NowView.matchingItems(selection, filter: "no matching title").isEmpty)
     }
 
+    func testNowRowTextUsesElapsedTimeOnlyForSilentSingleTask() throws {
+        let item = try XCTUnwrap(try Fixtures.queue().first { $0.id == 21 })
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        var progress = try XCTUnwrap(item.progress)
+        progress.message = ""
+        progress.startedAt = now.addingTimeInterval(-245)
+        XCTAssertEqual(NowRowText.activeDetail(item: item, progress: [progress], at: now), "Encoding · started 4m ago")
+
+        progress.startedAt = now.addingTimeInterval(-0.5)
+        XCTAssertEqual(NowRowText.activeDetail(item: item, progress: [progress], at: now), item.activityDescription)
+        progress.startedAt = nil
+        XCTAssertEqual(NowRowText.activeDetail(item: item, progress: [progress], at: now), item.activityDescription)
+        progress.message = "Working"
+        XCTAssertEqual(NowRowText.activeDetail(item: item, progress: [progress], at: now), item.activityDescription)
+        XCTAssertEqual(NowRowText.activeDetail(item: item, progress: [], at: now), item.activityDescription)
+        XCTAssertEqual(NowRowText.activeDetail(item: item, progress: [progress, progress], at: now), item.activityDescription, "overlapping tasks keep the combined activity description")
+    }
+
+    func testNowWaitingTextNamesNextTaskRatherThanCoarseItemStage() throws {
+        var item = try XCTUnwrap(try Fixtures.queue().first { $0.id == 22 })
+        item.stage = .ripping
+        XCTAssertEqual(NowRowText.waitingText(item: item, reason: nil), "queued for ripping")
+        XCTAssertEqual(NowRowText.waitingText(item: item, reason: .resource(next: .encoding, name: "gpu", holders: [])), "Encoding · GPU busy")
+        XCTAssertEqual(NowRowText.waitingText(item: item, reason: .dependency(next: .analysis, on: .encoding)), "Analysis · after Encoding")
+        XCTAssertEqual(NowRowText.waitingText(item: item, reason: .ready(next: .subtitling)), "Subtitling · next up")
+    }
+
     func testNowIdleExplanationUsesDriveAndDrainingState() {
         XCTAssertEqual(NowView.idleMessage(drive: .available, draining: false).symbol, "opticaldisc")
         XCTAssertTrue(NowView.idleMessage(drive: .available, draining: false).text.contains("insert a disc"))
@@ -82,6 +109,43 @@ final class InspectorTests: XCTestCase {
         XCTAssertEqual(ItemInspectorView.stageHelp(waiting, reason: nil), waiting.stage.displayName)
         XCTAssertEqual(ItemInspectorView.stageLabel(completed, reason: nil), "Completed")
         XCTAssertEqual(ItemInspectorView.stageHelp(completed, reason: nil), completed.stage.displayName)
+    }
+
+    func testQueueStageColumnUsesTasksAndWaitingReasons() throws {
+        let items = try Fixtures.queue()
+        let failed = try Fixtures.failedItem()
+        let review = try XCTUnwrap(items.first { $0.id == 19 })
+        let running = try XCTUnwrap(items.first { $0.id == 21 })
+        let waiting = try XCTUnwrap(items.first { $0.id == 22 })
+        let completed = try XCTUnwrap(items.first { $0.id == 1 })
+        let reason = WaitReason.resource(next: .encoding, name: "gpu", holders: [ResourceHolder(itemId: 21, task: .encoding)])
+
+        let failureLabel = QueueStagePresentation(item: failed, reason: nil)
+        XCTAssertEqual(failureLabel.text, "Failed")
+        XCTAssertEqual(failureLabel.help, failed.attentionReason)
+        let reviewLabel = QueueStagePresentation(item: review, reason: nil)
+        XCTAssertEqual(reviewLabel.text, "Review")
+        XCTAssertEqual(reviewLabel.help, review.attentionReason)
+        let waitingLabel = QueueStagePresentation(item: waiting, reason: reason)
+        XCTAssertEqual(waitingLabel.text, "Queued · \(reason.short)")
+        XCTAssertEqual(waitingLabel.help, reason.detail)
+        let unblocked = QueueStagePresentation(item: waiting, reason: nil)
+        XCTAssertEqual(unblocked.text, "Queued · \(waiting.stage.displayName)")
+        XCTAssertEqual(unblocked.help, "Queued for \(waiting.stage.displayName)")
+        let doneLabel = QueueStagePresentation(item: completed, reason: nil)
+        XCTAssertEqual(doneLabel.text, "Completed")
+        XCTAssertEqual(doneLabel.help, completed.stage.displayName)
+
+        var overlapping = running
+        overlapping.stage = .ripping // scheduler lags behind the live encoding task
+        let activeLabel = QueueStagePresentation(item: overlapping, reason: reason)
+        XCTAssertEqual(activeLabel.text, "Encoding")
+        XCTAssertEqual(activeLabel.help, overlapping.activityDescription)
+        overlapping.tasks = [
+            PipelineTask(type: .encoding, state: .running, progress: TaskProgress(percent: 25, message: "")),
+            PipelineTask(type: .subtitling, state: .running, progress: TaskProgress(percent: 10, message: "")),
+        ]
+        XCTAssertEqual(QueueStagePresentation(item: overlapping, reason: nil).text, "Encoding + Subtitling")
     }
 
     func testInspectorReasonPrefixSplit() {

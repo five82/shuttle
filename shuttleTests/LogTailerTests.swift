@@ -134,6 +134,17 @@ final class LogTailerTests: XCTestCase {
         XCTAssertEqual(LogView.unseenCount(entries, seenSeq: 12, following: false), 0)
     }
 
+    func testLogContentStateKeepsHistoryOnErrorAndDistinguishesNoMatches() {
+        let state = LogView.contentState(entryCount:visibleCount:error:loading:filter:)
+        XCTAssertEqual(state(0, 0, "offline", true, "error"), .unavailable("offline"), "an error outranks the loading indicator")
+        XCTAssertEqual(state(0, 0, nil, true, ""), .loading)
+        XCTAssertEqual(state(0, 0, nil, false, "  "), .noEntries)
+        XCTAssertEqual(state(3, 0, "offline", false, "  disk  "), .noMatches, "old entries remain searchable while disconnected")
+        XCTAssertEqual(state(3, 0, "offline", false, ""), .noEntries)
+        XCTAssertEqual(state(3, 2, "offline", false, "disk"), .entries, "a failed tail does not hide prior rows")
+        XCTAssertEqual(state(3, 1, nil, true, "disk"), .entries, "reloading a filter does not hide prior rows")
+    }
+
     func testCopiedLogLineIncludesContextAndFoldedFields() {
         var log = entry(7, level: "warning", item: 21)
         log.ts = "2026-08-28T12:00:00Z"

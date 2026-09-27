@@ -338,7 +338,7 @@ private struct ActiveRow: View {
             ItemID(id: item.id)
             VStack(alignment: .leading, spacing: 4) {
                 ItemTitle(item: item, weight: .semibold)
-                Text(detail)
+                Text(NowRowText.activeDetail(item: item, progress: progress, at: Date()))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -348,17 +348,6 @@ private struct ActiveRow: View {
             ProgressStack(progress: progress, fallback: item.activityDescription, barWidth: 140)
         }
         .padding(.vertical, 6)
-    }
-
-    /// "Encoding · Phase 1/1 - …", or "Encoding · started 4m ago" until
-    /// the task reports a message.
-    private var detail: String {
-        guard progress.count == 1, let only = progress.first else { return item.activityDescription }
-        if !only.message.isEmpty { return item.activityDescription }
-        if let elapsed = only.elapsedText(at: Date()) {
-            return "\(only.stage.displayName) · started \(elapsed) ago"
-        }
-        return item.activityDescription
     }
 }
 
@@ -371,7 +360,7 @@ private struct WaitingRow: View {
             ItemID(id: item.id)
             ItemTitle(item: item)
             Spacer()
-            Text(text)
+            Text(NowRowText.waitingText(item: item, reason: reason))
                 .font(.callout)
                 .foregroundStyle(tint)
                 .help(reason?.detail ?? "Queued for \(item.stage.displayName.lowercased())")
@@ -383,9 +372,24 @@ private struct WaitingRow: View {
         if case .ready = reason { return .accentColor }
         return .secondary
     }
+}
+
+/// Short Now-row descriptions, independent of SwiftUI rendering and the
+/// wall clock so task overlap and elapsed time can be tested deterministically.
+enum NowRowText {
+    /// "Encoding · Phase 1/1 - …", or "Encoding · started 4m ago" until
+    /// the task reports a message.
+    static func activeDetail(item: QueueItem, progress: [ItemProgress], at now: Date) -> String {
+        guard progress.count == 1, let only = progress.first else { return item.activityDescription }
+        if !only.message.isEmpty { return item.activityDescription }
+        if let elapsed = only.elapsedText(at: now) {
+            return "\(only.stage.displayName) · started \(elapsed) ago"
+        }
+        return item.activityDescription
+    }
 
     /// "Encoding · waiting for encode slot", "Analysis · after Ripping".
-    private var text: String {
+    static func waitingText(item: QueueItem, reason: WaitReason?) -> String {
         guard let reason else { return "queued for \(item.stage.displayName.lowercased())" }
         return "\(reason.next.displayName) · \(reason.short)"
     }

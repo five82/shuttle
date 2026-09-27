@@ -55,12 +55,27 @@ struct LogView: View {
         following ? 0 : entries.filter { $0.seq > seenSeq }.count
     }
 
+    enum ContentState: Equatable {
+        case unavailable(String), loading, noEntries, noMatches, entries
+    }
+
+    /// A failed tail only replaces the log when no history is available;
+    /// otherwise keep showing old rows (or the active search's empty state).
+    static func contentState(entryCount: Int, visibleCount: Int, error: String?, loading: Bool, filter: String) -> ContentState {
+        if let error, entryCount == 0 { return .unavailable(error) }
+        if loading, entryCount == 0 { return .loading }
+        if visibleCount == 0 {
+            return filter.trimmingCharacters(in: .whitespaces).isEmpty ? .noEntries : .noMatches
+        }
+        return .entries
+    }
+
     @ViewBuilder
     private func content(_ tailer: LogTailer) -> some View {
         @Bindable var tailer = tailer
         let rows = Self.visibleEntries(tailer.entries, filter: filterText)
         let unseen = Self.unseenCount(rows, seenSeq: seenSeq, following: follow)
-        let needle = filterText.trimmingCharacters(in: .whitespaces).lowercased()
+        let state = Self.contentState(entryCount: tailer.entries.count, visibleCount: rows.count, error: tailer.lastError, loading: tailer.isLoading, filter: filterText)
 
         VStack(spacing: 0) {
             toolbar(tailer)
@@ -70,19 +85,18 @@ struct LogView: View {
 
             Divider()
 
-            if let error = tailer.lastError, tailer.entries.isEmpty {
+            switch state {
+            case .unavailable(let error):
                 emptyState("Log Unavailable", systemImage: "doc.text.magnifyingglass", description: SpindleMonitor.hint(for: error).map { "\(error) \($0)" } ?? error)
-            } else if tailer.isLoading, tailer.entries.isEmpty {
+            case .loading:
                 ProgressView("Loading log…")
                     .controlSize(.small)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if rows.isEmpty {
-                emptyState(
-                    needle.isEmpty ? "No Entries" : "No Matches",
-                    systemImage: needle.isEmpty ? "doc.text" : "magnifyingglass",
-                    description: needle.isEmpty ? "Nothing at \(tailer.minimumLevel.rawValue.capitalized) or above yet." : "No entries contain “\(filterText)”."
-                )
-            } else {
+            case .noEntries:
+                emptyState("No Entries", systemImage: "doc.text", description: "Nothing at \(tailer.minimumLevel.rawValue.capitalized) or above yet.")
+            case .noMatches:
+                emptyState("No Matches", systemImage: "magnifyingglass", description: "No entries contain “\(filterText)”.")
+            case .entries:
                 ScrollViewReader { proxy in
                     List(rows) { entry in
                         LogRow(entry: entry, showsItem: itemID == nil, compact: compact) { id in

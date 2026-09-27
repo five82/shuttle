@@ -62,6 +62,21 @@ final class EventDetectorTests: XCTestCase {
         XCTAssertTrue(AppSettings.defaults.notifies(.completed))
     }
 
+    func testNotificationSettingsDescribeEveryEventKind() {
+        let labels: [(NotificationKind, String, String)] = [
+            (.driveAvailable, "Drive available", "The drive went from busy to free. Time to insert the next disc."),
+            (.needsReview, "Item needs review", "An item finished but was routed to review."),
+            (.failed, "Item failed", "An item stopped before completing."),
+            (.completed, "Item completed", "An item reached the library."),
+            (.connection, "Connection lost or restored", "shuttle stopped reaching the daemon, or reached it again after an outage."),
+        ]
+        XCTAssertEqual(NotificationKind.allCases.map(\.id), labels.map { $0.0.rawValue })
+        for (kind, title, detail) in labels {
+            XCTAssertEqual(kind.title, title)
+            XCTAssertEqual(kind.detail, detail)
+        }
+    }
+
     func testNewAndRemovedItemsAreSilent() throws {
         let failed = try item(7, stage: .failed)
         let completed = try item(8, stage: .completed)

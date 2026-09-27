@@ -174,17 +174,33 @@ private struct StageLabel: View {
     let reason: WaitReason?
 
     var body: some View {
-        HStack(spacing: 5) {
+        let presentation = QueueStagePresentation(item: item, reason: reason)
+        return HStack(spacing: 5) {
             Circle().fill(tint).frame(width: 7, height: 7)
-            Text(text)
+            Text(presentation.text)
                 .lineLimit(1)
                 .truncationMode(.tail)
         }
         .foregroundStyle(item.needsAttention ? tint : (item.isWaiting ? .secondary : .primary))
-        .help(help)
+        .help(presentation.help)
     }
 
-    private var text: String {
+    private var tint: Color {
+        if item.hasFailed { return .red }
+        if item.needsReview { return .orange }
+        if item.isActive { return .accentColor }
+        if item.isCompleted { return .green }
+        return .secondary
+    }
+}
+
+/// Testable wording for the queue's stage column; running tasks take
+/// precedence over the scheduler's coarse stage during overlap windows.
+struct QueueStagePresentation {
+    let item: QueueItem
+    let reason: WaitReason?
+
+    var text: String {
         if item.hasFailed { return "Failed" }
         if item.needsReview { return "Review" }
         if item.isActive {
@@ -198,18 +214,10 @@ private struct StageLabel: View {
         return item.stage.displayName
     }
 
-    private var help: String {
+    var help: String {
         if item.isWaiting { return reason?.detail ?? "Queued for \(item.stage.displayName)" }
         if item.isActive { return item.activityDescription }
         return item.attentionReason ?? item.stage.displayName
-    }
-
-    private var tint: Color {
-        if item.hasFailed { return .red }
-        if item.needsReview { return .orange }
-        if item.isActive { return .accentColor }
-        if item.isCompleted { return .green }
-        return .secondary
     }
 }
 

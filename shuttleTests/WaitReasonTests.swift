@@ -142,6 +142,25 @@ final class LibraryMappingTests: XCTestCase {
         XCTAssertNil(settings.localLibraryPath(for: "/srv/other/A.mkv"))
     }
 
+    func testLocalLibraryURLRequiresAnExistingLocalPathAndFallsBackToDirectMount() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("shuttle-library-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let mapped = root.appendingPathComponent("mapped", isDirectory: true)
+        try FileManager.default.createDirectory(at: mapped, withIntermediateDirectories: true)
+        let file = mapped.appendingPathComponent("movie.mkv")
+        try Data().write(to: file)
+
+        var settings = AppSettings.defaults
+        settings.libraryRemotePrefix = "/mnt/media/"
+        settings.libraryLocalPrefix = "  \(mapped.path)/  "
+        XCTAssertEqual(settings.localLibraryURL(for: "/mnt/media/movie.mkv"), file)
+        XCTAssertEqual(settings.localLibraryURL(for: "/mnt/media"), mapped, "directories can also be revealed")
+        XCTAssertNil(settings.localLibraryURL(for: "/mnt/media/missing.mkv"))
+        XCTAssertNil(settings.localLibraryURL(for: "/mnt/media-extra/movie.mkv"))
+        XCTAssertEqual(settings.localLibraryURL(for: file.path), file, "a directly mounted path needs no mapping")
+    }
+
     @MainActor
     func testLibraryMappingAndTokenPersist() {
         let suite = "shuttle.tests.\(UUID().uuidString)"
@@ -177,6 +196,61 @@ final class LibraryMappingTests: XCTestCase {
         XCTAssertEqual(store.settings.token, "old-token")
         XCTAssertEqual(tokens.read(), "old-token")
         XCTAssertNil(defaults.string(forKey: "spindleAPIToken"))
+    }
+
+    @MainActor
+    func testSettingsURLNotificationsAndPollIntervalPersistAndReset() throws {
+        let suite = "shuttle.tests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let tokens = InMemoryTokenStore()
+        let store = AppSettingsStore(defaults: defaults, tokenStore: tokens)
+        XCTAssertTrue(store.settings.isPlaceholderAddress)
+        XCTAssertTrue(store.baseURLIsValid, "the placeholder is syntactically valid, not a working configuration")
+        XCTAssertFalse(store.settings.notifies(.connection))
+
+        store.updateBaseURLString("  https://example.invalid:7487  ")
+        store.setPollInterval(5)
+        store.setNotification(.connection, enabled: true)
+        store.setNotification(.completed, enabled: false)
+        store.setMenuBarOnly(true)
+        XCTAssertEqual(store.settings.baseURL?.absoluteString, "https://example.invalid:7487")
+        XCTAssertFalse(store.settings.isPlaceholderAddress)
+        XCTAssertTrue(store.settings.notifies(.connection))
+        XCTAssertFalse(store.settings.notifies(.completed))
+        let restored = AppSettingsStore(defaults: defaults, tokenStore: tokens)
+        XCTAssertEqual(restored.settings.baseURLString, "  https://example.invalid:7487  ")
+        XCTAssertEqual(restored.settings.pollInterval, 5)
+        XCTAssertTrue(restored.settings.menuBarOnly)
+        XCTAssertTrue(restored.settings.notifies(.connection))
+        XCTAssertFalse(restored.settings.notifies(.completed))
+
+        restored.updateBaseURLString("not a URL")
+        XCTAssertFalse(restored.baseURLIsValid)
+        XCTAssertNil(restored.makeClient())
+        restored.resetToDefaults()
+        let reset = AppSettingsStore(defaults: defaults, tokenStore: tokens)
+        XCTAssertEqual(reset.settings, .defaults)
+        XCTAssertTrue(reset.settings.isPlaceholderAddress)
+        XCTAssertNil(defaults.object(forKey: "spindleBaseURL"))
+        XCTAssertNil(defaults.object(forKey: "pollInterval"))
+        XCTAssertNil(defaults.object(forKey: "notify.connection"))
+    }
+
+    @MainActor
+    func testExistingTokenWinsOverLegacyTokenAndClearingTokenDeletesIt() throws {
+        let suite = "shuttle.tests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set("obsolete", forKey: "spindleAPIToken")
+        let tokens = InMemoryTokenStore("current")
+        let store = AppSettingsStore(defaults: defaults, tokenStore: tokens)
+        XCTAssertEqual(store.settings.token, "current")
+        XCTAssertEqual(tokens.read(), "current")
+        XCTAssertNil(defaults.object(forKey: "spindleAPIToken"))
+        store.updateToken("")
+        XCTAssertNil(tokens.read())
+        XCTAssertEqual(AppSettingsStore(defaults: defaults, tokenStore: tokens).settings.token, "")
     }
 
     func testSectionDeepLinks() {
