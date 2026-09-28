@@ -128,7 +128,7 @@ final class SpindleMonitorTests: XCTestCase {
         XCTAssertNil(monitor.progress[21])
     }
 
-    func testRipETAUsesSnapshotClockAndRefreshesOnPoll() async throws {
+    func testRipDoesNotInferETAFromElapsedTaskTime() async throws {
         var item = try Fixtures.failedItem()
         item.tasks = [PipelineTask(
             type: .ripping, state: .running, startedAt: "2027-01-15T08:00:00Z",
@@ -140,13 +140,13 @@ final class SpindleMonitorTests: XCTestCase {
         let monitor = makeMonitor(api, clockBox: clockBox)
 
         await monitor.refresh()
-        XCTAssertEqual(monitor.taskProgress[item.id]?.first?.etaSeconds, 3_000)
-        XCTAssertEqual(monitor.progress[item.id]?.shortText, "25% · 50m left")
+        XCTAssertNil(monitor.taskProgress[item.id]?.first?.etaSeconds)
+        XCTAssertEqual(monitor.progress[item.id]?.shortText, "10 GB / 40 GB")
 
         clockBox.date = started.addingTimeInterval(1_200)
         await monitor.refresh()
-        XCTAssertEqual(monitor.progress[item.id]?.etaSeconds, 3_600)
-        XCTAssertEqual(monitor.progress[item.id]?.shortText, "25% · 1h 0m left")
+        XCTAssertNil(monitor.progress[item.id]?.etaSeconds)
+        XCTAssertEqual(monitor.progress[item.id]?.shortText, "10 GB / 40 GB")
     }
 
     func testPartialFailureLeavesSnapshotUntouched() async throws {

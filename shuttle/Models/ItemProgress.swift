@@ -14,8 +14,10 @@ struct ItemProgress: Equatable, Sendable {
     var totalFrames: Int64?
     var bytesCopied: Int64?
     var totalBytes: Int64?
+    var measured = true
+    var measurement: String? = nil
 
-    var hasStarted: Bool { fraction > 0 || (bytesCopied ?? 0) > 0 }
+    var hasStarted: Bool { measured && (fraction > 0 || (bytesCopied ?? 0) > 0) }
 
     var percentText: String { Format.percent(fraction) }
 
@@ -43,11 +45,13 @@ struct ItemProgress: Equatable, Sendable {
     /// or "Starting…" before the task reports anything. Prefer the ETA to
     /// byte counts when both exist so the text fits narrow progress columns.
     var shortText: String {
+        if let measurement { return measurement }
         if let totalBytes, totalBytes > 0, etaText == nil {
             let copied = ByteCountFormatter.string(fromByteCount: bytesCopied ?? 0, countStyle: .file)
             let all = ByteCountFormatter.string(fromByteCount: totalBytes, countStyle: .file)
             return "\(copied) / \(all)"
         }
+        guard measured else { return message.isEmpty ? "Working…" : message }
         guard hasStarted else { return "Starting…" }
         var parts = [percentText]
         if let eta = etaText { parts.append(eta) }
@@ -56,6 +60,8 @@ struct ItemProgress: Equatable, Sendable {
 
     /// The inspector line: "66% · 1.3x · 177,507 / 258,775 frames · 43 min left".
     var detailText: String {
+        if let measurement { return [message, measurement].filter { !$0.isEmpty }.joined(separator: " · ") }
+        guard measured else { return message.isEmpty ? "Working…" : message }
         guard hasStarted else { return "Starting…" }
         var parts = [percentText]
         if let speed = speedText { parts.append(speed) }
@@ -73,7 +79,7 @@ struct ItemProgress: Equatable, Sendable {
 
     /// VoiceOver: "Encoding, 66 percent, 43 minutes left".
     var accessibilityText: String {
-        var parts = [stage.displayName, hasStarted ? "\(Int((min(max(fraction, 0), 1) * 100).rounded(.down))) percent" : "starting"]
+        var parts = [stage.displayName, measurement ?? (measured ? (hasStarted ? "\(Int((min(max(fraction, 0), 1) * 100).rounded(.down))) percent" : "starting") : (message.isEmpty ? "working" : message))]
         if let eta = etaText { parts.append(eta) }
         return parts.joined(separator: ", ")
     }
@@ -91,38 +97,33 @@ extension QueueItem {
     /// the GPU branch, so an item can have two; rows stack a bar per task.
     var progressList: [ItemProgress] { progressList(at: Date()) }
 
-    /// Derive time-based rip estimates once per poll, using the poll's clock.
+    /// One scoped entry per working task; measured activities take precedence
+    /// over the legacy task progress slot. Never infer stage progress or ETA.
     func progressList(at now: Date) -> [ItemProgress] {
-        let encoding = workingTasks.contains { $0.type == .encoding } ? encodingDetails : nil
-        return workingTasks
-            .sorted { $0.type.rank < $1.type.rank }
-            .map { task in
-                var progress = ItemProgress(
-                    fraction: min(max(task.progress.percent / 100, 0), 1),
-                    stage: task.type,
-                    message: task.progress.message.trimmingCharacters(in: .whitespaces),
-                    startedAt: task.startedDate,
-                    bytesCopied: task.progress.bytesCopied,
-                    totalBytes: task.progress.totalBytes
-                )
-                if task.type == .ripping, let started = task.startedDate {
-                    let percent = min(max(task.progress.percent, 0), 100)
-                    let elapsed = now.timeIntervalSince(started)
-                    if percent >= 5, percent < 100, elapsed > 0 {
-                        let remaining = elapsed * (100 - percent) / percent
-                        if remaining.isFinite, remaining > 0 { progress.etaSeconds = remaining }
-                    }
-                }
-                if task.type == .encoding, let encoding {
-                    if let percent = encoding.percent, percent > 0, progress.fraction == 0 {
-                        progress.fraction = min(max(percent / 100, 0), 1)
-                    }
-                    progress.etaSeconds = encoding.etaSeconds
-                    progress.speed = encoding.averageSpeed
-                    progress.currentFrame = encoding.currentFrame
-                    progress.totalFrames = encoding.totalFrames
-                }
-                return progress
+        workingTasks.sorted { $0.type.rank < $1.type.rank }.map { task in
+            let running = task.activities?.filter { $0.state == "running" } ?? []
+            let measured = running.first { ($0.total ?? 0) > 0 }
+            let activity = measured ?? running.first
+            let hasActivities = task.id != nil || !(task.activities ?? []).isEmpty
+            var progress = ItemProgress(
+                fraction: hasActivities ? (measured.map { min(max(Double($0.completed ?? 0) / Double($0.total ?? 1), 0), 1) } ?? 0)
+                    : min(max(task.progress.percent / 100, 0), 1),
+                stage: task.type,
+                message: activity?.message ?? task.progress.message.trimmingCharacters(in: .whitespaces),
+                startedAt: activity?.startedAt.flatMap(SpindleDate.parse) ?? task.startedDate,
+                bytesCopied: hasActivities ? nil : task.progress.bytesCopied,
+                totalBytes: hasActivities ? nil : task.progress.totalBytes
+            )
+            if hasActivities {
+                progress.measured = measured != nil
+                progress.measurement = measured?.measurement
+            } else if task.type == .encoding, let encoding = encodingDetails {
+                progress.etaSeconds = encoding.etaSeconds
+                progress.speed = encoding.averageSpeed
+                progress.currentFrame = encoding.currentFrame
+                progress.totalFrames = encoding.totalFrames
             }
+            return progress
+        }
     }
 }

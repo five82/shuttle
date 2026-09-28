@@ -7,6 +7,7 @@ struct PipelineCell: Identifiable, Equatable {
     var state: TaskState?
     var percent: Double
     var message: String
+    var activities: [TaskActivity] = []
     var error: String?
     var attempts: Int
     var startedAt: Date?
@@ -34,6 +35,7 @@ struct PipelineCell: Identifiable, Equatable {
     func trailing(progress: ItemProgress?, at now: Date) -> String {
         if state == .running {
             if let progress { return progress.shortText }
+            if !activities.isEmpty { return duration(at: now).map(EncodingDetails.duration) ?? "running" }
             if percent > 0 { return "\(Int(percent.rounded()))%" }
             return duration(at: now).map(EncodingDetails.duration) ?? "running"
         }
@@ -43,6 +45,8 @@ struct PipelineCell: Identifiable, Equatable {
 
     /// Review and failure notes take precedence over retry counts.
     var note: String? {
+        if let wait = activities.first(where: { $0.state == "waiting" && !$0.summary.isEmpty }) { return wait.summary }
+        if state == .running, let running = activities.first(where: { $0.state == "running" && !$0.summary.isEmpty }) { return running.summary }
         if state == .running, !message.isEmpty { return message }
         if state == .failed, let error, !error.isEmpty { return error }
         if flagged { return "Routed to review" }
@@ -68,8 +72,9 @@ struct PipelineCell: Identifiable, Equatable {
             return PipelineCell(
                 stage: stage,
                 state: state,
-                percent: idleEncoder ? 0 : task?.progress.percent ?? 0,
+                percent: idleEncoder || task?.id != nil ? 0 : task?.progress.percent ?? 0,
                 message: idleEncoder ? "" : task?.progress.message ?? "",
+                activities: task?.activities ?? [],
                 error: task?.error,
                 attempts: task?.attempts ?? 0,
                 startedAt: idleEncoder ? nil : task?.startedDate,
@@ -183,6 +188,10 @@ private struct PipelineRow: View {
                         .font(.caption)
                         .foregroundStyle(cell.state == .failed ? .red : .secondary)
                         .lineLimit(2)
+                }
+                ForEach(Array(cell.activities.filter { $0.state == "running" }.dropFirst()), id: \.id) { activity in
+                    Text(activity.summary.isEmpty ? activity.operation : activity.summary)
+                        .font(.caption).foregroundStyle(.secondary).lineLimit(2)
                 }
             }
         }

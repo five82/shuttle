@@ -35,6 +35,9 @@ struct QueueItem: Codable, Identifiable, Hashable, Sendable {
 struct PipelineTask: Codable, Hashable, Sendable, Identifiable {
     var type: Stage
     var state: TaskState
+    var id: Int64? = nil
+    var activities: [TaskActivity]? = nil
+    var encoding: JSONValue? = nil
     var attempts: Int?
     var error: String?
     var dependsOn: [String]?
@@ -43,12 +46,42 @@ struct PipelineTask: Codable, Hashable, Sendable, Identifiable {
     var progress: TaskProgress
     var activeAssetKey: String?
 
-    var id: String { type.rawValue }
-
     /// Encoding reserves a worker before a ripped asset is available and
     /// between episodes. Other running tasks begin work immediately.
     var isWorking: Bool {
-        state == .running && (type != .encoding || !(activeAssetKey ?? "").isEmpty)
+        guard state == .running else { return false }
+        if let activities, !activities.isEmpty { return activities.contains { $0.state == "running" } }
+        return type != .encoding || !(activeAssetKey ?? "").isEmpty
+    }
+
+    var waitingMessage: String? {
+        activities?.first { $0.state == "waiting" && $0.message?.isEmpty == false }?.message
+    }
+}
+
+/// A bounded, task-scoped lane. A total of zero means the operation has no
+/// measured denominator; it must not be presented as a percentage.
+struct TaskActivity: Codable, Hashable, Sendable {
+    var id: String
+    var operation: String
+    var assetKey: String?
+    var state: String
+    var message: String?
+    var startedAt: String?
+    var updatedAt: String?
+    var advancedAt: String?
+    var completed: Int64?
+    var total: Int64?
+    var unit: String?
+
+    var measurement: String? {
+        guard let total, total > 0, let completed else { return nil }
+        return "\(completed.formatted())/\(total.formatted())\(unit.map { " \($0)" } ?? "")"
+    }
+
+    var summary: String {
+        [message?.trimmingCharacters(in: .whitespaces), measurement]
+            .compactMap { $0?.isEmpty == false ? $0 : nil }.joined(separator: " · ")
     }
 }
 
@@ -77,6 +110,12 @@ struct Episode: Codable, Hashable, Sendable, Identifiable {
     var encodedPath: String?
     var subtitledPath: String?
     var finalPath: String?
+    var finalSizeBytes: Int64?
+    var finalRoute: String?
+    var finalValidation: JSONValue?
+    var encodeStats: JSONValue?
+    var audioAnalysis: JSONValue?
+    var subtitleSkipReason: String?
     var subtitleSource: String?
     var subtitleLanguage: String?
     var subtitleValidation: String?
@@ -139,6 +178,7 @@ extension QueueItem {
     var isCompleted: Bool { stage == .completed }
     var isActive: Bool { !workingTasks.isEmpty }
     var isWaiting: Bool { !isActive && !stage.isTerminal }
+    var explicitWait: String? { taskList.compactMap(\.waitingMessage).first }
     var needsAttention: Bool { needsReview || hasFailed }
 
     /// The single line an operator needs to know why this item needs them.
@@ -160,10 +200,16 @@ extension QueueItem {
         return nil
     }
 
-    /// Progress of the furthest-along working task, 0...1.
+    /// Sort value for the queue table; only measured operations contribute.
     var progressFraction: Double {
-        let percent = workingTasks.map(\.progress.percent).max() ?? 0
-        return min(max(percent / 100, 0), 1)
+        workingTasks.map { task in
+            if task.id != nil || !(task.activities ?? []).isEmpty {
+                guard let activity = task.activities?.first(where: { $0.state == "running" && ($0.total ?? 0) > 0 }),
+                      let total = activity.total, total > 0 else { return 0 }
+                return min(max(Double(activity.completed ?? 0) / Double(total), 0), 1)
+            }
+            return min(max(task.progress.percent / 100, 0), 1)
+        }.max() ?? 0
     }
 
     /// "Encoding · Phase 1/1 - Encoding foo.mkv", or the stage name when idle.
@@ -171,7 +217,9 @@ extension QueueItem {
         let running = workingTasks
         guard !running.isEmpty else { return stage.displayName }
         return running.map { task in
-            let message = task.progress.message.trimmingCharacters(in: .whitespaces)
+            let activities = task.activities?.filter { $0.state == "running" } ?? []
+            let message = activities.isEmpty ? task.progress.message.trimmingCharacters(in: .whitespaces)
+                : activities.map(\.summary).filter { !$0.isEmpty }.joined(separator: " · ")
             return message.isEmpty ? task.type.displayName : "\(task.type.displayName) · \(message)"
         }.joined(separator: "  ·  ")
     }

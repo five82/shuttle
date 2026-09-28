@@ -43,7 +43,7 @@ final class SpindleClientTests: XCTestCase {
         let receivedQueue = try await api.queue()
         let receivedItem = try await api.item(id: 21)
         let receivedEvents = try await api.itemEvents(id: 21, since: 0)
-        let query = LogQuery(since: 42, limit: 20, tail: true, itemID: 21, minimumLevel: .warn, component: "disc monitor", daemonOnly: true)
+        let query = LogQuery(since: 42, limit: 20, tail: true, itemID: 21, minimumLevel: .warn, component: "disc monitor", stage: "encoding", asset: "main", taskID: 8, attempt: 2, daemonOnly: true)
         let receivedLogs = try await api.logs(query)
         XCTAssertEqual(receivedStatus.pid, try Fixtures.status().pid)
         XCTAssertEqual(receivedQueue.count, 24)
@@ -65,7 +65,7 @@ final class SpindleClientTests: XCTestCase {
         let url = try XCTUnwrap(requests.last?.url)
         let parameters = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems)
         XCTAssertEqual(Dictionary(uniqueKeysWithValues: parameters.map { ($0.name, $0.value ?? "") }), [
-            "since": "42", "limit": "20", "tail": "1", "item": "21", "level": "warn", "component": "disc monitor", "daemon_only": "1",
+            "since": "42", "limit": "20", "tail": "1", "item": "21", "level": "warn", "component": "disc monitor", "stage": "encoding", "asset": "main", "task": "8", "attempt": "2", "daemon_only": "1",
         ])
     }
 

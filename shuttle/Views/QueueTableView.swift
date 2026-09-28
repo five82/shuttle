@@ -208,6 +208,7 @@ struct QueueStagePresentation {
             return running.isEmpty ? item.stage.displayName : running.joined(separator: " + ")
         }
         if item.isWaiting {
+            if item.explicitWait != nil { return "Waiting · \(item.taskList.first { $0.waitingMessage != nil }?.type.displayName ?? item.stage.displayName)" }
             guard let reason else { return "Queued · \(item.stage.displayName)" }
             return "Queued · \(reason.short)"
         }
@@ -215,7 +216,7 @@ struct QueueStagePresentation {
     }
 
     var help: String {
-        if item.isWaiting { return reason?.detail ?? "Queued for \(item.stage.displayName)" }
+        if item.isWaiting { return item.explicitWait ?? reason?.detail ?? "Queued for \(item.stage.displayName)" }
         if item.isActive { return item.activityDescription }
         return item.attentionReason ?? item.stage.displayName
     }

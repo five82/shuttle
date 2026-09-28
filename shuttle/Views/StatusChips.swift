@@ -172,10 +172,12 @@ struct ProgressStack: View {
 
     private func bar(_ task: ItemProgress) -> some View {
         HStack(spacing: 8) {
-            ProgressView(value: task.fraction)
-                .controlSize(compact ? .small : .regular)
-                .frame(width: barWidth)
-                .accessibilityLabel(task.accessibilityText)
+            if task.measured {
+                ProgressView(value: task.fraction)
+                    .controlSize(compact ? .small : .regular)
+                    .frame(width: barWidth)
+                    .accessibilityLabel(task.accessibilityText)
+            }
             Text(task.shortText)
                 .font(.system(compact ? .caption2 : .caption, design: .monospaced))
                 .foregroundStyle(.secondary)

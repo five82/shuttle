@@ -255,10 +255,9 @@ final class InspectorTests: XCTestCase {
             "current_frame": .number(177_507), "total_frames": .number(258_775),
         ])
         progress = try XCTUnwrap(item.progress)
-        XCTAssertEqual(progress.fraction, 0.664, accuracy: 0.001, "falls back to the encoder's percent when the task reports 0")
-        XCTAssertEqual(progress.shortText, "66% · 42m left")
-        XCTAssertEqual(progress.detailText, "66% · 1.3x · 177,507 / 258,775 frames · 42m left")
-        XCTAssertEqual(progress.accessibilityText, "Encoding, 66 percent, 42m left")
+        XCTAssertEqual(progress.fraction, 0, "the item-wide encoder snapshot cannot supply task progress")
+        XCTAssertEqual(progress.shortText, "Starting…")
+        XCTAssertEqual(progress.detailText, "Starting…")
 
         let started = try XCTUnwrap(item.tasks?.first { $0.type == .encoding }?.startedDate)
         XCTAssertEqual(progress.elapsedText(at: started.addingTimeInterval(125)), "2m")
@@ -275,49 +274,26 @@ final class InspectorTests: XCTestCase {
         XCTAssertEqual(progress.detailText, "25% · 10 GB / 40 GB")
     }
 
-    func testRippingETAFromTaskStartAndPercent() throws {
+    func testTaskScopedActivitiesAndNoSyntheticETA() throws {
         var item = try Fixtures.failedItem()
-        let now = Date(timeIntervalSince1970: 10_000)
-        item.tasks = [PipelineTask(
-            type: .ripping, state: .running, startedAt: "1970-01-01T02:30:00Z",
-            progress: TaskProgress(percent: 25, message: "Copying", bytesCopied: 10_000_000_000, totalBytes: 40_000_000_000)
-        )]
-        let progress = try XCTUnwrap(item.progressList(at: now).first)
-        XCTAssertEqual(progress.etaSeconds ?? 0, 3_000, accuracy: 0.01)
-        XCTAssertEqual(progress.shortText, "25% · 50m left")
-        XCTAssertEqual(progress.detailText, "25% · 10 GB / 40 GB · 50m left")
-        XCTAssertEqual(progress.accessibilityText, "Ripping, 25 percent, 50m left")
+        let json = #"{"id":12,"type":"ripping","state":"running","activeAssetKey":"a","progress":{"percent":49,"message":"old"},"activities":[{"id":"work","operation":"optical_read","assetKey":"a","state":"running","message":"Reading title 03","startedAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:01Z","completed":25,"total":100,"unit":"units"}]}"#
+        let rip = try JSONDecoder().decode(PipelineTask.self, from: Data(json.utf8))
+        XCTAssertEqual(rip.id, 12)
+        item.tasks = [rip]
+        let progress = try XCTUnwrap(item.progress)
+        XCTAssertEqual(progress.fraction, 0.25)
+        XCTAssertEqual(progress.detailText, "Reading title 03 · 25/100 units")
+        XCTAssertNil(progress.etaText)
+        XCTAssertEqual(item.activityDescription, "Ripping · Reading title 03 · 25/100 units")
+        XCTAssertEqual(PipelineCell.cells(for: item, pipeline: []).first?.note, "Reading title 03 · 25/100 units")
 
-        item.tasks?.append(PipelineTask(type: .encoding, state: .running,
-                                        progress: TaskProgress(percent: 60, message: "Encoding"), activeAssetKey: "main"))
-        let tasks = item.progressList(at: now)
-        let cells = PipelineCell.cells(for: item, pipeline: try Fixtures.status().pipelineStages)
-        let ripCell = try XCTUnwrap(cells.first { $0.stage == .ripping })
-        let encodeCell = try XCTUnwrap(cells.first { $0.stage == .encoding })
-        XCTAssertEqual(PipelineListView.progress(for: ripCell, from: tasks)?.etaText, "50m left",
-                       "the rip's ETA must not be hidden by a concurrent encode")
-        XCTAssertEqual(PipelineListView.progress(for: encodeCell, from: tasks)?.stage, .encoding)
-        item.tasks?.removeLast()
-
-        item.tasks?[0].progress.bytesCopied = nil
-        item.tasks?[0].progress.totalBytes = nil
-        XCTAssertEqual(item.progressList(at: now).first?.shortText, "25% · 50m left")
-
-        for percent in [0.0, 4.9, 100.0, 120.0] {
-            item.tasks?[0].progress.percent = percent
-            XCTAssertNil(item.progressList(at: now).first?.etaText, "no estimate at \(percent)%")
-        }
-        item.tasks?[0].progress.percent = 25
-        XCTAssertNil(item.progressList(at: Date(timeIntervalSince1970: 9_000)).first?.etaText, "no elapsed time")
-        XCTAssertNil(item.progressList(at: Date(timeIntervalSince1970: 8_999)).first?.etaText, "future start")
-        item.tasks?[0].startedAt = nil
-        XCTAssertNil(item.progressList(at: now).first?.etaText, "no start time")
-        item.tasks?[0].startedAt = "1970-01-01T02:30:00Z"
-        item.tasks?[0].type = .analysis
-        XCTAssertNil(item.progressList(at: now).first?.etaText, "other stages do not get a rip ETA")
-        item.tasks?[0].type = .ripping
+        item.tasks?[0].activities?[0].total = 0
+        let unknown = try XCTUnwrap(item.progress)
+        XCTAssertFalse(unknown.measured)
+        XCTAssertEqual(unknown.shortText, "Reading title 03")
+        XCTAssertNil(unknown.etaText)
         item.tasks?[0].state = .done
-        XCTAssertTrue(item.progressList(at: now).isEmpty, "completed rips have no live ETA")
+        XCTAssertTrue(item.progressList.isEmpty)
     }
 
     func testPipelineRowProgressDurationAndNotePriorities() throws {

@@ -77,6 +77,27 @@ extension Episode {
 
     var mappingDescription: String? { mappingDescription(threshold: nil) }
 
+    var deliveredDescription: String? {
+        guard let finalPath, !finalPath.isEmpty else { return nil }
+        var parts: [String] = []
+        if let finalSizeBytes, finalSizeBytes > 0 { parts.append("\(EncodingDetails.bytes(finalSizeBytes)) delivered") }
+        if let route = finalRoute, !route.isEmpty { parts.append(route) }
+        if let validation = finalValidation {
+            let failed = validation["failed_checks"]
+            if case .array(let checks) = failed, !checks.isEmpty {
+                parts.append("final checks failed: \(checks.compactMap(\.stringValue).joined(separator: ", "))")
+            } else if let error = validation["error"]?.stringValue, !error.isEmpty {
+                parts.append("final check unavailable: \(error)")
+            } else if validation["av_sync"]?["passed"]?.boolValue == true && validation["passed"]?.boolValue == true {
+                parts.append("final post-Apply passed")
+            }
+        }
+        if let encoded = encodeStats?["encoded_size_bytes"]?.doubleValue, encoded > 0 {
+            parts.append("\(EncodingDetails.bytes(Int64(encoded))) encoded intermediate")
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
     /// "en · opensubtitles" or "en · 2 issues".
     var subtitleDescription: String? {
         var parts: [String] = []
@@ -84,6 +105,8 @@ extension Episode {
         let issues = (subtitleSevereIssues ?? []) + (subtitleReviewIssues ?? [])
         if !issues.isEmpty {
             parts.append(issues.count == 1 ? issues[0] : "\(issues.count) subtitle issues")
+        } else if let skip = subtitleSkipReason, !skip.isEmpty {
+            parts.append("subtitles skipped: \(skip)")
         } else if let source = subtitleSource, !source.isEmpty {
             parts.append(source.lowercased())
         }
@@ -157,7 +180,7 @@ private struct EpisodeRow: View {
                 }
                 assetGrid
             }
-            let details = [episode.mappingDescription(threshold: threshold), episode.subtitleDescription, episode.reviewReason, episode.errorMessage]
+            let details = [episode.mappingDescription(threshold: threshold), episode.subtitleDescription, episode.deliveredDescription, episode.reviewReason, episode.errorMessage]
                 .compactMap { $0 }
                 .filter { !$0.isEmpty }
             if !details.isEmpty {

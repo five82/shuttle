@@ -93,6 +93,7 @@ struct ItemInspectorView: View {
         if item.needsReview { return "Review" }
         if item.isActive { return item.activityDescription.components(separatedBy: " · ").first ?? item.stage.displayName }
         if item.isWaiting {
+            if item.explicitWait != nil { return "Waiting · \(item.taskList.first { $0.waitingMessage != nil }?.type.displayName ?? item.stage.displayName)" }
             if let reason { return "Queued · \(reason.short)" }
             return "Queued · \(item.stage.displayName)"
         }
@@ -100,7 +101,7 @@ struct ItemInspectorView: View {
     }
 
     static func stageHelp(_ item: QueueItem, reason: WaitReason?) -> String {
-        if item.isWaiting, let reason { return reason.detail }
+        if item.isWaiting { return item.explicitWait ?? reason?.detail ?? item.stage.displayName }
         if item.isActive { return item.activityDescription }
         return item.attentionReason ?? item.stage.displayName
     }
@@ -152,7 +153,12 @@ private struct OverviewView: View {
         let warning = encoding?.warning?.trimmingCharacters(in: .whitespaces) ?? ""
         let validation = encoding?.validation
         let failingSteps = (validation?.passed == false) ? validation?.stepList ?? [] : []
-        if item.needsAttention || !warning.isEmpty || !failingSteps.isEmpty {
+        let finalFailures = item.episodeList.filter { episode in
+            let validation = episode.finalValidation
+            return validation?["passed"]?.boolValue == false ||
+                (validation?["error"]?.stringValue?.isEmpty == false)
+        }
+        if item.needsAttention || !warning.isEmpty || !failingSteps.isEmpty || !finalFailures.isEmpty {
             InspectorSection("Attention", tint: item.hasFailed ? .red : .orange) {
                 if item.needsReview {
                     let reasons = item.reviewReasons?.filter { !$0.isEmpty } ?? []
@@ -190,6 +196,9 @@ private struct OverviewView: View {
                 }
                 ForEach(failingSteps) { step in
                     ValidationStepRow(step: step)
+                }
+                ForEach(finalFailures) { episode in
+                    InspectorRow("Final check", "\(episode.key): \(episode.finalValidation?["error"]?.stringValue ?? "failed post-Apply validation")", tint: .red)
                 }
             }
         }
@@ -235,10 +244,11 @@ private struct OverviewView: View {
         let subs = item.inspectorSubtitleSummary
         let rows: [(String, String, Color?)] = [
             ("Progress", progress.max { $0.fraction < $1.fraction }?.detailText ?? "", Color.accentColor),
-            ("Estimate", encoding?.sizeEstimate ?? "", Color.accentColor),
-            ("Size", encoding?.sizeResult ?? "", nil),
+            ("Encode est.", encoding?.sizeEstimate ?? "", Color.accentColor),
+            ("Encode size", encoding?.sizeResult ?? "", nil),
             ("Encode", encoding?.encodeStats ?? "", nil),
-            ("Validation", checks, validation?.passed == false ? Color.red : Color.green),
+            ("Encode checks", checks, validation?.passed == false ? Color.red : Color.green),
+            ("Delivered", item.deliveredSummary, item.episodeList.contains { $0.finalValidation?["passed"]?.boolValue == false } ? Color.red : nil),
             ("Subtitles", subs, nil),
             ("Files", item.hasFailed ? "" : (item.fileStateSummary ?? ""), nil),
         ].filter { !$0.1.isEmpty }
@@ -315,6 +325,20 @@ extension ContentIdentification {
 }
 
 extension QueueItem {
+    /// Final post-Apply facts are per file, not the encoder's intermediate
+    /// validation of a file that may later have been rewritten.
+    var deliveredSummary: String {
+        let files = episodeList.filter { !($0.finalPath ?? "").isEmpty }
+        guard !files.isEmpty else { return "" }
+        let bytes = files.compactMap(\.finalSizeBytes).filter { $0 > 0 }.reduce(Int64(0), +)
+        let checks = files.compactMap(\.finalValidation)
+        let passed = checks.filter { $0["passed"]?.boolValue == true && $0["av_sync"]?["passed"]?.boolValue == true }.count
+        var parts = ["\(files.count) delivered"]
+        if bytes > 0 { parts.append(EncodingDetails.bytes(bytes)) }
+        if !checks.isEmpty { parts.append("final post-Apply: \(passed)/\(checks.count) passed") }
+        return parts.joined(separator: " · ")
+    }
+
     /// Stable, case-insensitive source counts for the Output section.
     var inspectorSubtitleSummary: String {
         let sources = episodeList.compactMap { $0.subtitleSource?.lowercased() }.filter { !$0.isEmpty }

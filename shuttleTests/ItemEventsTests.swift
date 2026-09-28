@@ -10,19 +10,19 @@ final class ItemEventsTests: XCTestCase {
     func testDecodeOptionalFieldsUnknownStageAndPresentation() throws {
         let page = try batch(#"{"events":[{"id":1,"itemId":21,"time":"2026-09-27T18:00:00Z","type":"stage_start","stage":"encoding"},{"id":2,"itemId":21,"time":"2026-09-27T18:00:02.123Z","type":"encoding_substage","stage":"new_stage","episodeKey":"e01","substage":"chunking","message":"segment done","percent":25.5,"durationSeconds":62}],"next":2}"#)
         XCTAssertEqual(page.events.count, 2)
-        XCTAssertEqual(page.events[0].label, "Started")
+        XCTAssertEqual(page.events[0].label, "Worker reserved (may wait for input)")
         XCTAssertNil(ItemEventsView.detail(page.events[0]))
         XCTAssertEqual(page.events[1].stage, .unknown("new_stage"))
         XCTAssertEqual(page.events[1].label, "Chunking")
         XCTAssertNotNil(page.events[1].timestamp)
-        XCTAssertEqual(ItemEventsView.detail(page.events[1]), "e01 · segment done · 25.5% · 1m")
+        XCTAssertEqual(ItemEventsView.detail(page.events[1]), "chunking · e01 · segment done · 25.5% · 1m")
     }
 
-    func testIdleEncodingStartHiddenButSubstagesAndOutcomesRemain() throws {
+    func testEncoderReservationAndOutcomesRemainVisible() throws {
         let page = try batch(#"{"events":[{"id":1,"itemId":21,"time":"2026-09-27T18:00:00Z","type":"stage_start","stage":"encoding"},{"id":2,"itemId":21,"time":"2026-09-27T18:00:01Z","type":"stage_start","stage":"ripping"},{"id":3,"itemId":21,"time":"2026-09-27T18:00:02Z","type":"encoding_substage","stage":"encoding","substage":"chunking"},{"id":4,"itemId":21,"time":"2026-09-27T18:00:03Z","type":"stage_complete","stage":"encoding"}],"next":4}"#)
-        XCTAssertEqual(ItemEventsView.visibleEvents(Array(page.events.prefix(1))).count, 0)
-        XCTAssertEqual(ItemEventsView.visibleEvents(page.events).map(\.id), [2, 3, 4])
-        XCTAssertEqual(page.events.count, 4, "filtering must not change journal data or cursor")
+        XCTAssertEqual(ItemEventsView.visibleEvents(Array(page.events.prefix(1))).count, 1)
+        XCTAssertEqual(ItemEventsView.visibleEvents(page.events).map(\.id), [1, 2, 3, 4])
+        XCTAssertEqual(page.events.count, 4, "presentation must not change journal data or cursor")
     }
 
     func testExclusiveCursorCatchesUpAcrossPagesAndRetainsRowsOnError() async throws {

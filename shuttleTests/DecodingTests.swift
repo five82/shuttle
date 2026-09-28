@@ -127,6 +127,27 @@ final class DecodingTests: XCTestCase {
         XCTAssertEqual(String(decoding: encoded, as: UTF8.self), "\"frobnicate\"")
     }
 
+    func testTaskScopedSchemaAndDeliveredFileFacts() throws {
+        let json = #"{"id":42,"discTitle":"Disc","displayTitle":"Film","stage":"ripping","createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z","needsReview":false,"tasks":[{"id":7,"type":"ripping","state":"running","progress":{"percent":49,"message":"stale"},"activities":[{"id":"work","operation":"optical_read","state":"running","message":"Reading title","startedAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:01Z","completed":25,"total":100,"unit":"units"}]},{"id":8,"type":"encoding","state":"running","progress":{"percent":60,"message":"stale encode"},"activities":[{"id":"input","operation":"input","state":"waiting","message":"Waiting for first rip","startedAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:01Z"}]}],"episodes":[{"key":"main","season":0,"episode":0,"stage":"final","finalPath":"/library/Film.mkv","finalSizeBytes":142000000,"finalRoute":"library","finalValidation":{"passed":true,"av_sync":{"passed":true}},"encodeStats":{"encoded_size_bytes":190000000},"subtitleSkipReason":"no match"}]}"#
+        var item = try JSONDecoder().decode(QueueItem.self, from: Data(json.utf8))
+        XCTAssertEqual(item.taskList.map(\.id), [7, 8])
+        XCTAssertEqual(item.workingTasks.map(\.type), [.ripping])
+        XCTAssertEqual(item.explicitWait, "Waiting for first rip")
+        XCTAssertEqual(item.progress?.fraction, 0.25)
+        XCTAssertEqual(item.progress?.shortText, "25/100 units")
+        item.tasks?[0].activities = [TaskActivity(id: "work", operation: "scan", state: "running", message: "Scanning", completed: 0, total: 0)]
+        XCTAssertEqual(item.progressFraction, 0, "legacy percent cannot leak into unknown-denominator work")
+        XCTAssertEqual(item.progress?.shortText, "Scanning")
+        XCTAssertFalse(try XCTUnwrap(item.progress).measured)
+        item.tasks?[0].activities = nil
+        XCTAssertEqual(item.progressFraction, 0, "new-schema tasks without activities have no measured progress")
+        XCTAssertEqual(item.deliveredSummary, "1 delivered · 142 MB · final post-Apply: 1/1 passed")
+        XCTAssertTrue(item.episodeList[0].deliveredDescription?.contains("190 MB encoded intermediate") == true)
+        item.tasks?[0].state = .done
+        XCTAssertEqual(NowRowText.waitingText(item: item, reason: nil), "Waiting for first rip")
+        XCTAssertEqual(QueueStagePresentation(item: item, reason: nil).text, "Waiting · Encoding")
+    }
+
     func testStageRawValuesRoundTrip() {
         let stages: [Stage] = [.identification, .ripping, .episodeIdentification, .encoding, .analysis, .subtitling, .apply, .organizing, .completed, .failed]
         for stage in stages {

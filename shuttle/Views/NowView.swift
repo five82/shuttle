@@ -363,7 +363,7 @@ private struct WaitingRow: View {
             Text(NowRowText.waitingText(item: item, reason: reason))
                 .font(.callout)
                 .foregroundStyle(tint)
-                .help(reason?.detail ?? "Queued for \(item.stage.displayName.lowercased())")
+                .help(item.explicitWait ?? reason?.detail ?? "Queued for \(item.stage.displayName.lowercased())")
         }
         .padding(.vertical, 3)
     }
@@ -390,6 +390,7 @@ enum NowRowText {
 
     /// "Encoding · waiting for encode slot", "Analysis · after Ripping".
     static func waitingText(item: QueueItem, reason: WaitReason?) -> String {
+        if let wait = item.explicitWait { return wait }
         guard let reason else { return "queued for \(item.stage.displayName.lowercased())" }
         return "\(reason.next.displayName) · \(reason.short)"
     }

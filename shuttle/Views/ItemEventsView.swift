@@ -11,6 +11,8 @@ struct ItemEvent: Decodable, Identifiable, Sendable {
     let time: String
     let type: String
     let stage: Stage
+    let taskId: Int64?
+    let attempt: Int?
     let episodeKey: String?
     let substage: String?
     let message: String?
@@ -18,7 +20,7 @@ struct ItemEvent: Decodable, Identifiable, Sendable {
     let durationSeconds: Double?
 
     private enum CodingKeys: String, CodingKey {
-        case id, time, type, stage, episodeKey, substage, message, percent, durationSeconds
+        case id, time, type, stage, taskId, attempt, episodeKey, substage, message, percent, durationSeconds
         case itemID = "itemId"
     }
 
@@ -26,7 +28,7 @@ struct ItemEvent: Decodable, Identifiable, Sendable {
 
     var label: String {
         switch type {
-        case "stage_start": return "Started"
+        case "stage_start": return stage == .encoding ? "Worker reserved (may wait for input)" : "Started"
         case "stage_complete": return "Completed"
         case "stage_failed": return "Failed"
         case "stage_canceled": return "Canceled"
@@ -139,11 +141,8 @@ struct ItemEventsView: View {
         }
     }
 
-    /// Scheduling the encoder is not evidence of encode work. Keep the raw
-    /// journal/cursor intact; hide only that start row in the presentation.
-    static func visibleEvents(_ events: [ItemEvent]) -> [ItemEvent] {
-        events.filter { !($0.type == "stage_start" && $0.stage == .encoding) }
-    }
+    /// Preserve worker reservations in history, but label them honestly.
+    static func visibleEvents(_ events: [ItemEvent]) -> [ItemEvent] { events }
 
     @ViewBuilder
     private func content(_ tailer: ItemEventTailer) -> some View {
@@ -192,6 +191,10 @@ struct ItemEventsView: View {
 
     static func detail(_ event: ItemEvent) -> String? {
         var parts: [String] = []
+        if let task = event.taskId, task > 0 {
+            parts.append("task \(task)" + (event.attempt.map { "/run \($0)" } ?? ""))
+        }
+        if let substage = event.substage, !substage.isEmpty { parts.append(substage) }
         if let key = event.episodeKey, !key.isEmpty { parts.append(key) }
         if let message = event.message, !message.isEmpty { parts.append(message) }
         if let percent = event.percent, percent > 0 { parts.append(String(format: "%.1f%%", percent)) }

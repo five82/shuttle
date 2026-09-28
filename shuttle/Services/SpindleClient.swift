@@ -21,6 +21,10 @@ struct LogQuery: Equatable, Sendable {
     var itemID: Int64? = nil
     var minimumLevel: LogLevel? = nil
     var component: String? = nil
+    var stage: String? = nil
+    var asset: String? = nil
+    var taskID: Int64? = nil
+    var attempt: Int? = nil
     var daemonOnly = false
 
     var queryItems: [URLQueryItem] {
@@ -31,6 +35,10 @@ struct LogQuery: Equatable, Sendable {
         if let itemID { items.append(URLQueryItem(name: "item", value: String(itemID))) }
         if let minimumLevel { items.append(URLQueryItem(name: "level", value: minimumLevel.queryValue)) }
         if let component, !component.isEmpty { items.append(URLQueryItem(name: "component", value: component)) }
+        if let stage, !stage.isEmpty { items.append(URLQueryItem(name: "stage", value: stage)) }
+        if let asset, !asset.isEmpty { items.append(URLQueryItem(name: "asset", value: asset)) }
+        if let taskID { items.append(URLQueryItem(name: "task", value: String(taskID))) }
+        if let attempt { items.append(URLQueryItem(name: "attempt", value: String(attempt))) }
         if daemonOnly { items.append(URLQueryItem(name: "daemon_only", value: "1")) }
         return items
     }
